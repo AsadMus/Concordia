@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+    <head>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Dashboard - ConChordia</title>
+
+        <link rel="stylesheet" href="style.css">
+
+    </head>
+
+    <body>
+        <div class="sidebar">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                ☰
+            </button>
+
+            <div class="logo">
+                <img src="images/logo.png" alt="ConChordia Logo">
+            </div>
+
+            <nav>
+                <a href="dashboard.html" class="active">Dashboard</a>
+                <a href="artist-profile.html">Artist Profile</a>
+                <a href="contacts.html">Contacts</a>
+                <a href="projects.html">Projects</a>
+                <a href="calendar.html">Calendar</a>
+                <a href="opportunities.html">Opportunities</a>
+                <a href="revenue.html">Revenue</a>
+                <a href="network.html">Network</a>
+                <a href="settings.html">Settings</a>
+            </nav>
+
+        </div>
+        
+        <main class="main-content">
+            <header class="topbar">
+
+                <div>
+                    <h1>Welcome back, User!</h1>
+                    <p>Here's what's happening with your music network: </p>
+                </div>
+
+                <div class="profile">
+                    <div class="profile-circle">
+                        U
+                    </div>
+                    <span>User</span>
+                </div>
+
+            </header>
+            <h2 class="section-title">Your Overview</h2>
+
+            <div class="dashboard-grid">
+
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2>Upcoming Events</h2>
+                        <a href="calendar.html">View All</a>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Performer(s)</th>
+                                <th>Venue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Oct 31, 2026 
+                                    <small>7:00 PM</small>
+                                </td>
+                                <td>Art the Clown</td>
+                                <td>Universal Studios
+                                    <small>Hollywood, CA</small>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Dec 30, 2026 
+                                    <small>7:00 PM</small>
+                                </td>
+                                <td>LyssaKay</td>
+                                <td>Glen Helen Amphitheater
+                                    <small>San Bernardino, CA</small>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2>Projects</h2>
+                        <a href="projects.html">View All</a>
+                    </div>
+                    
+                    <table>
+                        <thead>
+
+                            <tr>
+                                <th>Project</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Collaborator(s)</th>
+                            </tr>
+
+                        </thead>
+                        
+                        <tbody>
+                            <tr>
+                                <td>Falling</td>
+                                <td>Song</td>
+                                <td>In Progress</td>
+                                <td><small>ft. </small>Kosmo</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>Nevermind</td>
+                                <td>Album</td>
+                                <td>Not Started</td>
+                                <td>Myself</td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+                </section>
+
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2>Follow-Ups</h2>
+                        <a href="calendar.html">View All</a>
+                    </div>
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>Contact</th>
+                                <th>Role</th>
+                                <th>Follow-Up Date</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            <tr>
+                                <td>Kehlani</td>
+                                <td>R&B Artist</td>
+                                <td>Oct 15, 2026</td>
+                            </tr>
+
+                            <tr>
+                                <td>Leon Thomas</td>
+                                <td>R&B Artist</td>
+                                <td>Oct 15, 2026</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </section> 
+
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2>Revenue</h2>
+                        <a href="revenue.html">View All</a>
+                    </div>
+
+                    <div class="revenue-summary">
+                        <div class="revenue-item">
+                            <h4>Profit</h4>
+                            <p>$2,450.00</p>
+                        </div>
+                        
+                        <div class="revenue-item">
+                            <h4>Soonest Balance Due</h4>
+                            <p>$500.00</p>
+                        </div>
+
+                    </div>
+                </section>
+
+            </div>
+        </main>
+
+        <script>
+            const sidebar = document.querySelector(".sidebar");
+            const toggleButton = document.getElementById("sidebarToggle");
+
+            toggleButton.addEventListener("click", function() {
+                sidebar.classList.toggle("collapsed");
+            });
+        </script>
+        
+    </body>
+
+</html>
