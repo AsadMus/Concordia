@@ -1,27 +1,10 @@
 # ConChordia Backend
 
-Node.js + Express REST API with PostgreSQL. It also serves the HTML pages in the repo root, so the whole app runs from one address: **http://localhost:3000**.
+Node.js + Express REST API with PostgreSQL. It also serves the pages in `frontend/`, so the whole app runs from one address: **http://localhost:3000**.
 
-## Setup (one time)
+## Setup
 
-1. Install [Node.js 20+](https://nodejs.org) and [PostgreSQL 16](https://www.postgresql.org/download/) (remember the password you set for the `postgres` user).
-2. Create the database:
-   ```bash
-   psql -U postgres -c "CREATE DATABASE conchordia;"
-   ```
-3. Install and configure:
-   ```bash
-   cd backend
-   npm install
-   cp .env.example .env        # Windows: copy .env.example .env
-   ```
-   Edit `.env`: put your postgres password in `DATABASE_URL` and change `JWT_SECRET` to any long random string.
-4. Create the tables and the demo data:
-   ```bash
-   npm run db:init     # WARNING: wipes and recreates all tables
-   npm run db:seed     # demo login: demo@conchordia.test / password123
-   ```
-5. Run it: `npm run dev` (restarts automatically when you save), then open http://localhost:3000
+See the step-by-step guide in the [main README](../README.md).
 
 ## Project layout
 
@@ -35,7 +18,7 @@ backend/
   src/routes/auth.js      DONE  signup / login / me
   src/routes/contacts.js  DONE  full CRUD: the pattern to copy
   src/routes/*.js         TODO  stubs that return 501 until built
-js/api.js                 front-end fetch helper (token handling included)
+../frontend/js/api.js     front-end fetch helper (token handling included)
 ```
 
 ## How auth works

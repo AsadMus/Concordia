@@ -33,7 +33,7 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'No such API route' 
 app.use(errorHandler);
 
 // ---------- Front end ----------
-const frontendDir = path.join(__dirname, '../..');
+const frontendDir = path.join(__dirname, '../../frontend');
 app.use(express.static(frontendDir, { index: 'login.html' }));
 
 const PORT = process.env.PORT || 3000;
