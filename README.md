@@ -5,7 +5,6 @@ A CRM for musicians and music professionals (CSE 4050 Web Application Developmen
 ```
 frontend/   HTML, CSS and js/api.js (the pages people see)
 backend/    Node.js + Express API and PostgreSQL database
-TASKS.md    who is doing what
 ```
 
 The backend serves the frontend, so the whole app runs at **http://localhost:3000**.
@@ -78,7 +77,7 @@ npm run dev
 | `ECONNREFUSED 5432` | PostgreSQL isn't running: open Windows Services, start `postgresql-x64-16` |
 | `EADDRINUSE 3000` | The server is already running in another terminal |
 | `npm` not recognized | Restart VS Code after installing Node.js |
-| Page says "Not implemented yet" | That API route is still a TODO (see TASKS.md) |
+| Page says "Not implemented yet" | That API route is still a TODO |
 
 ## Optional: one shared database
 Each person has their own local database by default, and `schema.sql` in git keeps the table structure the same for everyone.
