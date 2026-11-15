@@ -1,0 +1,223 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Artist Profile - ConChordia</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+        <button class="sidebar-toggle" id="sidebarToggle">
+            ☰
+        </button>
+
+        <div class="logo">
+            <img src="images/logo.png" alt="ConChordia Logo">
+        </div>
+
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="artist-profile.html" class="active">Artist Profile</a>
+            <a href="contacts.html">Contacts</a>
+            <a href="projects.html">Projects</a>
+            <a href="calendar.html">Calendar</a>
+            <a href="opportunities.html">Opportunities</a>
+            <a href="revenue.html">Revenue</a>
+            <a href="network.html">Network</a>
+            <a href="settings.html">Settings</a>
+        </nav>
+
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <h1>Artist Profile</h1>
+                <p>Manage your artist information and online presence.</p>
+            </div>
+        </header>
+
+        <section class="dashboard-card artist-profile-card">
+
+            <h2>Basic Information</h2>
+
+            <form class="artist-profile-form" id="artistProfileForm">
+
+                <label for="stageName">Stage Name</label>
+                <input
+                    type="text"
+                    id="stageName"
+                    placeholder="Enter stage name"
+                >
+
+                <label for="legalName">Legal Name</label>
+                <input
+                    type="text"
+                    id="legalName"
+                    placeholder="Enter legal name"
+                >
+
+                <label for="genre">Genre</label>
+                <input
+                    type="text"
+                    id="genre"
+                    placeholder="Enter music genre"
+                >
+
+                <label for="location">Location</label>
+                <input
+                    type="text"
+                    id="location"
+                    placeholder="City, State"
+                >
+
+                <h2>Contact Information</h2>
+
+                <label for="email">Email</label>
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter email address"
+                >
+
+                <label for="phone">Phone Number</label>
+                <input
+                    type="tel"
+                    id="phone"
+                    placeholder="Enter phone number"
+                >
+
+                <h2>Social Media</h2>
+
+                <label for="instagram">Instagram</label>
+                <input
+                    type="url"
+                    id="instagram"
+                    placeholder="https://instagram.com/username"
+                >
+
+                <label for="tiktok">TikTok</label>
+                <input
+                    type="url"
+                    id="tiktok"
+                    placeholder="https://tiktok.com/@username"
+                >
+
+                <label for="youtube">YouTube</label>
+                <input
+                    type="url"
+                    id="youtube"
+                    placeholder="https://youtube.com/@username"
+                >
+
+                <label for="spotify">Spotify</label>
+                <input
+                    type="url"
+                    id="spotify"
+                    placeholder="Spotify artist profile URL"
+                >
+
+                <h2>Artist Biography</h2>
+
+                <label for="bio">Biography</label>
+                <textarea
+                    id="bio"
+                    rows="5"
+                    placeholder="Tell us about yourself as an artist"
+                ></textarea>
+
+                <button type="submit" class="save-profile-button">
+                    Save Profile
+                </button>
+
+                <p id="saveMessage" role="status"></p>
+
+            </form>
+
+        </section>
+
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+
+        // Sidebar Toggle
+        const sidebar = document.querySelector(".sidebar");
+        const toggleButton = document.getElementById("sidebarToggle");
+
+        toggleButton.addEventListener("click", function() {
+            sidebar.classList.toggle("collapsed");
+        });
+
+        // Artist Profile - Temporary Browser Storage
+        const profileForm = document.getElementById("artistProfileForm");
+        const saveMessage = document.getElementById("saveMessage");
+
+        const profileFields = [
+            "stageName",
+            "legalName",
+            "genre",
+            "location",
+            "email",
+            "phone",
+            "instagram",
+            "tiktok",
+            "youtube",
+            "spotify",
+            "bio"
+        ];
+
+        // Load previously saved information
+        try {
+            const savedProfile = JSON.parse(
+                localStorage.getItem("conchordiaArtistProfile") || "{}"
+            );
+
+            profileFields.forEach(function(field) {
+                if (typeof savedProfile[field] === "string") {
+                    document.getElementById(field).value = savedProfile[field];
+                }
+            });
+        } catch (error) {
+            console.error("Could not load artist profile:", error);
+        }
+
+        // Save information
+        profileForm.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const profileData = {};
+
+            profileFields.forEach(function(field) {
+                profileData[field] = document.getElementById(field).value;
+            });
+
+            try {
+                localStorage.setItem(
+                    "conchordiaArtistProfile",
+                    JSON.stringify(profileData)
+                );
+
+                saveMessage.textContent = "Profile saved successfully!";
+            } catch (error) {
+                saveMessage.textContent = "Unable to save profile.";
+                console.error(error);
+            }
+        });
+
+    </script>
+
+</body>
+</html>
+
