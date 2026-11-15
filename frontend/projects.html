@@ -441,7 +441,11 @@
                 const statusCell = addCell(row, project.status);
                 statusCell.className = "project-status";
 
-                addCell(row, project.deadline);
+                const formattedDate = project.deadline
+                    ? project.deadline.split("-").slice(1).concat(project.deadline.split("-")[0]).join("/")
+                    : "—";
+
+                addCell(row, formattedDate);
 
                 const fee = project.fee == null ? "No fee" : "$" + Number(project.fee).toFixed(2);
                 addCell(row, fee + " - " + (project.paymentStatus || "Not Applicable"));

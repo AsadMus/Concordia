@@ -383,7 +383,11 @@
                 const statusCell = addCell(row, opportunity.status);
                 statusCell.className = "opportunity-status";
 
-                addCell(row, opportunity.deadline);
+                const formattedDate = opportunity.deadline
+                    ? opportunity.deadline.split("-").slice(1).concat(opportunity.deadline.split("-")[0]).join("/")
+                    : "—";
+
+                addCell(row, formattedDate);
 
                 const amount = opportunity.estimatedValue == null
                     ? "—"
