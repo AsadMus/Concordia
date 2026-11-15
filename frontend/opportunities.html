@@ -1,0 +1,444 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opportunities - ConChordia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+        <div class="logo">
+            <img src="images/logo.png" alt="ConChordia Logo">
+        </div>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="artist-profile.html">Artist Profile</a>
+            <a href="contacts.html">Contacts</a>
+            <a href="projects.html">Projects</a>
+            <a href="calendar.html">Calendar</a>
+            <a href="opportunities.html" class="active">Opportunities</a>
+            <a href="revenue.html">Revenue</a>
+            <a href="network.html">Network</a>
+            <a href="settings.html">Settings</a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <h1>Opportunities</h1>
+                <p>Track gigs, collaborations, sponsorships, and other opportunities.</p>
+            </div>
+        </header>
+
+        <div class="opportunity-header">
+            <h2 class="section-title">Your Opportunities</h2>
+            <button class="save-profile-button" id="addOpportunityButton">+ Add Opportunity</button>
+        </div>
+
+        <div class="opportunity-summary">
+            <section class="dashboard-card">
+                <h3>Total Opportunities</h3>
+                <p class="opportunity-stat" id="totalOpportunities">0</p>
+            </section>
+            <section class="dashboard-card">
+                <h3>In Progress</h3>
+                <p class="opportunity-stat" id="progressOpportunities">0</p>
+            </section>
+            <section class="dashboard-card">
+                <h3>Accepted</h3>
+                <p class="opportunity-stat" id="acceptedOpportunities">0</p>
+            </section>
+            <section class="dashboard-card">
+                <h3>Potential Value</h3>
+                <p class="opportunity-stat" id="potentialValue">$0.00</p>
+            </section>
+        </div>
+
+        <section class="dashboard-card">
+            <h2>Opportunity List</h2>
+            <div class="opportunity-filters">
+                <input type="search" id="opportunitySearch" placeholder="Search opportunities...">
+                <select id="opportunityTypeFilter">
+                    <option value="">All Types</option>
+                    <option>Gig</option>
+                    <option>Collaboration</option>
+                    <option>Sponsorship</option>
+                    <option>Feature</option>
+                    <option>Playlist Submission</option>
+                    <option>Audition</option>
+                    <option>Other</option>
+                </select>
+                <select id="opportunityStatusFilter">
+                    <option value="">All Statuses</option>
+                    <option>Discovered</option>
+                    <option>Applied</option>
+                    <option>Under Review</option>
+                    <option>Accepted</option>
+                    <option>Rejected</option>
+                    <option>Closed</option>
+                </select>
+            </div>
+
+            <div class="opportunity-table-wrapper">
+                <table class="opportunity-table">
+                    <thead>
+                        <tr>
+                            <th>Opportunity</th>
+                            <th>Type</th>
+                            <th>Contact</th>
+                            <th>Status</th>
+                            <th>Deadline</th>
+                            <th>Value</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="opportunitiesTableBody"></tbody>
+                </table>
+            </div>
+            <p class="opportunity-empty" id="emptyOpportunities">No opportunities added yet.</p>
+        </section>
+
+        <section class="dashboard-card opportunity-form-card" id="opportunityFormCard" hidden>
+            <h2 id="opportunityFormTitle">Add Opportunity</h2>
+            <form class="opportunity-form" id="opportunityForm">
+                <label for="opportunityName">Opportunity Name *</label>
+                <input type="text" id="opportunityName" placeholder="Enter opportunity name" required>
+
+                <div class="opportunity-form-row">
+                    <div>
+                        <label for="opportunityType">Type</label>
+                        <select id="opportunityType">
+                            <option>Gig</option>
+                            <option>Collaboration</option>
+                            <option>Sponsorship</option>
+                            <option>Feature</option>
+                            <option>Playlist Submission</option>
+                            <option>Audition</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="opportunityStatus">Status</label>
+                        <select id="opportunityStatus">
+                            <option>Discovered</option>
+                            <option>Applied</option>
+                            <option>Under Review</option>
+                            <option>Accepted</option>
+                            <option>Rejected</option>
+                            <option>Closed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="opportunity-form-row">
+                    <div>
+                        <label for="opportunityDeadline">Deadline</label>
+                        <input type="date" id="opportunityDeadline">
+                    </div>
+                    <div>
+                        <label for="opportunityValue">Estimated Value ($)</label>
+                        <input type="number" id="opportunityValue" min="0" step="0.01" placeholder="0.00">
+                    </div>
+                </div>
+
+                <label for="opportunityContact">Related Contact</label>
+                <select id="opportunityContact">
+                    <option value="">No Contact Selected</option>
+                </select>
+                <p class="opportunity-note">Contacts are loaded from your Contacts page.</p>
+
+                <label for="opportunityOrganization">Organization / Venue</label>
+                <input type="text" id="opportunityOrganization" placeholder="Company, venue, or organization">
+
+                <label for="opportunityLink">Opportunity Link</label>
+                <input type="url" id="opportunityLink" placeholder="https://example.com">
+
+                <label for="opportunityNotes">Notes</label>
+                <textarea id="opportunityNotes" rows="5" placeholder="Requirements, application details, or updates..."></textarea>
+
+                <div class="opportunity-actions">
+                    <button type="submit" class="save-profile-button">Save Opportunity</button>
+                    <button type="button" class="opportunity-cancel" id="cancelOpportunity">Cancel</button>
+                    <button type="button" class="opportunity-delete" id="deleteOpportunity" hidden>Delete Opportunity</button>
+                </div>
+            </form>
+        </section>
+
+        <p id="opportunityMessage" role="status"></p>
+    </main>
+
+    <script>
+        document.getElementById("sidebarToggle").onclick = function() {
+            document.querySelector(".sidebar").classList.toggle("collapsed");
+        };
+
+        function loadData(key) {
+            try {
+                const data = JSON.parse(localStorage.getItem(key) || "[]");
+                return Array.isArray(data) ? data : [];
+            } catch (error) {
+                console.error(error);
+                return [];
+            }
+        }
+
+        let opportunities = loadData("conchordiaOpportunities");
+        let contacts = loadData("conchordiaContacts");
+        let editingId = null;
+
+        const form = document.getElementById("opportunityForm");
+        const formCard = document.getElementById("opportunityFormCard");
+        const tableBody = document.getElementById("opportunitiesTableBody");
+        const message = document.getElementById("opportunityMessage");
+        const contactSelect = document.getElementById("opportunityContact");
+
+        function value(id) {
+            return document.getElementById(id).value.trim();
+        }
+
+        function saveOpportunities() {
+            try {
+                localStorage.setItem("conchordiaOpportunities", JSON.stringify(opportunities));
+                return true;
+            } catch (error) {
+                message.textContent = "Could not save opportunity.";
+                return false;
+            }
+        }
+
+        function loadContacts() {
+            contacts = loadData("conchordiaContacts");
+            contactSelect.replaceChildren();
+
+            const firstOption = document.createElement("option");
+            firstOption.value = "";
+            firstOption.textContent = "No Contact Selected";
+            contactSelect.appendChild(firstOption);
+
+            contacts.forEach(function(contact) {
+                const option = document.createElement("option");
+                option.value = contact.id;
+                option.textContent = contact.name + (contact.role ? " (" + contact.role + ")" : "");
+                contactSelect.appendChild(option);
+            });
+        }
+
+        function getContactName(id) {
+            if (!id) return "—";
+
+            const contact = contacts.find(function(person) {
+                return String(person.id) === String(id);
+            });
+
+            return contact ? contact.name : "Contact Removed";
+        }
+
+        function openForm(opportunity = null) {
+            form.reset();
+            editingId = opportunity ? opportunity.id : null;
+            loadContacts();
+
+            document.getElementById("opportunityFormTitle").textContent =
+                opportunity ? "Edit Opportunity" : "Add Opportunity";
+            document.getElementById("deleteOpportunity").hidden = !opportunity;
+
+            document.getElementById("opportunityName").value = opportunity ? opportunity.name : "";
+            document.getElementById("opportunityType").value = opportunity ? opportunity.type : "Gig";
+            document.getElementById("opportunityStatus").value = opportunity ? opportunity.status : "Discovered";
+            document.getElementById("opportunityDeadline").value = opportunity ? opportunity.deadline || "" : "";
+            document.getElementById("opportunityValue").value = opportunity ? opportunity.estimatedValue ?? "" : "";
+            document.getElementById("opportunityContact").value = opportunity ? opportunity.contactId || "" : "";
+            document.getElementById("opportunityOrganization").value = opportunity ? opportunity.organization || "" : "";
+            document.getElementById("opportunityLink").value = opportunity ? opportunity.link || "" : "";
+            document.getElementById("opportunityNotes").value = opportunity ? opportunity.notes || "" : "";
+
+            formCard.hidden = false;
+            formCard.scrollIntoView({ behavior: "smooth" });
+        }
+
+        function closeForm() {
+            formCard.hidden = true;
+            editingId = null;
+            form.reset();
+        }
+
+        document.getElementById("addOpportunityButton").onclick = function() {
+            openForm();
+        };
+
+        document.getElementById("cancelOpportunity").onclick = closeForm;
+
+        form.onsubmit = function(event) {
+            event.preventDefault();
+
+            const amount = value("opportunityValue");
+            const estimatedValue = amount === "" ? null : Number(amount);
+
+            if (estimatedValue !== null && (!Number.isFinite(estimatedValue) || estimatedValue < 0)) {
+                message.textContent = "Enter a valid estimated value.";
+                return;
+            }
+
+            const opportunity = {
+                id: editingId || crypto.randomUUID(),
+                name: value("opportunityName"),
+                type: value("opportunityType"),
+                status: value("opportunityStatus"),
+                deadline: value("opportunityDeadline"),
+                estimatedValue: estimatedValue,
+                contactId: value("opportunityContact"),
+                organization: value("opportunityOrganization"),
+                link: value("opportunityLink"),
+                notes: value("opportunityNotes")
+            };
+
+            if (!opportunity.name) return;
+
+            const oldOpportunities = [...opportunities];
+
+            if (editingId) {
+                opportunities = opportunities.map(function(item) {
+                    return item.id === editingId ? opportunity : item;
+                });
+            } else {
+                opportunities.push(opportunity);
+            }
+
+            if (!saveOpportunities()) {
+                opportunities = oldOpportunities;
+                return;
+            }
+
+            closeForm();
+            showOpportunities();
+            message.textContent = "Opportunity saved!";
+        };
+
+        document.getElementById("deleteOpportunity").onclick = function() {
+            if (!editingId) return;
+
+            const opportunity = opportunities.find(function(item) {
+                return item.id === editingId;
+            });
+
+            if (!opportunity) return;
+            if (!confirm("Delete " + opportunity.name + "? This cannot be undone.")) return;
+
+            const oldOpportunities = [...opportunities];
+            opportunities = opportunities.filter(function(item) {
+                return item.id !== editingId;
+            });
+
+            if (!saveOpportunities()) {
+                opportunities = oldOpportunities;
+                return;
+            }
+
+            closeForm();
+            showOpportunities();
+            message.textContent = "Opportunity deleted.";
+        };
+
+        function addCell(row, text) {
+            const cell = document.createElement("td");
+            cell.textContent = text == null || text === "" ? "—" : text;
+            row.appendChild(cell);
+            return cell;
+        }
+
+        function showOpportunities() {
+            contacts = loadData("conchordiaContacts");
+
+            const search = value("opportunitySearch").toLowerCase();
+            const typeFilter = value("opportunityTypeFilter");
+            const statusFilter = value("opportunityStatusFilter");
+
+            const filtered = opportunities.filter(function(opportunity) {
+                const text = [
+                    opportunity.name,
+                    opportunity.type,
+                    opportunity.status,
+                    opportunity.organization,
+                    getContactName(opportunity.contactId)
+                ].join(" ").toLowerCase();
+
+                return text.includes(search) &&
+                    (!typeFilter || opportunity.type === typeFilter) &&
+                    (!statusFilter || opportunity.status === statusFilter);
+            });
+
+            tableBody.replaceChildren();
+
+            filtered.forEach(function(opportunity) {
+                const row = document.createElement("tr");
+
+                addCell(row, opportunity.name);
+                addCell(row, opportunity.type);
+                addCell(row, getContactName(opportunity.contactId));
+
+                const statusCell = addCell(row, opportunity.status);
+                statusCell.className = "opportunity-status";
+
+                addCell(row, opportunity.deadline);
+
+                const amount = opportunity.estimatedValue == null
+                    ? "—"
+                    : "$" + Number(opportunity.estimatedValue).toFixed(2);
+                addCell(row, amount);
+
+                const actions = document.createElement("td");
+                const edit = document.createElement("button");
+                edit.type = "button";
+                edit.textContent = "Edit";
+                edit.className = "opportunity-button";
+                edit.onclick = function() {
+                    openForm(opportunity);
+                };
+
+                actions.appendChild(edit);
+                row.appendChild(actions);
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById("totalOpportunities").textContent = opportunities.length;
+
+            document.getElementById("progressOpportunities").textContent =
+                opportunities.filter(function(item) {
+                    return item.status === "Applied" || item.status === "Under Review";
+                }).length;
+
+            document.getElementById("acceptedOpportunities").textContent =
+                opportunities.filter(function(item) {
+                    return item.status === "Accepted";
+                }).length;
+
+            const totalValue = opportunities.reduce(function(total, item) {
+                if (item.status === "Rejected" || item.status === "Closed") return total;
+                return total + (Number(item.estimatedValue) || 0);
+            }, 0);
+
+            document.getElementById("potentialValue").textContent =
+                "$" + totalValue.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+
+            const empty = document.getElementById("emptyOpportunities");
+            empty.textContent = opportunities.length === 0
+                ? "No opportunities added yet."
+                : "No opportunities match your search.";
+            empty.hidden = filtered.length > 0;
+        }
+
+        document.getElementById("opportunitySearch").addEventListener("input", showOpportunities);
+        document.getElementById("opportunityTypeFilter").addEventListener("change", showOpportunities);
+        document.getElementById("opportunityStatusFilter").addEventListener("change", showOpportunities);
+
+        showOpportunities();
+    </script>
+</body>
+</html>
