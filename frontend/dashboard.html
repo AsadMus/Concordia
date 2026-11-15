@@ -1,214 +1,414 @@
+
 <!DOCTYPE html>
-
 <html lang="en">
-
-    <head>
-
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-        <title>Dashboard - ConChordia</title>
-
-        <link rel="stylesheet" href="style.css">
-
-    </head>
-
-    <body>
-        <div class="sidebar">
-            <button class="sidebar-toggle" id="sidebarToggle">
-                ☰
-            </button>
-
-            <div class="logo">
-                <img src="images/logo.png" alt="ConChordia Logo">
-            </div>
-
-            <nav>
-                <a href="dashboard.html" class="active">Dashboard</a>
-                <a href="artist-profile.html">Artist Profile</a>
-                <a href="contacts.html">Contacts</a>
-                <a href="projects.html">Projects</a>
-                <a href="calendar.html">Calendar</a>
-                <a href="opportunities.html">Opportunities</a>
-                <a href="revenue.html">Revenue</a>
-                <a href="network.html">Network</a>
-                <a href="settings.html">Settings</a>
-            </nav>
-
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ConChordia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+        <div class="logo">
+            <img src="images/logo.png" alt="ConChordia Logo">
         </div>
-        
-        <main class="main-content">
-            <header class="topbar">
-
-                <div>
-                    <h1>Welcome back, User!</h1>
-                    <p>Here's what's happening with your music network: </p>
-                </div>
-
-                <div class="profile-menu">
-                    <button class="profile-button" id="profileButton"
-                            aria-expanded="false" aria-controls="profileDropdown">
-                        <span class="profile-circle">U</span>
-                        <span>User</span>
-                        <span>▼</span>
-                    </button>
-
-                    <div class="profile-dropdown" id="profileDropdown">
-                        <a href="artist-profile.html">My Profile</a>
-                        <a href="settings.html">Settings</a>
-                        <a href="login.html">Log Out</a>
-                    </div>
-                </div>
-
-            </header>
-            <h2 class="section-title">Your Overview</h2>
-
-            <div class="dashboard-grid">
-
-                <section class="dashboard-card">
-                    <div class="card-header">
-                        <h2>Upcoming Events</h2>
-                        <a href="calendar.html">View All</a>
-                    </div>
-
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Performer(s)</th>
-                                <th>Venue</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Oct 31, 2026 
-                                    <small>7:00 PM</small>
-                                </td>
-                                <td>Art the Clown</td>
-                                <td>Universal Studios
-                                    <small>Hollywood, CA</small>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>Dec 30, 2026 
-                                    <small>7:00 PM</small>
-                                </td>
-                                <td>LyssaKay</td>
-                                <td>Glen Helen Amphitheater
-                                    <small>San Bernardino, CA</small>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
-
-                <section class="dashboard-card">
-                    <div class="card-header">
-                        <h2>Projects</h2>
-                        <a href="projects.html">View All</a>
-                    </div>
-                    
-                    <table>
-                        <thead>
-
-                            <tr>
-                                <th>Project</th>
-                                <th>Type</th>
-                                <th>Status</th>
-                                <th>Collaborator(s)</th>
-                            </tr>
-
-                        </thead>
-                        
-                        <tbody>
-                            <tr>
-                                <td>Falling</td>
-                                <td>Song</td>
-                                <td>In Progress</td>
-                                <td><small>ft. </small>Kosmo</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>Nevermind</td>
-                                <td>Album</td>
-                                <td>Not Started</td>
-                                <td>Myself</td>
-                            </tr>
-
-                        </tbody>
-
-                    </table>
-                </section>
-
-                <section class="dashboard-card">
-                    <div class="card-header">
-                        <h2>Follow-Ups</h2>
-                        <a href="calendar.html">View All</a>
-                    </div>
-
-                    <table>
-
-                        <thead>
-
-                            <tr>
-                                <th>Contact</th>
-                                <th>Role</th>
-                                <th>Follow-Up Date</th>
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            <tr>
-                                <td>Kehlani</td>
-                                <td>R&B Artist</td>
-                                <td>Oct 15, 2026</td>
-                            </tr>
-
-                            <tr>
-                                <td>Leon Thomas</td>
-                                <td>R&B Artist</td>
-                                <td>Oct 15, 2026</td>
-                            </tr>
-
-                        </tbody>
-                    </table>
-                </section> 
-
-                <section class="dashboard-card">
-                    <div class="card-header">
-                        <h2>Revenue</h2>
-                        <a href="revenue.html">View All</a>
-                    </div>
-
-                    <div class="revenue-summary">
-                        <div class="revenue-item">
-                            <h4>Profit</h4>
-                            <p>$2,450.00</p>
-                        </div>
-                        
-                        <div class="revenue-item">
-                            <h4>Soonest Balance Due</h4>
-                            <p>$500.00</p>
-                        </div>
-
-                    </div>
-                </section>
-
+        <nav>
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="artist-profile.html">Artist Profile</a>
+            <a href="contacts.html">Contacts</a>
+            <a href="projects.html">Projects</a>
+            <a href="calendar.html">Calendar</a>
+            <a href="opportunities.html">Opportunities</a>
+            <a href="revenue.html">Revenue</a>
+            <a href="network.html">Network</a>
+            <a href="settings.html">Settings</a>
+        </nav>
+    </div>
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <h1 id="welcomeMessage">Welcome back, User!</h1>
+                <p>Here's what's happening with your music network:</p>
             </div>
-        </main>
+            <div class="profile-menu">
+                <button class="profile-button" id="profileButton" aria-expanded="false" aria-controls="profileDropdown">
+                    <span class="profile-circle" id="profileInitial">U</span>
+                    <span id="profileName">User</span>
+                    <span>▼</span>
+                </button>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="artist-profile.html">My Profile</a>
+                    <a href="settings.html">Settings</a>
+                    <a href="login.html">Log Out</a>
+                </div>
+            </div>
+        </header>
+        <h2 class="section-title">Your Overview</h2>
+        <div class="dashboard-grid">
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2>Upcoming Events</h2>
+                    <a href="calendar.html">View All</a>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Performer(s)</th>
+                            <th>Venue</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dashboardEvents"></tbody>
+                </table>
+            </section>
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2>Projects</h2>
+                    <a href="projects.html">View All</a>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Project</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Collaborator(s)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dashboardProjects"></tbody>
+                </table>
+            </section>
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2>Follow-Ups</h2>
+                    <a href="calendar.html">View All</a>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Contact</th>
+                            <th>Role</th>
+                            <th>Follow-Up Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dashboardFollowUps"></tbody>
+                </table>
+            </section>
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2>Revenue</h2>
+                    <a href="revenue.html">View All</a>
+                </div>
+                <div class="revenue-summary">
+                    <div class="revenue-item">
+                        <h4>Profit</h4>
+                        <p id="dashboardProfit">$0.00</p>
+                    </div>
+                    <div class="revenue-item">
+                        <h4>Soonest Balance Due</h4>
+                        <p id="dashboardBalance">$0.00</p>
+                        <small id="dashboardBalanceDate"></small>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script>
+        const sidebar = document.querySelector(".sidebar");
+        const toggleButton = document.getElementById("sidebarToggle");
+        toggleButton.addEventListener("click", function() {
+            sidebar.classList.toggle("collapsed");
+        });
 
-        <script>
-            const sidebar = document.querySelector(".sidebar");
-            const toggleButton = document.getElementById("sidebarToggle");
+        const profileButton = document.getElementById("profileButton");
+        const profileDropdown = document.getElementById("profileDropdown");
+        profileButton.addEventListener("click", function() {
+            const isOpen = profileButton.getAttribute("aria-expanded") === "true";
+            profileButton.setAttribute("aria-expanded", String(!isOpen));
+            profileDropdown.classList.toggle("show", !isOpen);
+        });
+        document.addEventListener("click", function(event) {
+            if (!event.target.closest(".profile-menu")) {
+                profileButton.setAttribute("aria-expanded", "false");
+                profileDropdown.classList.remove("show");
+            }
+        });
 
-            toggleButton.addEventListener("click", function() {
-                sidebar.classList.toggle("collapsed");
+        function loadData(key) {
+            try {
+                const data = JSON.parse(localStorage.getItem(key) || "[]");
+                return Array.isArray(data) ? data : [];
+            } catch (error) {
+                console.error(error);
+                return [];
+            }
+        }
+
+        function money(amount) {
+            return Number(amount || 0).toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD"
             });
-        </script>
-        
-    </body>
+        }
 
+        function displayDate(dateString) {
+            if (!dateString) return "—";
+            const parts = dateString.split("-");
+            if (parts.length !== 3) return dateString;
+            return `${parts[1]}/${parts[2]}/${parts[0]}`;
+        }
+
+        function todayDate() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return `${year}-${month}-${day}`;
+        }
+
+        function addCell(row, text) {
+            const cell = document.createElement("td");
+            cell.textContent = text == null || text === "" ? "—" : String(text);
+            row.appendChild(cell);
+            return cell;
+        }
+
+        function showEmptyRow(tableId, message, columns) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+            cell.colSpan = columns;
+            cell.textContent = message;
+            row.appendChild(cell);
+            document.getElementById(tableId).appendChild(row);
+        }
+
+        function getContactName(contactId, contacts) {
+            const contact = contacts.find(person =>
+                String(person.id) === String(contactId)
+            );
+            return contact ? contact.name || "Unnamed Contact" : "—";
+        }
+
+        function getContactRole(contactId, contacts) {
+            const contact = contacts.find(person =>
+                String(person.id) === String(contactId)
+            );
+            return contact ? contact.role || "—" : "—";
+        }
+
+        function showProfile() {
+            try {
+                const profile = JSON.parse(
+                    localStorage.getItem("conchordiaArtistProfile") || "{}"
+                );
+                const name = profile.stageName ||
+                    profile.name ||
+                    profile.artistName ||
+                    "User";
+                document.getElementById("welcomeMessage").textContent =
+                    "Welcome back, " + name + "!";
+                document.getElementById("profileName").textContent = name;
+                document.getElementById("profileInitial").textContent =
+                    name.charAt(0).toUpperCase();
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function showUpcomingEvents() {
+            const calendarEvents = loadData("conchordiaCalendarEvents");
+            const projects = loadData("conchordiaProjects");
+            const opportunities = loadData("conchordiaOpportunities");
+            const table = document.getElementById("dashboardEvents");
+            table.replaceChildren();
+
+            const projectEvents = projects
+                .filter(project => project.deadline)
+                .map(project => ({
+                    name: project.name || project.title || "Project",
+                    date: project.deadline,
+                    time: "",
+                    location: "",
+                    category: "Project Deadline"
+                }));
+
+            const opportunityEvents = opportunities
+                .filter(opportunity =>
+                    opportunity.deadline &&
+                    opportunity.status !== "Rejected" &&
+                    opportunity.status !== "Closed"
+                )
+                .map(opportunity => ({
+                    name: opportunity.name,
+                    date: opportunity.deadline,
+                    time: "",
+                    location: opportunity.organization || "",
+                    category: "Opportunity"
+                }));
+
+            const upcoming = [
+                ...calendarEvents,
+                ...projectEvents,
+                ...opportunityEvents
+            ]
+                .filter(event => event.date && event.date >= todayDate())
+                .sort((a, b) =>
+                    (a.date + (a.time || "")).localeCompare(
+                        b.date + (b.time || "")
+                    )
+                )
+                .slice(0, 5);
+
+            if (upcoming.length === 0) {
+                showEmptyRow("dashboardEvents", "No upcoming events.", 3);
+                return;
+            }
+
+            upcoming.forEach(event => {
+                const row = document.createElement("tr");
+                const dateCell = addCell(row, displayDate(event.date));
+                if (event.time) {
+                    const time = document.createElement("small");
+                    time.textContent = event.time;
+                    dateCell.appendChild(time);
+                }
+                addCell(row, event.name || event.title || "Untitled Event");
+                addCell(row, event.location || "—");
+                table.appendChild(row);
+            });
+        }
+
+        function showProjects() {
+            const projects = loadData("conchordiaProjects");
+            const contacts = loadData("conchordiaContacts");
+            const table = document.getElementById("dashboardProjects");
+            table.replaceChildren();
+
+            const recentProjects = [...projects].slice(-5).reverse();
+
+            if (recentProjects.length === 0) {
+                showEmptyRow("dashboardProjects", "No projects added yet.", 4);
+                return;
+            }
+
+            recentProjects.forEach(project => {
+                const row = document.createElement("tr");
+                addCell(row, project.name || project.title || "Unnamed Project");
+                addCell(row, project.type || "—");
+                addCell(row, project.status || "—");
+
+                let collaborators = "—";
+
+                if (Array.isArray(project.collaborators) && project.collaborators.length) {
+                    collaborators = project.collaborators.map(person => {
+                        if (typeof person === "string") return person;
+                        if (person.name) return person.name;
+                        if (person.contactId) {
+                            return getContactName(person.contactId, contacts);
+                        }
+                        return "Unknown";
+                    }).join(", ");
+                } else if (project.collaborator) {
+                    collaborators = project.collaborator;
+                }
+
+                addCell(row, collaborators);
+                table.appendChild(row);
+            });
+        }
+
+        function showFollowUps() {
+            const calendarEvents = loadData("conchordiaCalendarEvents");
+            const contacts = loadData("conchordiaContacts");
+            const table = document.getElementById("dashboardFollowUps");
+            table.replaceChildren();
+
+            const followUps = calendarEvents
+                .filter(event =>
+                    event.category === "Follow-Up" &&
+                    event.date &&
+                    event.date >= todayDate()
+                )
+                .sort((a, b) => a.date.localeCompare(b.date))
+                .slice(0, 5);
+
+            if (followUps.length === 0) {
+                showEmptyRow("dashboardFollowUps", "No upcoming follow-ups.", 3);
+                return;
+            }
+
+            followUps.forEach(event => {
+                const row = document.createElement("tr");
+                const contactId = event.contactId || "";
+                const contactName = contactId
+                    ? getContactName(contactId, contacts)
+                    : event.name || event.title || "—";
+                const role = contactId
+                    ? getContactRole(contactId, contacts)
+                    : "—";
+
+                addCell(row, contactName);
+                addCell(row, role);
+                addCell(row, displayDate(event.date));
+                table.appendChild(row);
+            });
+        }
+
+        function showRevenue() {
+            const transactions = loadData("conchordiaTransactions");
+            const paid = transactions.filter(transaction =>
+                transaction.status === "Paid"
+            );
+
+            const income = paid
+                .filter(transaction => transaction.type === "Income")
+                .reduce((total, transaction) =>
+                    total + Number(transaction.amount || 0), 0
+                );
+
+            const expenses = paid
+                .filter(transaction => transaction.type === "Expense")
+                .reduce((total, transaction) =>
+                    total + Number(transaction.amount || 0), 0
+                );
+
+            document.getElementById("dashboardProfit").textContent =
+                money(income - expenses);
+
+            const unpaid = transactions
+                .filter(transaction =>
+                    transaction.type === "Income" &&
+                    (transaction.status === "Pending" ||
+                     transaction.status === "Overdue")
+                )
+                .sort((a, b) =>
+                    (a.date || "").localeCompare(b.date || "")
+                );
+
+            const balance = unpaid.length > 0 ? unpaid[0] : null;
+
+            document.getElementById("dashboardBalance").textContent =
+                balance ? money(balance.amount) : "$0.00";
+
+            document.getElementById("dashboardBalanceDate").textContent =
+                balance && balance.date
+                    ? "Transaction date: " + displayDate(balance.date)
+                    : "No pending payments";
+        }
+
+        function updateDashboard() {
+            showProfile();
+            showUpcomingEvents();
+            showProjects();
+            showFollowUps();
+            showRevenue();
+        }
+
+        updateDashboard();
+
+        window.addEventListener("pageshow", updateDashboard);
+        window.addEventListener("storage", updateDashboard);
+    </script>
+</body>
 </html>

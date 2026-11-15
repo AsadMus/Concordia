@@ -1194,3 +1194,165 @@ nav a:not(.active):hover {
         align-items: stretch;
     }
 }
+
+/* Revenue Page */
+.revenue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+.revenue-header .save-profile-button {
+    margin-top: 0;
+}
+.revenue-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+.revenue-stat {
+    font-size: 30px;
+    margin-top: 12px;
+    overflow-wrap: anywhere;
+}
+.revenue-filters {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+.revenue-filters input {
+    flex: 1;
+    min-width: 180px;
+}
+.revenue-filters input,
+.revenue-filters select,
+.revenue-form input,
+.revenue-form select,
+.revenue-form textarea {
+    padding: 12px;
+    background: #2e0342;
+    color: white;
+    border: 1px solid #743a91;
+    border-radius: 8px;
+    font-family: 'Baumans', sans-serif;
+    box-sizing: border-box;
+}
+.revenue-table-wrapper {
+    overflow-x: auto;
+}
+.revenue-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.revenue-table th,
+.revenue-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #6e288b;
+}
+.revenue-table th {
+    color: #e9c9ff;
+}
+.revenue-income {
+    color: #8ce5a1;
+}
+.revenue-expense {
+    color: #ff9ba8;
+}
+.revenue-status {
+    color: #e9c9ff;
+}
+.revenue-form-card {
+    max-width: 850px;
+    margin-top: 25px;
+}
+.revenue-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+.revenue-form label {
+    color: #e9c9ff;
+}
+.revenue-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+.revenue-form-row div {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.revenue-form-row input,
+.revenue-form-row select {
+    width: 100%;
+}
+.revenue-form textarea {
+    resize: vertical;
+}
+.revenue-form-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+.revenue-form-actions .save-profile-button {
+    margin-top: 0;
+}
+.revenue-button {
+    padding: 10px 14px;
+    background: #780ba6;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: 'Baumans', sans-serif;
+}
+.revenue-button:hover {
+    background: #920cc9;
+}
+.revenue-cancel,
+.revenue-delete {
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-family: 'Baumans', sans-serif;
+}
+.revenue-cancel {
+    background: transparent;
+    border: 1px solid #743a91;
+}
+.revenue-delete {
+    background: #a72b58;
+    border: none;
+}
+.revenue-empty {
+    text-align: center;
+    padding: 25px;
+    color: #e9c9ff;
+}
+#revenueMessage {
+    color: #e9c9ff;
+    margin-top: 15px;
+}
+@media (max-width: 1100px) {
+    .revenue-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (max-width: 750px) {
+    .revenue-summary,
+    .revenue-form-row {
+        grid-template-columns: 1fr;
+    }
+    .revenue-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

@@ -1,0 +1,534 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revenue - ConChordia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+        <div class="logo">
+            <img src="images/logo.png" alt="ConChordia Logo">
+        </div>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="artist-profile.html">Artist Profile</a>
+            <a href="contacts.html">Contacts</a>
+            <a href="projects.html">Projects</a>
+            <a href="calendar.html">Calendar</a>
+            <a href="opportunities.html">Opportunities</a>
+            <a href="revenue.html" class="active">Revenue</a>
+            <a href="network.html">Network</a>
+            <a href="settings.html">Settings</a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <h1>Revenue</h1>
+                <p>Track income, expenses, payments, and overall profit.</p>
+            </div>
+        </header>
+
+        <div class="revenue-header">
+            <h2 class="section-title">Financial Overview</h2>
+            <button class="save-profile-button" id="addTransactionButton">+ Add Transaction</button>
+        </div>
+
+        <div class="revenue-summary">
+            <section class="dashboard-card">
+                <h3>Total Income</h3>
+                <p class="revenue-stat" id="totalIncome">$0.00</p>
+            </section>
+            <section class="dashboard-card">
+                <h3>Total Expenses</h3>
+                <p class="revenue-stat" id="totalExpenses">$0.00</p>
+            </section>
+            <section class="dashboard-card">
+                <h3>Net Profit</h3>
+                <p class="revenue-stat" id="netProfit">$0.00</p>
+            </section>
+            <section class="dashboard-card">
+                <h3>Pending Payments</h3>
+                <p class="revenue-stat" id="pendingPayments">$0.00</p>
+            </section>
+        </div>
+
+        <section class="dashboard-card">
+            <h2>Transaction History</h2>
+
+            <div class="revenue-filters">
+                <input type="search" id="transactionSearch" placeholder="Search transactions...">
+
+                <select id="transactionTypeFilter">
+                    <option value="">All Types</option>
+                    <option value="Income">Income</option>
+                    <option value="Expense">Expense</option>
+                </select>
+
+                <select id="transactionStatusFilter">
+                    <option value="">All Statuses</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Overdue">Overdue</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+
+            <div class="revenue-table-wrapper">
+                <table class="revenue-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Project</th>
+                            <th>Contact</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTableBody"></tbody>
+                </table>
+            </div>
+
+            <p class="revenue-empty" id="emptyTransactions">No transactions added yet.</p>
+        </section>
+
+        <section class="dashboard-card revenue-form-card" id="transactionFormCard" hidden>
+            <h2 id="transactionFormTitle">Add Transaction</h2>
+
+            <form class="revenue-form" id="transactionForm">
+                <label for="transactionDescription">Description *</label>
+                <input type="text" id="transactionDescription" placeholder="Enter transaction description" required>
+
+                <div class="revenue-form-row">
+                    <div>
+                        <label for="transactionType">Transaction Type</label>
+                        <select id="transactionType">
+                            <option value="Income">Income</option>
+                            <option value="Expense">Expense</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="transactionCategory">Category</label>
+                        <select id="transactionCategory">
+                            <option value="Recording">Recording</option>
+                            <option value="Mixing / Mastering">Mixing / Mastering</option>
+                            <option value="Performance">Performance</option>
+                            <option value="Collaboration">Collaboration</option>
+                            <option value="Sponsorship">Sponsorship</option>
+                            <option value="Equipment">Equipment</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Travel">Travel</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="revenue-form-row">
+                    <div>
+                        <label for="transactionAmount">Amount ($) *</label>
+                        <input type="number" id="transactionAmount" min="0.01" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <div>
+                        <label for="transactionDate">Date *</label>
+                        <input type="date" id="transactionDate" required>
+                    </div>
+                </div>
+
+                <div class="revenue-form-row">
+                    <div>
+                        <label for="transactionStatus">Payment Status</label>
+                        <select id="transactionStatus">
+                            <option value="Paid">Paid</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Overdue">Overdue</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="transactionMethod">Payment Method</label>
+                        <select id="transactionMethod">
+                            <option value="">Not Specified</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Card">Card</option>
+                            <option value="PayPal">PayPal</option>
+                            <option value="Zelle">Zelle</option>
+                            <option value="Venmo">Venmo</option>
+                            <option value="Cash App">Cash App</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="revenue-form-row">
+                    <div>
+                        <label for="transactionProject">Related Project</label>
+                        <select id="transactionProject">
+                            <option value="">No Project Selected</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="transactionContact">Related Contact</label>
+                        <select id="transactionContact">
+                            <option value="">No Contact Selected</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label for="transactionNotes">Notes</label>
+                <textarea id="transactionNotes" rows="4" placeholder="Additional payment information..."></textarea>
+
+                <div class="revenue-form-actions">
+                    <button type="submit" class="save-profile-button">Save Transaction</button>
+                    <button type="button" class="revenue-cancel" id="cancelTransaction">Cancel</button>
+                    <button type="button" class="revenue-delete" id="deleteTransaction" hidden>Delete Transaction</button>
+                </div>
+            </form>
+        </section>
+
+        <p id="revenueMessage" role="status"></p>
+    </main>
+
+    <script>
+        document.getElementById("sidebarToggle").onclick = function() {
+            document.querySelector(".sidebar").classList.toggle("collapsed");
+        };
+
+        function loadData(key) {
+            try {
+                const data = JSON.parse(localStorage.getItem(key) || "[]");
+                return Array.isArray(data) ? data : [];
+            } catch (error) {
+                console.error(error);
+                return [];
+            }
+        }
+
+        let transactions = loadData("conchordiaTransactions");
+        let projects = loadData("conchordiaProjects");
+        let contacts = loadData("conchordiaContacts");
+        let editingId = null;
+
+        const form = document.getElementById("transactionForm");
+        const formCard = document.getElementById("transactionFormCard");
+        const tableBody = document.getElementById("transactionsTableBody");
+        const message = document.getElementById("revenueMessage");
+
+        function value(id) {
+            return document.getElementById(id).value.trim();
+        }
+
+        function money(amount) {
+            return Number(amount || 0).toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD"
+            });
+        }
+
+        function displayDate(dateString) {
+            if (!dateString) return "—";
+            const parts = dateString.split("-");
+            if (parts.length !== 3) return dateString;
+            return `${parts[1]}/${parts[2]}/${parts[0]}`;
+        }
+
+        function todayDate() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return `${year}-${month}-${day}`;
+        }
+
+        function saveTransactions() {
+            try {
+                localStorage.setItem("conchordiaTransactions", JSON.stringify(transactions));
+                return true;
+            } catch (error) {
+                message.textContent = "Unable to save transaction.";
+                return false;
+            }
+        }
+
+        function loadRelationships() {
+            projects = loadData("conchordiaProjects");
+            contacts = loadData("conchordiaContacts");
+
+            const projectSelect = document.getElementById("transactionProject");
+            const contactSelect = document.getElementById("transactionContact");
+
+            projectSelect.replaceChildren();
+            contactSelect.replaceChildren();
+
+            const emptyProject = document.createElement("option");
+            emptyProject.value = "";
+            emptyProject.textContent = "No Project Selected";
+            projectSelect.appendChild(emptyProject);
+
+            const emptyContact = document.createElement("option");
+            emptyContact.value = "";
+            emptyContact.textContent = "No Contact Selected";
+            contactSelect.appendChild(emptyContact);
+
+            projects.forEach(project => {
+                const option = document.createElement("option");
+                option.value = project.id;
+                option.textContent = project.name || project.title || "Unnamed Project";
+                projectSelect.appendChild(option);
+            });
+
+            contacts.forEach(contact => {
+                const option = document.createElement("option");
+                option.value = contact.id;
+                option.textContent = contact.name || "Unnamed Contact";
+                contactSelect.appendChild(option);
+            });
+        }
+
+        function getProjectName(id) {
+            if (!id) return "—";
+            const project = projects.find(item => String(item.id) === String(id));
+            return project ? project.name || project.title || "Unnamed Project" : "Project Removed";
+        }
+
+        function getContactName(id) {
+            if (!id) return "—";
+            const contact = contacts.find(item => String(item.id) === String(id));
+            return contact ? contact.name || "Unnamed Contact" : "Contact Removed";
+        }
+
+        function openForm(transaction = null) {
+            form.reset();
+            editingId = transaction ? transaction.id : null;
+            loadRelationships();
+
+            document.getElementById("transactionFormTitle").textContent =
+                transaction ? "Edit Transaction" : "Add Transaction";
+
+            document.getElementById("deleteTransaction").hidden = !transaction;
+
+            document.getElementById("transactionDescription").value =
+                transaction ? transaction.description : "";
+
+            document.getElementById("transactionType").value =
+                transaction ? transaction.type : "Income";
+
+            document.getElementById("transactionCategory").value =
+                transaction ? transaction.category : "Recording";
+
+            document.getElementById("transactionAmount").value =
+                transaction ? transaction.amount : "";
+
+            document.getElementById("transactionDate").value =
+                transaction ? transaction.date : todayDate();
+
+            document.getElementById("transactionStatus").value =
+                transaction ? transaction.status : "Paid";
+
+            document.getElementById("transactionMethod").value =
+                transaction ? transaction.method || "" : "";
+
+            document.getElementById("transactionProject").value =
+                transaction ? transaction.projectId || "" : "";
+
+            document.getElementById("transactionContact").value =
+                transaction ? transaction.contactId || "" : "";
+
+            document.getElementById("transactionNotes").value =
+                transaction ? transaction.notes || "" : "";
+
+            formCard.hidden = false;
+            formCard.scrollIntoView({ behavior: "smooth" });
+        }
+
+        function closeForm() {
+            formCard.hidden = true;
+            editingId = null;
+            form.reset();
+        }
+
+        document.getElementById("addTransactionButton").onclick = function() {
+            openForm();
+        };
+
+        document.getElementById("cancelTransaction").onclick = closeForm;
+
+        form.onsubmit = function(event) {
+            event.preventDefault();
+
+            const amount = Number(value("transactionAmount"));
+
+            if (!Number.isFinite(amount) || amount <= 0) {
+                message.textContent = "Enter a valid amount greater than zero.";
+                return;
+            }
+
+            const transaction = {
+                id: editingId || crypto.randomUUID(),
+                description: value("transactionDescription"),
+                type: value("transactionType"),
+                category: value("transactionCategory"),
+                amount: amount,
+                date: value("transactionDate"),
+                status: value("transactionStatus"),
+                method: value("transactionMethod"),
+                projectId: value("transactionProject"),
+                contactId: value("transactionContact"),
+                notes: value("transactionNotes")
+            };
+
+            if (!transaction.description || !transaction.date) return;
+
+            const previous = [...transactions];
+
+            if (editingId) {
+                transactions = transactions.map(item =>
+                    item.id === editingId ? transaction : item
+                );
+            } else {
+                transactions.push(transaction);
+            }
+
+            if (!saveTransactions()) {
+                transactions = previous;
+                return;
+            }
+
+            closeForm();
+            showTransactions();
+            message.textContent = "Transaction saved successfully.";
+        };
+
+        document.getElementById("deleteTransaction").onclick = function() {
+            if (!editingId) return;
+
+            const transaction = transactions.find(item => item.id === editingId);
+            if (!transaction) return;
+
+            if (!confirm("Delete this transaction? This cannot be undone.")) return;
+
+            const previous = [...transactions];
+            transactions = transactions.filter(item => item.id !== editingId);
+
+            if (!saveTransactions()) {
+                transactions = previous;
+                return;
+            }
+
+            closeForm();
+            showTransactions();
+            message.textContent = "Transaction deleted.";
+        };
+
+        function addCell(row, text) {
+            const cell = document.createElement("td");
+            cell.textContent = text == null || text === "" ? "—" : text;
+            row.appendChild(cell);
+            return cell;
+        }
+
+        function showTransactions() {
+            projects = loadData("conchordiaProjects");
+            contacts = loadData("conchordiaContacts");
+
+            const search = value("transactionSearch").toLowerCase();
+            const typeFilter = value("transactionTypeFilter");
+            const statusFilter = value("transactionStatusFilter");
+
+            const filtered = transactions.filter(transaction => {
+                const text = [
+                    transaction.description,
+                    transaction.type,
+                    transaction.category,
+                    transaction.status,
+                    getProjectName(transaction.projectId),
+                    getContactName(transaction.contactId)
+                ].join(" ").toLowerCase();
+
+                return text.includes(search) &&
+                    (!typeFilter || transaction.type === typeFilter) &&
+                    (!statusFilter || transaction.status === statusFilter);
+            });
+
+            filtered.sort((a, b) => b.date.localeCompare(a.date));
+            tableBody.replaceChildren();
+
+            filtered.forEach(transaction => {
+                const row = document.createElement("tr");
+
+                addCell(row, displayDate(transaction.date));
+                addCell(row, transaction.description);
+                addCell(row, transaction.type);
+                addCell(row, transaction.category);
+                addCell(row, getProjectName(transaction.projectId));
+                addCell(row, getContactName(transaction.contactId));
+
+                const amountCell = addCell(row, money(transaction.amount));
+                amountCell.className = transaction.type === "Income"
+                    ? "revenue-income"
+                    : "revenue-expense";
+
+                const statusCell = addCell(row, transaction.status);
+                statusCell.className = "revenue-status";
+
+                const actions = document.createElement("td");
+                const editButton = document.createElement("button");
+
+                editButton.type = "button";
+                editButton.textContent = "Edit";
+                editButton.className = "revenue-button";
+                editButton.onclick = function() {
+                    openForm(transaction);
+                };
+
+                actions.appendChild(editButton);
+                row.appendChild(actions);
+                tableBody.appendChild(row);
+            });
+
+            const paid = transactions.filter(item => item.status === "Paid");
+
+            const income = paid
+                .filter(item => item.type === "Income")
+                .reduce((total, item) => total + Number(item.amount), 0);
+
+            const expenses = paid
+                .filter(item => item.type === "Expense")
+                .reduce((total, item) => total + Number(item.amount), 0);
+
+            const pending = transactions
+                .filter(item =>
+                    item.type === "Income" &&
+                    (item.status === "Pending" || item.status === "Overdue")
+                )
+                .reduce((total, item) => total + Number(item.amount), 0);
+
+            document.getElementById("totalIncome").textContent = money(income);
+            document.getElementById("totalExpenses").textContent = money(expenses);
+            document.getElementById("netProfit").textContent = money(income - expenses);
+            document.getElementById("pendingPayments").textContent = money(pending);
+
+            const empty = document.getElementById("emptyTransactions");
+            empty.textContent = transactions.length === 0
+                ? "No transactions added yet."
+                : "No transactions match your search.";
+            empty.hidden = filtered.length > 0;
+        }
+
+        document.getElementById("transactionSearch").addEventListener("input", showTransactions);
+        document.getElementById("transactionTypeFilter").addEventListener("change", showTransactions);
+        document.getElementById("transactionStatusFilter").addEventListener("change", showTransactions);
+
+        showTransactions();
+    </script>
+</body>
+</html>
