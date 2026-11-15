@@ -147,7 +147,6 @@ h1, h2, h3, h4 {
         width: 250px;
     }
 }
-
 /* Navigation Bar on the side */
 .sidebar {
     position: fixed;
@@ -161,7 +160,6 @@ h1, h2, h3, h4 {
     transition: width 0.8s ease;
     overflow: hidden;
 }
-
 /* Logo in the corner */
 .logo {
     text-align: center;
@@ -172,7 +170,6 @@ h1, h2, h3, h4 {
     width: 180px;
     height: auto;
 }
-
 /* Sidebar customization */
 /* Puts all items in the sidebar in column form */
 nav {
@@ -261,8 +258,174 @@ nav a:not(.active):hover {
     padding: 30px 40px;
     transition: margin-left 0.8s ease;
 }
-
 .sidebar.collapsed + .main-content {
     margin-left: 70px; 
     transition-delay: 0.55s;
+}
+/* Dashboard header */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+.main-content {
+    margin-left: 240px;
+    padding: 35px 40px;
+    min-width: 0;
+}
+.section-title {
+    margin-bottom: 24px;
+}
+/* Profile dropdown */
+.profile-menu {
+    position: relative;
+    flex-shrink: 0;
+}
+.profile-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
+    background: #440561;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Baumans', sans-serif;
+}
+.profile-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #780ba6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+.profile-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 170px;
+    background: #440561;
+    border-radius: 10px;
+    padding: 8px;
+    z-index: 100;
+    box-shadow: 0 8px 20px #0005;
+}
+.profile-dropdown.open {
+    display: block;
+}
+.profile-dropdown a {
+    display: block;
+    padding: 12px;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+}
+.profile-dropdown a:hover {
+    background: #680b92;
+}
+/* Dashboard cards */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+.dashboard-card {
+    background: #4d126b;
+    border: 1px solid #6e288b;
+    border-radius: 14px;
+    padding: 22px;
+    min-width: 0;
+    overflow-x: auto;
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.card-header h2 {
+    margin: 0;
+    font-size: 23px;
+}
+.card-header a {
+    color: #e3b5ff;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.card-header a:hover {
+    text-decoration: underline;
+}
+/* Tables inside dashboard cards */
+.dashboard-card table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Baumans', sans-serif;
+    font-size: 14px;
+    color: #f0e5f5;
+}
+.dashboard-card th,
+.dashboard-card td {
+    text-align: left;
+    padding: 12px 8px;
+    border-bottom: 1px solid #743a91;
+}
+.dashboard-card th {
+    color: #e9c9ff;
+    font-weight: bold;
+}
+.dashboard-card td small { 
+    display: block;
+    color: #cbb0d8;
+    margin-top: 4px;
+}
+/* Revenue section */
+.revenue-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+.revenue-item {
+    background: #622580;
+    padding: 18px;
+    border-radius: 10px;
+}
+.revenue-item h4 {
+    font-family: 'Baumans', sans-serif;
+    font-size: 14px;
+    margin: 0 0 12px;
+}
+.revenue-item p {
+    font-size: 22px;
+    color: white;
+    margin: 0;
+}
+.revenue-due-date {
+    display: block;
+    margin-top: 8px;
+    font-family: 'Baumans', sans-serif;
+    font-size: 13px;
+    color: #d8b5eb;
+}
+/* Smaller screens */
+@media (max-width: 1100px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 650px) {
+    .main-content {
+        padding: 20px;
+    }
+
+    .topbar {
+        flex-wrap: wrap;
+    }
 }
