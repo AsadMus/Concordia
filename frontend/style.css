@@ -468,3 +468,111 @@ nav a:not(.active):hover {
 .save-profile-button:hover {
     background: #920cc9;
 }
+
+/* Contacts Page */
+.contacts-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+.contacts-header .save-profile-button {
+    margin-top: 0;
+}
+.contacts-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+.contact-stat {
+    font-size: 32px;
+    font-weight: bold;
+    margin-top: 12px;
+}
+.contact-filters {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+}
+.contact-filters input,
+.contact-filters select,
+.artist-profile-form select {
+    padding: 12px;
+    background: #2e0342;
+    color: white;
+    border: 1px solid #743a91;
+    border-radius: 8px;
+    font-family: 'Baumans', sans-serif;
+}
+.contact-filters input {
+    flex: 1;
+    min-width: 0;
+}
+.contacts-table-wrapper {
+    overflow-x: auto;
+}
+.contacts-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.contacts-table th,
+.contacts-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #6e288b;
+}
+.contacts-table th {
+    color: #e9c9ff;
+}
+.contact-action-button {
+    padding: 7px 12px;
+    margin: 3px;
+    border: none;
+    border-radius: 6px;
+    background: #780ba6;
+    color: white;
+    cursor: pointer;
+    font-family: 'Baumans', sans-serif;
+}
+.contact-delete-button {
+    background: #a72b58;
+}
+.contact-form-card {
+    margin-top: 25px;
+    max-width: 800px;
+}
+.contact-form-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.contact-cancel-button {
+    margin-top: 15px;
+    padding: 12px 20px;
+    border: 1px solid #743a91;
+    border-radius: 8px;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    font-family: 'Baumans', sans-serif;
+}
+.contacts-empty {
+    padding: 25px;
+    text-align: center;
+    color: #e9c9ff;
+}
+[hidden] {
+    display: none !important;
+}
+@media (max-width: 700px) {
+    .contacts-header,
+    .contact-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .contacts-summary {
+        grid-template-columns: 1fr;
+    }
+}
