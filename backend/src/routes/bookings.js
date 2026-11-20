@@ -7,12 +7,231 @@ const db = require('../db/pool');
 const { asyncHandler, httpError } = require('../middleware/errors');
 const todo = require('./_todo');
 
-router.get('/', todo('GET /'));
-router.get('/:id', todo('GET /:id'));
-router.post('/', todo('POST /'));
-router.put('/:id', todo('PUT /:id'));
-router.delete('/:id', todo('DELETE /:id'));
-router.post('/:id/performers', todo('POST /:id/performers'));
-router.delete('/:id/performers/:contactId', todo('DELETE /:id/performers/:contactId'));
+const FIELDS = {
+    title: 'title',
+    venueName: 'venue_name',
+    venueCity: 'venue_city',
+    venueContactId: 'venue_contact_id',
+    startsAt: 'starts_at',
+    status: 'status',
+    fee: 'fee',
+    notes: 'notes',
+};
+
+const toJson = (r) => ({
+    id: r.id,
+    title: r.title,
+    venueName: r.venue_name,
+    venueCity: r.venue_city,
+    venueContactId: r.venue_contact_id,
+    startsAt: r.starts_at,
+    status: r.status,
+    fee: r.fee != null ? Number(r.fee) : 0,
+    notes: r.notes,
+    performers: r.performers || [],
+    createdAt: r.created_at,
+});
+
+const SELECT_WITH_PERFORMERS = `
+SELECT b.*,
+  COALESCE(b.venue_name, vc.name) AS venue_name,
+  COALESCE(
+    json_agg(
+      json_build_object('contactId', c.id, 'name', c.name, 'stageName', c.stage_name)
+      ORDER BY c.name
+    ) FILTER (WHERE c.id IS NOT NULL),
+    '[]'
+  ) AS performers
+FROM bookings b
+LEFT JOIN contacts vc ON vc.id = b.venue_contact_id
+LEFT JOIN booking_performers bp ON bp.booking_id = b.id
+LEFT JOIN contacts c ON c.id = bp.contact_id
+`;
+
+router.get('/', asyncHandler(async (req, res) => {
+  const { from, to, upcoming, status } = req.query;
+  const where = ['b.user_id = $1'];
+  const params = [req.user.id];
+
+  if (from) {
+    params.push(from);
+    where.push(`b.starts_at >= $${params.length}`);
+  }
+
+  if (to) {
+    params.push(to);
+    where.push(`b.starts_at <= $${params.length}`);
+  }
+
+  if (upcoming === 'true') {
+    where.push(`b.starts_at >= NOW() AND b.status != 'Cancelled'`);
+  }
+
+  if (status) {
+    params.push(status);
+    where.push(`b.status = $${params.length}`);
+  }
+
+  const { rows } = await db.query(
+    `${SELECT_WITH_PERFORMERS}
+     WHERE ${where.join(' AND ')}
+     GROUP BY b.id, vc.name
+     ORDER BY b.starts_at ASC`,
+    params
+  );
+  res.json(rows.map(toJson));
+}));
+
+router.get('/:id', asyncHandler(async (req, res) => {
+    const { rows } = await db.query(
+        `${SELECT_WITH_PERFORMERS} 
+        WHERE b.id = $1 AND b.user_id = $2
+        GROUP BY b.id, vc.name`, 
+        [req.params.id, req.user.id]
+    );
+    if (!rows[0]) throw httpError(404, 'Booking not found');
+    res.json(toJson(rows[0]));
+}));
+
+router.post('/', asyncHandler(async (req, res) => {
+    if(!req.body.title) throw httpError(400, 'Title is required');
+    if(!req.body.startsAt) throw httpError(400, 'startsAt is required');
+
+    if(req.body.venueContactId) {
+        const vc = await db.query(
+            `SELECT id 
+            FROM contacts 
+            WHERE id = $1 AND user_id = $2`, 
+            [req.body.venueContactId, req.user.id]
+        );
+        if(!vc.rows[0]) throw httpError(400, 'Venue contact not found or does not belong to user');
+    }
+
+    const cols = ['user_id'];
+    const vals = [req.user.id];
+    for (const [field, col] of Object.entries(FIELDS)) {
+        if (req.body[field] !== undefined) {
+            cols.push(col);
+            vals.push(req.body[field] === '' ? null : req.body[field]);
+        }
+
+    }
+
+    const placeholders = vals.map((_, i) => `$${i + 1}`).join(', ');
+    const { rows } = await db.query(
+        `INSERT INTO bookings (${cols.join(', ')}) 
+        VALUES (${placeholders}) 
+        RETURNING id`, 
+        vals
+    );
+
+    const full = await db.query(
+        `${SELECT_WITH_PERFORMERS} 
+        WHERE b.id = $1 AND b.user_id = $2 
+        GROUP BY b.id, vc.name`,
+        [rows[0].id, req.user.id]
+    );
+    res.status(201).json(toJson(full.rows[0]));
+}));
+
+router.put('/:id', asyncHandler(async (req, res) => {
+  const sets = [];
+  const vals = [];
+
+  for (const [field, col] of Object.entries(FIELDS)) {
+    if (req.body[field] !== undefined) {
+      vals.push(req.body[field]);
+      sets.push(`${col} = $${vals.length}`);
+    }
+  }
+
+  if (!sets.length) throw httpError(400, 'Nothing to update');
+
+  vals.push(req.params.id, req.user.id);
+  const updated = await db.query(
+    `UPDATE bookings SET ${sets.join(', ')}
+     WHERE id = $${vals.length - 1} AND user_id = $${vals.length}
+     RETURNING id`,
+    vals
+  );
+
+  if (!updated.rows.at(0)) throw httpError(404, 'Booking not found');
+
+  const full = await db.query(
+    `${SELECT_WITH_PERFORMERS}
+     WHERE b.id = $1 AND b.user_id = $2
+     GROUP BY b.id, vc.name`,
+    [req.params.id, req.user.id]
+  );
+  res.json(toJson(full.rows.at(0)));
+}));
+
+router.delete('/:id', asyncHandler(async (req,res) => {
+    const { rowCount } = await db.query(
+        `DELETE FROM bookings 
+        WHERE id = $1 AND user_id = $2`, 
+        [req.params.id, req.user.id]
+    );
+    if (!rowCount) throw httpError(404, 'Booking not found');
+    res.status(204).end();
+}));
+
+router.post('/:id/performers', asyncHandler(async (req, res) => {
+  const contactId = Number(req.body?.contactId);
+  if (!Number.isInteger(contactId)) {
+    throw httpError(400, 'contactId is required');
+  }
+
+  // 1. Verify the booking exists and belongs to req.user.id
+  const bookingRes = await db.query(
+    'SELECT id FROM bookings WHERE id = $1 AND user_id = $2',
+    [req.params.id, req.user.id]
+  );
+  if (!bookingRes.rows.at(0)) {
+    throw httpError(404, 'Booking not found');
+  }
+
+  // 2. Verify the contact exists and belongs to req.user.id
+  const contactRes = await db.query(
+    'SELECT id FROM contacts WHERE id = $1 AND user_id = $2',
+    [contactId, req.user.id]
+  );
+  if (!contactRes.rows.at(0)) {
+    throw httpError(404, 'Contact not found');
+  }
+
+  // 3. Attach performer (ignore if already attached)
+  await db.query(
+    `INSERT INTO booking_performers (booking_id, contact_id)
+     VALUES ($1, $2)
+     ON CONFLICT (booking_id, contact_id) DO NOTHING`,
+    [req.params.id, contactId]
+  );
+
+  // 4. Return updated booking with performers
+  const full = await db.query(
+    `${SELECT_WITH_PERFORMERS}
+     WHERE b.id = $1 AND b.user_id = $2
+     GROUP BY b.id, vc.name`,
+    [req.params.id, req.user.id]
+  );
+  res.status(201).json(toJson(full.rows.at(0)));
+}));
+
+router.delete('/:id/performers/:contactId', asyncHandler(async (req, res) => {
+    const booking = await db.query(
+        `SELECT id FROM bookings 
+        WHERE id = $1 AND user_id = $2`, 
+        [req.params.id, req.user.id]);
+    if (!booking.rows[0]) throw httpError(404, 'Booking not found');
+
+    const { rowCount } = await db.query(
+        `DELETE FROM booking_performers 
+        WHERE booking_id = $1 AND contact_id = $2`, 
+        [req.params.id, req.params.contactId]
+    );
+    if (!rowCount) throw httpError(404, 'Performer not found on booking');
+    res.status(204).end();
+}));
 
 module.exports = router;
