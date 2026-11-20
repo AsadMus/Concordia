@@ -104,10 +104,9 @@ router.get('/', asyncHandler(async (req, res) => {
         params.push(kind);
         where.push(`t.kind = $${params.length}`);
     }
-    if (paid !== undefined && paid !== '') {
+    if (paid == undefined && paid !== '') {
         params.push(paid === 'true');
         where.push(`t.paid = $${params.length}`);
-    
     }
 
     const { rows } = await db.query(
@@ -124,7 +123,7 @@ router.post('/', asyncHandler(async (req, res) => {
     throw httpError(400, "kind is must be 'income' or 'expense'");
     }
     if (req.body.amount == undefined || Number(req.body.amount) < 0) {
-        throw httpError(400, 'Amount must be non-negative');
+        throw httpError(400, 'amount is must be non-negative');
     }
 
     await verifyOwnedLinks(req.user.id, req.body);

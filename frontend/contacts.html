@@ -1,0 +1,545 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Contacts - ConChordia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+
+        <div class="logo">
+            <img src="images/logo.png" alt="ConChordia Logo">
+        </div>
+
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="artist-profile.html">Artist Profile</a>
+            <a href="contacts.html" class="active">Contacts</a>
+            <a href="projects.html">Projects</a>
+            <a href="calendar.html">Calendar</a>
+            <a href="opportunities.html">Opportunities</a>
+            <a href="revenue.html">Revenue</a>
+            <a href="network.html">Network</a>
+            <a href="settings.html">Settings</a>
+        </nav>
+
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <h1>Contacts</h1>
+                <p>Manage your music industry connections.</p>
+            </div>
+        </header>
+
+        <div class="contacts-header">
+            <h2 class="section-title">Your Network</h2>
+
+            <button class="save-profile-button" id="addContactButton">
+                + Add Contact
+            </button>
+        </div>
+
+        <!-- Overview -->
+        <div class="contacts-summary">
+
+            <section class="dashboard-card">
+                <h3>Total Contacts</h3>
+                <p class="contact-stat" id="totalContacts">0</p>
+            </section>
+
+            <section class="dashboard-card">
+                <h3>Active Connections</h3>
+                <p class="contact-stat" id="activeContacts">0</p>
+            </section>
+
+        </div>
+
+        <!-- Contact List -->
+        <section class="dashboard-card">
+
+            <h2>Industry Contacts</h2>
+
+            <div class="contact-filters">
+
+                <input
+                    type="search"
+                    id="contactSearch"
+                    placeholder="Search name, role, company..."
+                >
+
+                <select id="roleFilter">
+                    <option value="">All Roles</option>
+                    <option>Artist</option>
+                    <option>Producer</option>
+                    <option>Engineer</option>
+                    <option>DJ</option>
+                    <option>Promoter</option>
+                    <option>Venue</option>
+                    <option>Manager</option>
+                    <option>Other</option>
+                </select>
+
+            </div>
+
+            <div class="contacts-table-wrapper">
+
+                <table class="contacts-table">
+
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Company</th>
+                            <th>Relationship</th>
+                            <th>Contact</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="contactsTableBody"></tbody>
+
+                </table>
+
+            </div>
+
+            <p id="emptyContacts" class="contacts-empty">
+                No contacts added yet.
+            </p>
+
+        </section>
+
+        <!-- Add/Edit Contact Form -->
+        <section
+            class="dashboard-card contact-form-card"
+            id="contactFormCard"
+            hidden
+        >
+
+            <h2 id="contactFormTitle">Add Contact</h2>
+
+            <form id="contactForm" class="artist-profile-form">
+
+                <label for="contactName">Name *</label>
+                <input
+                    type="text"
+                    id="contactName"
+                    required
+                    placeholder="Contact name"
+                >
+
+                <label for="contactRole">Industry Role</label>
+                <select id="contactRole">
+                    <option>Artist</option>
+                    <option>Producer</option>
+                    <option>Engineer</option>
+                    <option>DJ</option>
+                    <option>Promoter</option>
+                    <option>Venue</option>
+                    <option>Manager</option>
+                    <option>Other</option>
+                </select>
+
+                <label for="contactCompany">Company / Organization</label>
+                <input
+                    type="text"
+                    id="contactCompany"
+                    placeholder="Company or organization"
+                >
+
+                <label for="contactEmail">Email</label>
+                <input
+                    type="email"
+                    id="contactEmail"
+                    placeholder="Email address"
+                >
+
+                <label for="contactPhone">Phone</label>
+                <input
+                    type="tel"
+                    id="contactPhone"
+                    placeholder="Phone number"
+                >
+
+                <label for="contactLocation">Location</label>
+                <input
+                    type="text"
+                    id="contactLocation"
+                    placeholder="City, State"
+                >
+
+                <label for="contactInstagram">Instagram</label>
+                <input
+                    type="text"
+                    id="contactInstagram"
+                    placeholder="@username or profile URL"
+                >
+
+                <label for="contactRelationship">Relationship Status</label>
+                <select id="contactRelationship">
+                    <option>New</option>
+                    <option>Warm</option>
+                    <option>Active</option>
+                    <option>Frequent</option>
+                </select>
+
+                <label for="contactNotes">Communication Notes</label>
+                <textarea
+                    id="contactNotes"
+                    rows="4"
+                    placeholder="Meeting notes, conversations, follow-ups..."
+                ></textarea>
+
+                <div class="contact-form-actions">
+
+                    <button type="submit" class="save-profile-button">
+                        Save Contact
+                    </button>
+
+                    <button
+                        type="button"
+                        class="contact-cancel-button"
+                        id="cancelContactButton"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="button"
+                        class="contact-action-button contact-delete-button"
+                        id="deleteContactButton"
+                        hidden
+                    >
+                        Delete Contact
+                    </button>
+
+                </div>
+
+                <p id="contactFormMessage" role="status"></p>
+
+            </form>
+
+        </section>
+
+        <p id="contactsMessage" role="status"></p>
+
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+
+        // Sidebar
+        const sidebar = document.querySelector(".sidebar");
+        const toggleButton = document.getElementById("sidebarToggle");
+
+        toggleButton.addEventListener("click", function() {
+            sidebar.classList.toggle("collapsed");
+        });
+
+        // Contacts
+        const STORAGE_KEY = "conchordiaContacts";
+
+        const contactForm = document.getElementById("contactForm");
+        const formCard = document.getElementById("contactFormCard");
+        const tableBody = document.getElementById("contactsTableBody");
+        const searchInput = document.getElementById("contactSearch");
+        const roleFilter = document.getElementById("roleFilter");
+        const contactsMessage = document.getElementById("contactsMessage");
+        const deleteContactButton = document.getElementById("deleteContactButton");
+
+        let contacts = [];
+        let editingId = null;
+
+        // Load contacts
+        try {
+            const stored = JSON.parse(
+                localStorage.getItem(STORAGE_KEY) || "[]"
+            );
+
+            contacts = Array.isArray(stored) ? stored : [];
+
+        } catch (error) {
+            console.error("Unable to load contacts:", error);
+            contactsMessage.textContent = "Unable to load saved contacts.";
+        }
+
+        function getValue(id) {
+            return document.getElementById(id).value.trim();
+        }
+
+        // Save to browser storage
+        function saveContacts() {
+            try {
+                localStorage.setItem(
+                    STORAGE_KEY,
+                    JSON.stringify(contacts)
+                );
+
+                return true;
+
+            } catch (error) {
+                console.error("Unable to save contacts:", error);
+                contactsMessage.textContent = "Unable to save contacts.";
+                return false;
+            }
+        }
+
+        // Open Add/Edit form
+        function openForm(contact = null) {
+
+            contactForm.reset();
+            document.getElementById("contactFormMessage").textContent = "";
+
+            editingId = contact ? contact.id : null;
+
+            document.getElementById("contactFormTitle").textContent =
+                contact ? "Edit Contact" : "Add Contact";
+
+            // Delete is available only when editing
+            deleteContactButton.hidden = !contact;
+
+            if (contact) {
+                document.getElementById("contactName").value =
+                    contact.name || "";
+
+                document.getElementById("contactRole").value =
+                    contact.role || "Artist";
+
+                document.getElementById("contactCompany").value =
+                    contact.company || "";
+
+                document.getElementById("contactEmail").value =
+                    contact.email || "";
+
+                document.getElementById("contactPhone").value =
+                    contact.phone || "";
+
+                document.getElementById("contactLocation").value =
+                    contact.location || "";
+
+                document.getElementById("contactInstagram").value =
+                    contact.instagram || "";
+
+                document.getElementById("contactRelationship").value =
+                    contact.relationship || "New";
+
+                document.getElementById("contactNotes").value =
+                    contact.notes || "";
+            }
+
+            formCard.hidden = false;
+
+            formCard.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+
+        // Close form
+        function closeForm() {
+            formCard.hidden = true;
+            contactForm.reset();
+            editingId = null;
+            deleteContactButton.hidden = true;
+        }
+
+        // Add Contact button
+        document.getElementById("addContactButton").addEventListener(
+            "click",
+            function() {
+                openForm();
+            }
+        );
+
+        // Cancel button
+        document.getElementById("cancelContactButton").addEventListener(
+            "click",
+            closeForm
+        );
+
+        // Save Contact
+        contactForm.addEventListener("submit", function(event) {
+
+            event.preventDefault();
+
+            const contact = {
+                id: editingId || crypto.randomUUID(),
+                name: getValue("contactName"),
+                role: getValue("contactRole"),
+                company: getValue("contactCompany"),
+                email: getValue("contactEmail"),
+                phone: getValue("contactPhone"),
+                location: getValue("contactLocation"),
+                instagram: getValue("contactInstagram"),
+                relationship: getValue("contactRelationship"),
+                notes: getValue("contactNotes")
+            };
+
+            if (!contact.name) return;
+
+            const previousContacts = [...contacts];
+
+            if (editingId) {
+                contacts = contacts.map(function(existing) {
+                    return existing.id === editingId
+                        ? contact
+                        : existing;
+                });
+            } else {
+                contacts.push(contact);
+            }
+
+            if (!saveContacts()) {
+                contacts = previousContacts;
+                return;
+            }
+
+            closeForm();
+            renderContacts();
+
+            contactsMessage.textContent =
+                "Contact saved successfully!";
+        });
+
+        // Delete Contact - only from Edit form
+        deleteContactButton.addEventListener("click", function() {
+
+            if (!editingId) return;
+
+            const contact = contacts.find(function(item) {
+                return item.id === editingId;
+            });
+
+            if (!contact) return;
+
+            const confirmed = confirm(
+                "Are you sure you want to permanently delete " +
+                contact.name + "?"
+            );
+
+            if (!confirmed) return;
+
+            const previousContacts = [...contacts];
+
+            contacts = contacts.filter(function(item) {
+                return item.id !== editingId;
+            });
+
+            if (!saveContacts()) {
+                contacts = previousContacts;
+                return;
+            }
+
+            closeForm();
+            renderContacts();
+
+            contactsMessage.textContent =
+                "Contact deleted successfully.";
+        });
+
+        // Create table cells safely
+        function createCell(row, value) {
+            const cell = document.createElement("td");
+
+            cell.textContent = value || "—";
+
+            row.appendChild(cell);
+
+            return cell;
+        }
+
+        // Display contacts
+        function renderContacts() {
+
+            const query = searchInput.value.toLowerCase().trim();
+            const selectedRole = roleFilter.value;
+
+            const filtered = contacts.filter(function(contact) {
+
+                const searchable = [
+                    contact.name,
+                    contact.role,
+                    contact.company,
+                    contact.email
+                ].join(" ").toLowerCase();
+
+                return searchable.includes(query) &&
+                    (!selectedRole || contact.role === selectedRole);
+            });
+
+            tableBody.replaceChildren();
+
+            filtered.forEach(function(contact) {
+
+                const row = document.createElement("tr");
+
+                createCell(row, contact.name);
+                createCell(row, contact.role);
+                createCell(row, contact.company);
+                createCell(row, contact.relationship);
+                createCell(row, contact.email || contact.phone);
+
+                const actions = document.createElement("td");
+
+                // Only Edit is displayed in the table
+                const editButton = document.createElement("button");
+
+                editButton.type = "button";
+                editButton.textContent = "Edit";
+                editButton.className = "contact-action-button";
+
+                editButton.addEventListener("click", function() {
+                    openForm(contact);
+                });
+
+                actions.appendChild(editButton);
+
+                row.appendChild(actions);
+                tableBody.appendChild(row);
+            });
+
+            // Update statistics
+            document.getElementById("totalContacts").textContent =
+                contacts.length;
+
+            document.getElementById("activeContacts").textContent =
+                contacts.filter(function(contact) {
+                    return contact.relationship === "Active" ||
+                        contact.relationship === "Frequent";
+                }).length;
+
+            // Empty state
+            const emptyMessage =
+                document.getElementById("emptyContacts");
+
+            emptyMessage.textContent = contacts.length === 0
+                ? "No contacts added yet."
+                : "No contacts match your search or filter.";
+
+            emptyMessage.hidden = filtered.length > 0;
+        }
+
+        // Search and filtering
+        searchInput.addEventListener("input", renderContacts);
+        roleFilter.addEventListener("change", renderContacts);
+
+        // Initial display
+        renderContacts();
+
+    </script>
+
+</body>
+</html>
