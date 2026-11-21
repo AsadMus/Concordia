@@ -30,7 +30,7 @@
         <header class="topbar">
             <div>
                 <h1>Network</h1>
-                <p>Discover who you know through who.</p>
+                <p>Track how your professional relationships developed.</p>
             </div>
         </header>
 
@@ -58,17 +58,16 @@
                 <div class="network-toolbar">
                     <div>
                         <h2>Connection Web</h2>
-                        <p>Drag people to explore your network.</p>
+                        <p>Explore your professional relationship history.</p>
                     </div>
                     <button class="network-primary" id="addConnectionBtn">
-                        + Add Connection
+                        + Record Connection
                     </button>
                 </div>
 
                 <div class="network-search-row">
-                    <input id="networkSearch" type="search"
+                    <input type="search" id="networkSearch"
                         placeholder="Search people by name or role...">
-
                     <select id="networkFilter">
                         <option value="">All Relationships</option>
                         <option value="New">New</option>
@@ -78,10 +77,9 @@
                     </select>
                 </div>
 
-                <div class="network-canvas" id="networkCanvas">
-                    <svg id="networkSVG"
-                        viewBox="0 0 1000 650"
-                        aria-label="Interactive professional relationship graph">
+                <div class="network-canvas">
+                    <svg id="networkSVG" viewBox="0 0 1000 650"
+                        aria-label="Professional connection history graph">
                         <g id="networkViewport">
                             <g id="networkEdges"></g>
                             <g id="networkNodes"></g>
@@ -102,27 +100,27 @@
                 <div class="network-legend">
                     <span><i class="network-key self"></i> You</span>
                     <span><i class="network-key person"></i> Person</span>
-                    <span><i class="network-key direct"></i> Direct</span>
-                    <span><i class="network-key path"></i> Introduction Path</span>
+                    <span><i class="network-key direct"></i> Connection</span>
+                    <span><i class="network-key path"></i> History Trail</span>
                 </div>
             </div>
 
             <aside class="network-side-panel">
                 <section class="network-side-card">
-                    <h2>Find Connection Path</h2>
-                    <p>See how you can reach someone through people you know.</p>
+                    <h2>Trace Connection History</h2>
+                    <p>See how someone became part of your professional network.</p>
 
-                    <label for="pathTarget">Who do you want to reach?</label>
+                    <label for="pathTarget">Select a person</label>
                     <select id="pathTarget">
                         <option value="">Select a person</option>
                     </select>
 
                     <button class="network-primary network-full" id="findPathBtn">
-                        Find Introduction Path
+                        Trace Connection
                     </button>
 
                     <div id="pathResult" class="network-path-result">
-                        Select someone to find a connection.
+                        Select someone to view their introduction history.
                     </div>
 
                     <button class="network-secondary network-full"
@@ -139,7 +137,7 @@
                 </section>
 
                 <section class="network-side-card">
-                    <h2>Confirmed Connections</h2>
+                    <h2>Connection History</h2>
                     <div id="connectionList" class="network-connection-list"></div>
                 </section>
             </aside>
@@ -148,9 +146,10 @@
         <div class="network-modal-overlay" id="connectionModal" hidden>
             <div class="network-modal" role="dialog" aria-modal="true"
                 aria-labelledby="modalTitle">
+
                 <div class="network-modal-header">
-                    <h2 id="modalTitle">Add Connection</h2>
-                    <button id="closeModal" class="network-close"
+                    <h2 id="modalTitle">Record Connection</h2>
+                    <button class="network-close" id="closeModal"
                         aria-label="Close">×</button>
                 </div>
 
@@ -161,33 +160,36 @@
                     <label for="connectionTo">Person 2</label>
                     <select id="connectionTo" required></select>
 
-                    <label for="connectionType">Relationship Type</label>
+                    <label for="connectionType">How was the connection made?</label>
                     <select id="connectionType">
-                        <option>Professional</option>
-                        <option>Collaborator</option>
-                        <option>Referral</option>
-                        <option>Business Partner</option>
-                        <option>Personal</option>
-                        <option>Other</option>
+                        <option value="Introduced">Introduced</option>
+                        <option value="Met Directly">Met Directly</option>
                     </select>
 
                     <label for="connectionStrength">Relationship Strength</label>
                     <select id="connectionStrength">
-                        <option>New</option>
-                        <option>Warm</option>
-                        <option>Active</option>
-                        <option>Frequent</option>
+                        <option value="New">New</option>
+                        <option value="Warm">Warm</option>
+                        <option value="Active">Active</option>
+                        <option value="Frequent">Frequent</option>
                     </select>
 
-                    <label for="connectionNotes">How do they know each other?</label>
+                    <label for="connectionDate">Date Connected</label>
+                    <input type="date" id="connectionDate">
+
+                    <label for="connectionNotes">Connection History</label>
                     <textarea id="connectionNotes"
-                        placeholder="Example: Danny worked with this producer on an album."></textarea>
+                        placeholder="Example: Danny introduced me to this producer during a studio session."></textarea>
 
                     <div class="network-modal-actions">
                         <button type="button" class="network-danger"
-                            id="deleteConnectionBtn" hidden>Delete</button>
+                            id="deleteConnectionBtn" hidden>
+                            Delete
+                        </button>
                         <button type="button" class="network-secondary"
-                            id="cancelModal">Cancel</button>
+                            id="cancelModal">
+                            Cancel
+                        </button>
                         <button type="submit" class="network-primary">
                             Save Connection
                         </button>
@@ -205,7 +207,6 @@
         const SVG_NS = "http://www.w3.org/2000/svg";
         const STORAGE_KEY = "conchordiaNetworkConnections";
         const POSITION_KEY = "conchordiaNetworkPositions";
-
         const $ = id => document.getElementById(id);
 
         const strengthColors = {
@@ -214,6 +215,17 @@
             Active: "#59bd9a",
             Frequent: "#d38aff"
         };
+
+        let contacts = [];
+        let people = [];
+        let connections = [];
+        let positions = {};
+        let editingId = null;
+        let selectedId = null;
+        let highlightedPath = [];
+        let transform = { x: 0, y: 0, scale: 1 };
+        let dragging = null;
+        let suppressClick = false;
 
         function readJSON(key, fallback) {
             try {
@@ -254,23 +266,12 @@
             );
         }
 
-        let contacts = [];
-        let people = [];
-        let connections = [];
-        let positions = {};
-        let editingId = null;
-        let selectedId = null;
-        let highlightedPath = [];
-        let transform = { x: 0, y: 0, scale: 1 };
-        let dragging = null;
-        let movedDuringDrag = false;
-
         function loadData() {
             contacts = readArray("conchordiaContacts");
-
             const profile = readJSON("conchordiaArtistProfile", {});
 
-            const profileName = profile.stageName ||
+            const profileName =
+                profile.stageName ||
                 profile.name ||
                 profile.artistName ||
                 "You";
@@ -302,16 +303,21 @@
 
             connections = readArray(STORAGE_KEY).map(edge => ({
                 ...edge,
+                id: edge.id || makeId(),
                 from: String(edge.from ?? edge.contact1 ?? ""),
                 to: String(edge.to ?? edge.contact2 ?? ""),
-                strength: edge.strength || "New",
                 type: edge.type || "Professional",
+                strength: edge.strength || "New",
+                date: edge.date || "",
                 notes: edge.notes || ""
             }));
 
             positions = readJSON(POSITION_KEY, {});
+
             if (!positions || typeof positions !== "object" ||
-                Array.isArray(positions)) positions = {};
+                Array.isArray(positions)) {
+                positions = {};
+            }
 
             initializePositions();
         }
@@ -332,13 +338,18 @@
             );
         }
 
-        function initializePositions() {
-            const center = { x: 500, y: 325 };
+        function historicalEdges() {
+            return validEdges().filter(edge =>
+                edge.type === "Introduced" ||
+                edge.type === "Met Directly"
+            );
+        }
 
+        function initializePositions() {
             if (!positions.self ||
                 !Number.isFinite(positions.self.x) ||
                 !Number.isFinite(positions.self.y)) {
-                positions.self = center;
+                positions.self = { x: 500, y: 325 };
             }
 
             const others = people.filter(person => !person.isSelf);
@@ -346,31 +357,35 @@
             others.forEach((person, index) => {
                 if (positions[person.id] &&
                     Number.isFinite(positions[person.id].x) &&
-                    Number.isFinite(positions[person.id].y)) return;
+                    Number.isFinite(positions[person.id].y)) {
+                    return;
+                }
 
                 const angle = index * 2.399963229728653;
                 const radius = 125 + 42 * Math.sqrt(index);
 
                 positions[person.id] = {
-                    x: center.x + Math.cos(angle) * radius,
-                    y: center.y + Math.sin(angle) * radius
+                    x: 500 + Math.cos(angle) * radius,
+                    y: 325 + Math.sin(angle) * radius
                 };
             });
-        }
-
-        function savePositions() {
-            localStorage.setItem(POSITION_KEY, JSON.stringify(positions));
         }
 
         function saveConnections() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(connections));
         }
 
+        function savePositions() {
+            localStorage.setItem(POSITION_KEY, JSON.stringify(positions));
+        }
+
         function svgElement(tag, attributes = {}) {
             const element = document.createElementNS(SVG_NS, tag);
-            for (const [key, value] of Object.entries(attributes)) {
+
+            Object.entries(attributes).forEach(([key, value]) => {
                 element.setAttribute(key, String(value));
-            }
+            });
+
             return element;
         }
 
@@ -381,7 +396,7 @@
             );
         }
 
-        function screenToGraph(event) {
+        function clientToSVG(event) {
             const svg = $("networkSVG");
             const point = svg.createSVGPoint();
 
@@ -389,36 +404,45 @@
             point.y = event.clientY;
 
             const matrix = svg.getScreenCTM();
+
             if (!matrix) return { x: 0, y: 0 };
 
-            const local = point.matrixTransform(matrix.inverse());
+            const result = point.matrixTransform(matrix.inverse());
+
+            return { x: result.x, y: result.y };
+        }
+
+        function clientToGraph(event) {
+            const point = clientToSVG(event);
 
             return {
-                x: (local.x - transform.x) / transform.scale,
-                y: (local.y - transform.y) / transform.scale
+                x: (point.x - transform.x) / transform.scale,
+                y: (point.y - transform.y) / transform.scale
             };
         }
 
         function visiblePeople() {
-            const search = $("networkSearch").value.trim().toLowerCase();
+            const query = $("networkSearch").value.trim().toLowerCase();
 
-            if (!search) return people;
+            if (!query) return people;
 
             const matching = new Set(
                 people.filter(person =>
-                    person.name.toLowerCase().includes(search) ||
-                    person.role.toLowerCase().includes(search)
+                    person.name.toLowerCase().includes(query) ||
+                    person.role.toLowerCase().includes(query)
                 ).map(person => person.id)
             );
 
-            // Keep people directly connected to search matches visible.
+            const neighbors = new Set(matching);
+
             validEdges().forEach(edge => {
-                if (matching.has(edge.from)) matching.add(edge.to);
-                if (matching.has(edge.to)) matching.add(edge.from);
+                if (matching.has(edge.from)) neighbors.add(edge.to);
+                if (matching.has(edge.to)) neighbors.add(edge.from);
             });
 
-            matching.add("self");
-            return people.filter(person => matching.has(person.id));
+            neighbors.add("self");
+
+            return people.filter(person => neighbors.has(person.id));
         }
 
         function renderGraph() {
@@ -434,9 +458,9 @@
             const pathEdges = new Set();
 
             for (let i = 0; i < highlightedPath.length - 1; i++) {
-                const a = highlightedPath[i];
-                const b = highlightedPath[i + 1];
-                pathEdges.add([a, b].sort().join("|"));
+                pathEdges.add(
+                    highlightedPath[i] + "|" + highlightedPath[i + 1]
+                );
             }
 
             const pathNodes = new Set(highlightedPath);
@@ -449,10 +473,10 @@
 
                 const start = positions[edge.from];
                 const end = positions[edge.to];
+
                 if (!start || !end) return;
 
-                const edgeKey = [edge.from, edge.to].sort().join("|");
-                const isPath = pathEdges.has(edgeKey);
+                const isPath = pathEdges.has(edge.from + "|" + edge.to);
 
                 const line = svgElement("line", {
                     x1: start.x,
@@ -464,11 +488,24 @@
                         : strengthColors[edge.strength] || "#a47fbc",
                     "stroke-width": isPath
                         ? 7
-                        : { New: 2, Warm: 3, Active: 4, Frequent: 5 }[edge.strength] || 2,
-                    "stroke-opacity": highlightedPath.length && !isPath ? 0.2 : 0.85,
+                        : {
+                            New: 2,
+                            Warm: 3,
+                            Active: 4,
+                            Frequent: 5
+                        }[edge.strength] || 2,
+                    "stroke-opacity":
+                        highlightedPath.length && !isPath ? 0.2 : 0.85,
                     "stroke-linecap": "round",
-                    class: isPath ? "network-highlight-line" : "network-edge-line"
+                    class: isPath
+                        ? "network-highlight-line"
+                        : "network-edge-line"
                 });
+
+                if (edge.type !== "Introduced" &&
+                    edge.type !== "Met Directly") {
+                    line.setAttribute("stroke-dasharray", "6 5");
+                }
 
                 const hitLine = svgElement("line", {
                     x1: start.x,
@@ -482,7 +519,8 @@
 
                 const title = svgElement("title");
                 title.textContent =
-                    `${personName(edge.from)} ↔ ${personName(edge.to)} (${edge.strength})`;
+                    `${personName(edge.from)} → ${personName(edge.to)} (${edge.type})`;
+
                 hitLine.appendChild(title);
 
                 hitLine.addEventListener("click", event => {
@@ -490,22 +528,19 @@
                     openConnectionForm(edge);
                 });
 
-                edgesLayer.appendChild(line);
-                edgesLayer.appendChild(hitLine);
+                edgesLayer.append(line, hitLine);
             });
 
             visible.forEach(person => {
                 const position = positions[person.id];
                 if (!position) return;
 
-                const isSelected = selectedId === person.id;
                 const onPath = pathNodes.has(person.id);
                 const dim = highlightedPath.length && !onPath;
 
                 const group = svgElement("g", {
                     class: "network-person-node",
                     transform: `translate(${position.x} ${position.y})`,
-                    "data-person": person.id,
                     opacity: dim ? 0.35 : 1
                 });
 
@@ -513,7 +548,7 @@
                     r: person.isSelf ? 38 : 30,
                     fill: "none",
                     stroke: onPath ? "#f8d96a" :
-                        isSelected ? "#ffffff" : "transparent",
+                        selectedId === person.id ? "#ffffff" : "transparent",
                     "stroke-width": 3
                 });
 
@@ -535,6 +570,7 @@
                     class: "network-node-initials",
                     "text-anchor": "middle"
                 });
+
                 initialText.textContent = initials;
 
                 const nameText = svgElement("text", {
@@ -542,12 +578,13 @@
                     class: "network-node-name",
                     "text-anchor": "middle"
                 });
+
                 nameText.textContent = person.name.length > 22
                     ? person.name.slice(0, 20) + "…"
                     : person.name;
 
                 const title = svgElement("title");
-                title.textContent = `${person.name} — ${person.role}`;
+                title.textContent = person.name + " — " + person.role;
 
                 group.append(halo, circle, initialText, nameText, title);
 
@@ -559,17 +596,23 @@
                         type: "node",
                         id: person.id,
                         pointerId: event.pointerId,
-                        start: screenToGraph(event),
-                        original: { ...positions[person.id] }
+                        start: clientToGraph(event),
+                        original: { ...positions[person.id] },
+                        moved: false
                     };
 
-                    movedDuringDrag = false;
                     $("networkSVG").setPointerCapture(event.pointerId);
                 });
 
                 group.addEventListener("click", event => {
                     event.stopPropagation();
-                    if (!movedDuringDrag) selectPerson(person.id);
+
+                    if (suppressClick) {
+                        suppressClick = false;
+                        return;
+                    }
+
+                    selectPerson(person.id);
                 });
 
                 nodesLayer.appendChild(group);
@@ -579,32 +622,29 @@
         }
 
         function renderStats() {
-            const edges = validEdges();
+            const edges = historicalEdges();
             const direct = new Set();
             const reachable = new Set(["self"]);
             const queue = ["self"];
 
             edges.forEach(edge => {
                 if (edge.from === "self") direct.add(edge.to);
-                if (edge.to === "self") direct.add(edge.from);
             });
 
             while (queue.length) {
                 const current = queue.shift();
 
                 edges.forEach(edge => {
-                    const next = edge.from === current ? edge.to :
-                        edge.to === current ? edge.from : null;
-
-                    if (next && !reachable.has(next)) {
-                        reachable.add(next);
-                        queue.push(next);
+                    if (edge.from === current &&
+                        !reachable.has(edge.to)) {
+                        reachable.add(edge.to);
+                        queue.push(edge.to);
                     }
                 });
             }
 
             $("statPeople").textContent = Math.max(0, people.length - 1);
-            $("statConnections").textContent = edges.length;
+            $("statConnections").textContent = validEdges().length;
             $("statDirect").textContent = direct.size;
             $("statIndirect").textContent =
                 Math.max(0, reachable.size - 1 - direct.size);
@@ -618,7 +658,7 @@
 
             if (!edges.length) {
                 const empty = document.createElement("p");
-                empty.textContent = "No confirmed connections yet.";
+                empty.textContent = "No connections recorded yet.";
                 list.appendChild(empty);
                 return;
             }
@@ -630,21 +670,26 @@
 
                 const names = document.createElement("strong");
                 names.textContent =
-                    `${personName(edge.from)} ↔ ${personName(edge.to)}`;
+                    `${personName(edge.from)} → ${personName(edge.to)}`;
 
                 const meta = document.createElement("span");
-                meta.textContent = `${edge.type} · ${edge.strength}`;
+                meta.textContent =
+                    `${edge.type} · ${edge.strength}` +
+                    (edge.date ? ` · ${edge.date}` : "");
+
                 meta.style.color =
                     strengthColors[edge.strength] || "#e4c7f4";
 
                 button.append(names, meta);
-                button.addEventListener("click", () => openConnectionForm(edge));
+                button.onclick = () => openConnectionForm(edge);
+
                 list.appendChild(button);
             });
         }
 
         function selectPerson(id) {
             selectedId = id;
+
             const person = personById(id);
             if (!person) return;
 
@@ -665,27 +710,32 @@
 
             const count = document.createElement("p");
             count.textContent =
-                `${relationships.length} confirmed connection(s)`;
+                `${relationships.length} recorded connection(s)`;
+
             details.appendChild(count);
 
             relationships.forEach(edge => {
                 const other = edge.from === id ? edge.to : edge.from;
+
                 const item = document.createElement("button");
                 item.className = "network-person-link";
                 item.textContent =
-                    `${personName(other)} · ${edge.strength}`;
-                item.onclick = () => selectPerson(other);
+                    `${personName(other)} · ${edge.type} · ${edge.strength}`;
+
+                item.onclick = () => openConnectionForm(edge);
                 details.appendChild(item);
             });
 
             if (!person.isSelf) {
                 const pathButton = document.createElement("button");
                 pathButton.className = "network-primary network-full";
-                pathButton.textContent = "Find Path to This Person";
+                pathButton.textContent = "Trace Connection History";
+
                 pathButton.onclick = () => {
                     $("pathTarget").value = id;
                     findPath();
                 };
+
                 details.appendChild(pathButton);
             }
 
@@ -699,9 +749,8 @@
                 people.map(person => [person.id, []])
             );
 
-            validEdges().forEach(edge => {
+            historicalEdges().forEach(edge => {
                 adjacency.get(edge.from).push(edge.to);
-                adjacency.get(edge.to).push(edge.from);
             });
 
             const queue = [start];
@@ -739,12 +788,12 @@
         function findPath() {
             const target = $("pathTarget").value;
             const result = $("pathResult");
-            result.replaceChildren();
 
+            result.replaceChildren();
             highlightedPath = [];
 
             if (!target) {
-                result.textContent = "Select someone first.";
+                result.textContent = "Select a person first.";
                 renderGraph();
                 return;
             }
@@ -753,7 +802,7 @@
 
             if (!path) {
                 result.textContent =
-                    `No confirmed introduction path to ${personName(target)}. Add relationships to connect your network.`;
+                    `No documented connection trail to ${personName(target)}. Record how this relationship began.`;
                 renderGraph();
                 return;
             }
@@ -763,7 +812,8 @@
             const heading = document.createElement("strong");
             heading.textContent = path.length === 2
                 ? "Direct Connection"
-                : `${path.length - 2} Introduction(s) Needed`;
+                : "Documented Connection History";
+
             result.appendChild(heading);
 
             path.forEach((id, index) => {
@@ -773,26 +823,61 @@
                 const number = document.createElement("span");
                 number.textContent = String(index + 1);
 
-                const name = document.createElement("span");
+                const information = document.createElement("div");
+
+                const name = document.createElement("strong");
                 name.textContent = personName(id);
 
-                step.append(number, name);
+                information.appendChild(name);
+
+                if (index > 0) {
+                    const previous = path[index - 1];
+
+                    const edge = historicalEdges().find(connection =>
+                        connection.from === previous &&
+                        connection.to === id
+                    );
+
+                    if (edge) {
+                        const description = document.createElement("p");
+
+                        description.textContent =
+                            edge.type === "Introduced"
+                                ? `Introduced by ${personName(previous)}`
+                                : `Met directly through ${personName(previous)}`;
+
+                        information.appendChild(description);
+
+                        if (edge.date) {
+                            const date = document.createElement("p");
+                            date.textContent = `Date: ${edge.date}`;
+                            information.appendChild(date);
+                        }
+
+                        if (edge.notes) {
+                            const notes = document.createElement("p");
+                            notes.textContent = edge.notes;
+                            information.appendChild(notes);
+                        }
+                    }
+                }
+
+                step.append(number, information);
                 result.appendChild(step);
             });
 
             renderGraph();
         }
 
-        function populateSelect(select, includeSelf = true) {
+        function populateSelect(select) {
             select.replaceChildren();
 
-            people.filter(person => includeSelf || !person.isSelf)
-                .forEach(person => {
-                    const option = document.createElement("option");
-                    option.value = person.id;
-                    option.textContent = person.name;
-                    select.appendChild(option);
-                });
+            people.forEach(person => {
+                const option = document.createElement("option");
+                option.value = person.id;
+                option.textContent = person.name;
+                select.appendChild(option);
+            });
         }
 
         function populatePathTargets() {
@@ -813,7 +898,9 @@
                 select.appendChild(option);
             });
 
-            if (personById(oldValue)) select.value = oldValue;
+            if (oldValue && personById(oldValue)) {
+                select.value = oldValue;
+            }
         }
 
         function openConnectionForm(edge = null) {
@@ -829,15 +916,21 @@
             populateSelect($("connectionTo"));
 
             $("connectionForm").reset();
+
             $("modalTitle").textContent =
-                edge ? "Edit Connection" : "Add Connection";
+                edge ? "Edit Connection History" : "Record Connection";
 
             $("connectionFrom").value = edge?.from || "self";
             $("connectionTo").value = edge?.to ||
                 people.find(person => !person.isSelf)?.id;
 
-            $("connectionType").value = edge?.type || "Professional";
+            $("connectionType").value =
+                ["Introduced", "Met Directly"].includes(edge?.type)
+                    ? edge.type
+                    : "Introduced";
+
             $("connectionStrength").value = edge?.strength || "New";
+            $("connectionDate").value = edge?.date || "";
             $("connectionNotes").value = edge?.notes || "";
 
             $("deleteConnectionBtn").hidden = !edge;
@@ -855,6 +948,7 @@
 
             const from = $("connectionFrom").value;
             const to = $("connectionTo").value;
+            const type = $("connectionType").value;
 
             if (!personById(from) || !personById(to) || from === to) {
                 $("networkStatus").textContent =
@@ -862,15 +956,21 @@
                 return;
             }
 
+            if (type === "Met Directly" && from !== "self") {
+                $("networkStatus").textContent =
+                    "For a direct meeting, select yourself as Person 1.";
+                return;
+            }
+
             const duplicate = validEdges().some(edge =>
                 edge.id !== editingId &&
-                ((edge.from === from && edge.to === to) ||
-                 (edge.from === to && edge.to === from))
+                edge.from === from &&
+                edge.to === to
             );
 
             if (duplicate) {
                 $("networkStatus").textContent =
-                    "These people already have a confirmed connection.";
+                    "This connection has already been recorded.";
                 return;
             }
 
@@ -878,10 +978,13 @@
                 id: editingId || makeId(),
                 from,
                 to,
-                type: $("connectionType").value,
+                type,
                 strength: $("connectionStrength").value,
+                date: $("connectionDate").value,
                 notes: $("connectionNotes").value.trim()
             };
+
+            const previous = [...connections];
 
             if (editingId) {
                 connections = connections.map(edge =>
@@ -896,17 +999,23 @@
                 highlightedPath = [];
                 closeConnectionForm();
                 renderAll();
-                $("networkStatus").textContent = "Connection saved.";
-            } catch {
                 $("networkStatus").textContent =
-                    "Unable to save connection. Check browser storage.";
+                    "Connection history saved.";
+            } catch {
+                connections = previous;
+                $("networkStatus").textContent =
+                    "Unable to save connection history.";
             }
         }
 
         function deleteConnection() {
             if (!editingId || !confirm("Delete this connection?")) return;
 
-            connections = connections.filter(edge => edge.id !== editingId);
+            const previous = [...connections];
+
+            connections = connections.filter(edge =>
+                edge.id !== editingId
+            );
 
             try {
                 saveConnections();
@@ -915,6 +1024,7 @@
                 renderAll();
                 $("networkStatus").textContent = "Connection deleted.";
             } catch {
+                connections = previous;
                 $("networkStatus").textContent =
                     "Unable to delete connection.";
             }
@@ -923,7 +1033,8 @@
         function zoomAt(factor, x = 500, y = 325) {
             const oldScale = transform.scale;
             const nextScale = Math.max(
-                0.25, Math.min(3, oldScale * factor)
+                0.25,
+                Math.min(3, oldScale * factor)
             );
 
             const ratio = nextScale / oldScale;
@@ -944,7 +1055,7 @@
                 dragging = {
                     type: "pan",
                     pointerId: event.pointerId,
-                    start: screenToGraph(event),
+                    start: clientToSVG(event),
                     original: { ...transform }
                 };
 
@@ -952,16 +1063,17 @@
             });
 
             svg.addEventListener("pointermove", event => {
-                if (!dragging || dragging.pointerId !== event.pointerId) return;
-
-                const point = screenToGraph(event);
+                if (!dragging ||
+                    dragging.pointerId !== event.pointerId) return;
 
                 if (dragging.type === "node") {
+                    const point = clientToGraph(event);
+
                     const dx = point.x - dragging.start.x;
                     const dy = point.y - dragging.start.y;
 
                     if (Math.abs(dx) + Math.abs(dy) > 3) {
-                        movedDuringDrag = true;
+                        dragging.moved = true;
                     }
 
                     positions[dragging.id] = {
@@ -971,25 +1083,35 @@
 
                     renderGraph();
                 } else {
-                    const rect = svg.getBoundingClientRect();
-                    const scaleX = 1000 / rect.width;
-                    const scaleY = 650 / rect.height;
+                    const point = clientToSVG(event);
 
                     transform.x = dragging.original.x +
-                        (event.clientX - dragging.clientX) * scaleX;
+                        point.x - dragging.start.x;
 
                     transform.y = dragging.original.y +
-                        (event.clientY - dragging.clientY) * scaleY;
+                        point.y - dragging.start.y;
 
                     updateTransform();
                 }
             });
 
             svg.addEventListener("pointerup", event => {
-                if (!dragging || dragging.pointerId !== event.pointerId) return;
+                if (!dragging ||
+                    dragging.pointerId !== event.pointerId) return;
 
                 if (dragging.type === "node") {
-                    try { savePositions(); } catch {}
+                    suppressClick = dragging.moved;
+
+                    try {
+                        savePositions();
+                    } catch {
+                        $("networkStatus").textContent =
+                            "Unable to save node positions.";
+                    }
+
+                    if (!dragging.moved) {
+                        selectPerson(dragging.id);
+                    }
                 }
 
                 dragging = null;
@@ -1003,27 +1125,16 @@
                 dragging = null;
             });
 
-            // Record pointer position for background panning.
-            svg.addEventListener("pointerdown", event => {
-                if (dragging?.type === "pan") {
-                    dragging.clientX = event.clientX;
-                    dragging.clientY = event.clientY;
-                }
-            });
-
             svg.addEventListener("wheel", event => {
                 event.preventDefault();
 
-                const point = svg.createSVGPoint();
-                point.x = event.clientX;
-                point.y = event.clientY;
+                const point = clientToSVG(event);
 
-                const matrix = svg.getScreenCTM();
-                if (!matrix) return;
-
-                const local = point.matrixTransform(matrix.inverse());
-
-                zoomAt(event.deltaY < 0 ? 1.12 : 0.89, local.x, local.y);
+                zoomAt(
+                    event.deltaY < 0 ? 1.12 : 0.89,
+                    point.x,
+                    point.y
+                );
             }, { passive: false });
         }
 
@@ -1048,11 +1159,15 @@
         $("deleteConnectionBtn").onclick = deleteConnection;
 
         $("connectionModal").addEventListener("click", event => {
-            if (event.target === $("connectionModal")) closeConnectionForm();
+            if (event.target === $("connectionModal")) {
+                closeConnectionForm();
+            }
         });
 
         document.addEventListener("keydown", event => {
-            if (event.key === "Escape") closeConnectionForm();
+            if (event.key === "Escape") {
+                closeConnectionForm();
+            }
         });
 
         $("findPathBtn").onclick = findPath;
@@ -1060,12 +1175,13 @@
         $("clearPathBtn").onclick = () => {
             highlightedPath = [];
             $("pathResult").textContent =
-                "Select someone to find a connection.";
+                "Select someone to view their introduction history.";
             renderGraph();
         };
 
         $("zoomIn").onclick = () => zoomAt(1.2);
         $("zoomOut").onclick = () => zoomAt(0.8);
+
         $("zoomReset").onclick = () => {
             transform = { x: 0, y: 0, scale: 1 };
             updateTransform();

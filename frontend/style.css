@@ -1809,3 +1809,30 @@ nav a:not(.active):hover {
         font-size: 10px;
     }
 }
+.network-modal input[type="date"] {
+    width: 100%;
+    box-sizing: border-box;
+    background: #220331;
+    border: 1px solid #70418a;
+    border-radius: 8px;
+    padding: 11px 12px;
+    color: white;
+    font-family: inherit;
+    font-size: 13px;
+    color-scheme: dark;
+}
+.network-path-step > div {
+    flex: 1;
+    min-width: 0;
+}
+.network-path-step > div strong {
+    color: white;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+.network-path-step > div p {
+    color: #cdb4df;
+    font-size: 12px;
+    margin: 4px 0;
+    line-height: 1.5;
+}
