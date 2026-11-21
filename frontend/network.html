@@ -2,1204 +2,885 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network | ConChordia</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network | ConChordia</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="sidebar">
-        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
-        <div class="logo">
-            <img src="images/logo.png" alt="ConChordia">
+<div class="sidebar">
+    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+    <div class="logo"><img src="images/logo.png" alt="ConChordia"></div>
+    <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="artist-profile.html">Artist Profile</a>
+        <a href="contacts.html">Contacts</a>
+        <a href="projects.html">Projects</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="opportunities.html">Opportunities</a>
+        <a href="revenue.html">Revenue</a>
+        <a href="network.html" class="active">Network</a>
+        <a href="settings.html">Settings</a>
+    </nav>
+</div>
+<main class="main-content">
+    <header class="topbar">
+        <div>
+            <h1>Network</h1>
+            <p>Professional connections, introduction history, teams, and collectives.</p>
         </div>
-        <nav>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="artist-profile.html">Artist Profile</a>
-            <a href="contacts.html">Contacts</a>
-            <a href="projects.html">Projects</a>
-            <a href="calendar.html">Calendar</a>
-            <a href="opportunities.html">Opportunities</a>
-            <a href="revenue.html">Revenue</a>
-            <a href="network.html" class="active">Network</a>
-            <a href="settings.html">Settings</a>
-        </nav>
-    </div>
+    </header>
 
-    <main class="main-content">
-        <header class="topbar">
+    <section class="network-stats">
+        <div class="network-stat"><span>People</span><strong id="statPeople">0</strong></div>
+        <div class="network-stat"><span>Connections</span><strong id="statConnections">0</strong></div>
+        <div class="network-stat"><span>Direct Contacts</span><strong id="statDirect">0</strong></div>
+        <div class="network-stat"><span>Indirect Reach</span><strong id="statIndirect">0</strong></div>
+    </section>
+
+    <section class="network-organizations">
+        <div class="network-org-heading">
             <div>
-                <h1>Network</h1>
-                <p>Track how your professional relationships developed.</p>
+                <h2>Teams & Collectives</h2>
+                <p id="roleDescription"></p>
             </div>
-        </header>
+            <span id="accountRoleBadge"></span>
+        </div>
 
-        <section class="network-stats">
-            <div class="network-stat">
-                <span>People</span>
-                <strong id="statPeople">0</strong>
-            </div>
-            <div class="network-stat">
-                <span>Connections</span>
-                <strong id="statConnections">0</strong>
-            </div>
-            <div class="network-stat">
-                <span>Direct Contacts</span>
-                <strong id="statDirect">0</strong>
-            </div>
-            <div class="network-stat">
-                <span>Indirect Reach</span>
-                <strong id="statIndirect">0</strong>
-            </div>
-        </section>
-
-        <section class="network-workspace">
-            <div class="network-graph-panel">
-                <div class="network-toolbar">
-                    <div>
-                        <h2>Connection Web</h2>
-                        <p>Explore your professional relationship history.</p>
-                    </div>
-                    <button class="network-primary" id="addConnectionBtn">
-                        + Record Connection
-                    </button>
-                </div>
-
-                <div class="network-search-row">
-                    <input type="search" id="networkSearch"
-                        placeholder="Search people by name or role...">
-                    <select id="networkFilter">
-                        <option value="">All Relationships</option>
-                        <option value="New">New</option>
-                        <option value="Warm">Warm</option>
-                        <option value="Active">Active</option>
-                        <option value="Frequent">Frequent</option>
-                    </select>
-                </div>
-
-                <div class="network-canvas">
-                    <svg id="networkSVG" viewBox="0 0 1000 650"
-                        aria-label="Professional connection history graph">
-                        <g id="networkViewport">
-                            <g id="networkEdges"></g>
-                            <g id="networkNodes"></g>
-                        </g>
-                    </svg>
-
-                    <div class="network-zoom">
-                        <button id="zoomIn" title="Zoom in">+</button>
-                        <button id="zoomOut" title="Zoom out">−</button>
-                        <button id="zoomReset" title="Reset view">⟲</button>
-                    </div>
-
-                    <div class="network-hint">
-                        Scroll to zoom · Drag background to pan · Drag people to move
-                    </div>
-                </div>
-
-                <div class="network-legend">
-                    <span><i class="network-key self"></i> You</span>
-                    <span><i class="network-key person"></i> Person</span>
-                    <span><i class="network-key direct"></i> Connection</span>
-                    <span><i class="network-key path"></i> History Trail</span>
-                </div>
-            </div>
-
-            <aside class="network-side-panel">
-                <section class="network-side-card">
-                    <h2>Trace Connection History</h2>
-                    <p>See how someone became part of your professional network.</p>
-
-                    <label for="pathTarget">Select a person</label>
-                    <select id="pathTarget">
-                        <option value="">Select a person</option>
-                    </select>
-
-                    <button class="network-primary network-full" id="findPathBtn">
-                        Trace Connection
-                    </button>
-
-                    <div id="pathResult" class="network-path-result">
-                        Select someone to view their introduction history.
-                    </div>
-
-                    <button class="network-secondary network-full"
-                        id="clearPathBtn">
-                        Clear Highlight
-                    </button>
-                </section>
-
-                <section class="network-side-card">
-                    <h2>Person Details</h2>
-                    <div id="personDetails" class="network-person-details">
-                        Select a person in the web.
-                    </div>
-                </section>
-
-                <section class="network-side-card">
-                    <h2>Connection History</h2>
-                    <div id="connectionList" class="network-connection-list"></div>
-                </section>
-            </aside>
-        </section>
-
-        <div class="network-modal-overlay" id="connectionModal" hidden>
-            <div class="network-modal" role="dialog" aria-modal="true"
-                aria-labelledby="modalTitle">
-
-                <div class="network-modal-header">
-                    <h2 id="modalTitle">Record Connection</h2>
-                    <button class="network-close" id="closeModal"
-                        aria-label="Close">×</button>
-                </div>
-
-                <form id="connectionForm">
-                    <label for="connectionFrom">Person 1</label>
-                    <select id="connectionFrom" required></select>
-
-                    <label for="connectionTo">Person 2</label>
-                    <select id="connectionTo" required></select>
-
-                    <label for="connectionType">How was the connection made?</label>
-                    <select id="connectionType">
-                        <option value="Introduced">Introduced</option>
-                        <option value="Met Directly">Met Directly</option>
-                    </select>
-
-                    <label for="connectionStrength">Relationship Strength</label>
-                    <select id="connectionStrength">
-                        <option value="New">New</option>
-                        <option value="Warm">Warm</option>
-                        <option value="Active">Active</option>
-                        <option value="Frequent">Frequent</option>
-                    </select>
-
-                    <label for="connectionDate">Date Connected</label>
-                    <input type="date" id="connectionDate">
-
-                    <label for="connectionNotes">Connection History</label>
-                    <textarea id="connectionNotes"
-                        placeholder="Example: Danny introduced me to this producer during a studio session."></textarea>
-
-                    <div class="network-modal-actions">
-                        <button type="button" class="network-danger"
-                            id="deleteConnectionBtn" hidden>
-                            Delete
-                        </button>
-                        <button type="button" class="network-secondary"
-                            id="cancelModal">
-                            Cancel
-                        </button>
-                        <button type="submit" class="network-primary">
-                            Save Connection
-                        </button>
+        <div id="artistPanel" hidden>
+            <div class="network-org-card">
+                <h3>Join a Team or Collective</h3>
+                <p>Enter the invitation code provided by your manager or collective owner.</p>
+                <form id="joinArtistForm" class="network-org-form">
+                    <label for="artistCode">Invitation Code</label>
+                    <div class="network-org-inline">
+                        <input id="artistCode" placeholder="CC-XXXXXXXX" maxlength="11" required>
+                        <button class="network-primary" type="submit">Join</button>
                     </div>
                 </form>
             </div>
+            <div class="network-org-card">
+                <h3>My Memberships</h3>
+                <div id="artistMemberships"></div>
+            </div>
         </div>
 
-        <p id="networkStatus" class="network-status" role="status"></p>
-    </main>
+        <div id="managerPanel" hidden>
+            <div class="network-org-card">
+                <h3>Create Organization</h3>
+                <form id="createOrgForm" class="network-org-form">
+                    <label for="orgName">Organization Name</label>
+                    <input id="orgName" placeholder="Enter organization name" maxlength="100" required>
+                    <label for="orgType">Organization Type</label>
+                    <select id="orgType">
+                        <option value="team">Management Team</option>
+                        <option value="collective">Artist Collective</option>
+                    </select>
+                    <button class="network-primary" type="submit">Create Organization</button>
+                </form>
+            </div>
+            <div class="network-org-card">
+                <h3>Join a Collective as Administrator</h3>
+                <p>Enter an administrator invitation code from the collective owner.</p>
+                <form id="joinAdminForm" class="network-org-form">
+                    <label for="adminJoinCode">Administrator Code</label>
+                    <div class="network-org-inline">
+                        <input id="adminJoinCode" placeholder="CC-XXXXXXXX" maxlength="11" required>
+                        <button class="network-primary" type="submit">Join as Admin</button>
+                    </div>
+                </form>
+            </div>
+            <div class="network-org-card">
+                <h3>My Organizations</h3>
+                <div id="managerOrganizations"></div>
+            </div>
+        </div>
+        <p id="organizationStatus" role="status"></p>
+    </section>
 
-    <script>
-        "use strict";
+    <section class="network-workspace">
+        <div class="network-graph-panel">
+            <div class="network-toolbar">
+                <div>
+                    <h2>Professional Connection Web</h2>
+                    <p>Visualize existing relationships and recorded introductions.</p>
+                </div>
+                <button class="network-primary" id="addConnectionBtn">+ Record Connection</button>
+            </div>
+            <div class="network-search-row">
+                <input type="search" id="networkSearch" placeholder="Search people by name or role...">
+                <select id="networkFilter">
+                    <option value="">All Relationships</option>
+                    <option value="New">New</option>
+                    <option value="Warm">Warm</option>
+                    <option value="Active">Active</option>
+                    <option value="Frequent">Frequent</option>
+                </select>
+            </div>
+            <div class="network-canvas">
+                <svg id="networkSVG" viewBox="0 0 1000 650" aria-label="Professional connection web">
+                    <g id="networkViewport">
+                        <g id="networkEdges"></g>
+                        <g id="networkNodes"></g>
+                    </g>
+                </svg>
+                <div class="network-zoom">
+                    <button id="zoomIn" aria-label="Zoom in">+</button>
+                    <button id="zoomOut" aria-label="Zoom out">−</button>
+                    <button id="zoomReset" aria-label="Reset view">⟲</button>
+                </div>
+                <div class="network-hint">Scroll to zoom · Drag background to pan · Drag people to move</div>
+            </div>
+            <div class="network-legend">
+                <span><i class="network-key self"></i> You</span>
+                <span><i class="network-key person"></i> Contact</span>
+                <span><i class="network-key direct"></i> Relationship</span>
+                <span><i class="network-key path"></i> Introduction Trail</span>
+            </div>
+        </div>
 
-        const SVG_NS = "http://www.w3.org/2000/svg";
-        const STORAGE_KEY = "conchordiaNetworkConnections";
-        const POSITION_KEY = "conchordiaNetworkPositions";
-        const $ = id => document.getElementById(id);
+        <aside class="network-side-panel">
+            <section class="network-side-card">
+                <h2>Trace Connection History</h2>
+                <p>See how a person became part of your network.</p>
+                <label for="pathTarget">Select a person</label>
+                <select id="pathTarget"><option value="">Select a person</option></select>
+                <button class="network-primary network-full" id="findPathBtn">Trace Connection</button>
+                <div class="network-path-result" id="pathResult">Select someone to view their introduction history.</div>
+                <button class="network-secondary network-full" id="clearPathBtn">Clear Highlight</button>
+            </section>
+            <section class="network-side-card">
+                <h2>Person Details</h2>
+                <div class="network-person-details" id="personDetails">Select a person in the web.</div>
+            </section>
+            <section class="network-side-card">
+                <h2>Connection History</h2>
+                <div class="network-connection-list" id="connectionList"></div>
+            </section>
+        </aside>
+    </section>
 
-        const strengthColors = {
-            New: "#b88b55",
-            Warm: "#e0aa4f",
-            Active: "#59bd9a",
-            Frequent: "#d38aff"
-        };
+    <div class="network-modal-overlay" id="connectionModal" hidden>
+        <div class="network-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <div class="network-modal-header">
+                <h2 id="modalTitle">Record Connection</h2>
+                <button class="network-close" id="closeModal" aria-label="Close">×</button>
+            </div>
+            <form id="connectionForm">
+                <label for="connectionFrom">Person 1 / Introducer</label>
+                <select id="connectionFrom" required></select>
+                <label for="connectionTo">Person 2 / Person Introduced</label>
+                <select id="connectionTo" required></select>
+                <label for="connectionType">Connection Type</label>
+                <select id="connectionType">
+                    <option value="Introduced">Introduced</option>
+                    <option value="Met Directly">Met Directly</option>
+                </select>
+                <label for="connectionStrength">Relationship Strength</label>
+                <select id="connectionStrength">
+                    <option value="New">New</option>
+                    <option value="Warm">Warm</option>
+                    <option value="Active">Active</option>
+                    <option value="Frequent">Frequent</option>
+                </select>
+                <label for="connectionDate">Date Connected</label>
+                <input type="date" id="connectionDate">
+                <label for="connectionNotes">Connection History</label>
+                <textarea id="connectionNotes" placeholder="Describe how the introduction happened."></textarea>
+                <div class="network-modal-actions">
+                    <button type="button" class="network-danger" id="deleteConnectionBtn" hidden>Delete</button>
+                    <button type="button" class="network-secondary" id="cancelModal">Cancel</button>
+                    <button type="submit" class="network-primary">Save Connection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <p id="networkStatus" class="network-status" role="status"></p>
+</main>
 
-        let contacts = [];
-        let people = [];
-        let connections = [];
-        let positions = {};
-        let editingId = null;
-        let selectedId = null;
-        let highlightedPath = [];
-        let transform = { x: 0, y: 0, scale: 1 };
-        let dragging = null;
-        let suppressClick = false;
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const CONNECTIONS_KEY = "conchordiaNetworkConnections";
+const POSITIONS_KEY = "conchordiaNetworkPositions";
+const ORGS_KEY = "conchordiaOrganizations";
+const COLORS = {New:"#b88b55",Warm:"#e0aa4f",Active:"#59bd9a",Frequent:"#d38aff"};
+let people = [], connections = [], positions = {};
+let selectedId = null, editingId = null, highlightedPath = [];
+let view = {x:0,y:0,scale:1}, dragging = null;
 
-        function readJSON(key, fallback) {
-            try {
-                const value = JSON.parse(localStorage.getItem(key));
-                return value ?? fallback;
-            } catch {
-                return fallback;
+function read(key,fallback) {
+    try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+    catch { return fallback; }
+}
+function readArray(key) {
+    const value = read(key,[]);
+    return Array.isArray(value) ? value : [];
+}
+function save(key,value) {
+    localStorage.setItem(key,JSON.stringify(value));
+}
+function id() {
+    return crypto.randomUUID();
+}
+function account() {
+    return read("conchordiaAccount",{});
+}
+function accountRole() {
+    return account().role || localStorage.getItem("conchordiaAccountType") || "artist";
+}
+function accountId() {
+    return String(account().email || "").trim().toLowerCase();
+}
+function status(message) {
+    $("organizationStatus").textContent = message;
+}
+function element(tag,text,cls) {
+    const node = document.createElement(tag);
+    if(text !== undefined) node.textContent = text;
+    if(cls) node.className = cls;
+    return node;
+}
+function action(parent,label,callback,cls="network-secondary") {
+    const button = element("button",label,cls);
+    button.type = "button";
+    button.onclick = callback;
+    parent.appendChild(button);
+    return button;
+}
+function organizations() {
+    return readArray(ORGS_KEY);
+}
+function code(used) {
+    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let result;
+    do {
+        const bytes = new Uint32Array(8);
+        crypto.getRandomValues(bytes);
+        result = "CC-" + Array.from(bytes,n => alphabet[n % alphabet.length]).join("");
+    } while(used.has(result));
+    used.add(result);
+    return result;
+}
+function createOrganization(event) {
+    event.preventDefault();
+    if(accountRole() !== "manager" || !accountId()) {
+        status("Sign up as a manager first.");
+        return;
+    }
+    const name = $("orgName").value.trim();
+    const type = $("orgType").value;
+    if(!name) return;
+    const all = organizations();
+    const used = new Set(all.flatMap(org => [org.artistCode,org.adminCode].filter(Boolean)));
+    all.push({
+        id:id(),name,type,ownerId:accountId(),
+        artistCode:code(used),
+        adminCode:type === "collective" ? code(used) : null,
+        members:[],admins:[],createdAt:new Date().toISOString()
+    });
+    try {
+        save(ORGS_KEY,all);
+        $("createOrgForm").reset();
+        status("Organization created.");
+        renderOrganizations();
+    } catch {
+        status("Unable to save organization.");
+    }
+}
+function joinArtist(event) {
+    event.preventDefault();
+    if(accountRole() !== "artist" || !accountId()) {
+        status("Sign up as an artist first.");
+        return;
+    }
+    const entered = $("artistCode").value.trim().toUpperCase();
+    const all = organizations();
+    const org = all.find(item => item.artistCode === entered);
+    if(!org) { status("Invalid invitation code."); return; }
+    if(org.members.includes(accountId())) {
+        status("You already belong to this organization.");
+        return;
+    }
+    org.members.push(accountId());
+    try {
+        save(ORGS_KEY,all);
+        $("joinArtistForm").reset();
+        status("Joined " + org.name + ".");
+        renderOrganizations();
+    } catch { status("Unable to save membership."); }
+}
+function joinAdmin(event) {
+    event.preventDefault();
+    if(accountRole() !== "manager" || !accountId()) {
+        status("A manager account is required.");
+        return;
+    }
+    const entered = $("adminJoinCode").value.trim().toUpperCase();
+    const all = organizations();
+    const org = all.find(item => item.type === "collective" && item.adminCode === entered);
+    if(!org) { status("Invalid administrator code."); return; }
+    if(org.ownerId === accountId() || org.admins.includes(accountId())) {
+        status("You already manage this collective.");
+        return;
+    }
+    org.admins.push(accountId());
+    try {
+        save(ORGS_KEY,all);
+        $("joinAdminForm").reset();
+        status("Joined as administrator.");
+        renderOrganizations();
+    } catch { status("Unable to save membership."); }
+}
+function leaveOrganization(orgId) {
+    const all = organizations();
+    const org = all.find(item => item.id === orgId);
+    if(!org || org.ownerId === accountId()) return;
+    org.members = org.members.filter(member => member !== accountId());
+    org.admins = org.admins.filter(admin => admin !== accountId());
+    try {
+        save(ORGS_KEY,all);
+        status("Left " + org.name + ".");
+        renderOrganizations();
+    } catch { status("Unable to update membership."); }
+}
+function removeMember(orgId,memberId,kind) {
+    const all = organizations();
+    const org = all.find(item => item.id === orgId);
+    if(!org) return;
+    const owner = org.ownerId === accountId();
+    const admin = org.admins.includes(accountId());
+    if(kind === "admin") {
+        if(!owner) return;
+        org.admins = org.admins.filter(item => item !== memberId);
+    } else {
+        if(!owner && !admin) return;
+        org.members = org.members.filter(item => item !== memberId);
+    }
+    try {
+        save(ORGS_KEY,all);
+        status("Member removed.");
+        renderOrganizations();
+    } catch { status("Unable to remove member."); }
+}
+function copyCode(value) {
+    navigator.clipboard.writeText(value).then(
+        () => status("Invitation code copied."),
+        () => status("Copy failed. Select the code manually.")
+    );
+}
+function renderOrganizations() {
+    const role = accountRole();
+    const current = accountId();
+    const all = organizations();
+    $("artistPanel").hidden = role !== "artist";
+    $("managerPanel").hidden = role !== "manager";
+    $("accountRoleBadge").textContent = role === "manager" ? "Manager Mode" : "Artist Mode";
+    $("roleDescription").textContent = role === "manager"
+        ? "Create teams and collectives, manage artists, and invite administrators."
+        : "Join management teams and artist collectives with invitation codes.";
+
+    if(role === "artist") {
+        const list = $("artistMemberships");
+        list.replaceChildren();
+        const joined = all.filter(org => org.members.includes(current));
+        if(!joined.length) list.appendChild(element("p","You haven't joined any organizations."));
+        joined.forEach(org => {
+            const card = element("div",undefined,"network-org-item");
+            card.appendChild(element("h4",org.name));
+            card.appendChild(element("p",org.type === "team" ? "Management Team" : "Artist Collective"));
+            card.appendChild(element("p","Owner: " + org.ownerId));
+            action(card,"Leave Organization",() => {
+                if(confirm("Leave " + org.name + "?")) leaveOrganization(org.id);
+            });
+            list.appendChild(card);
+        });
+        return;
+    }
+
+    const list = $("managerOrganizations");
+    list.replaceChildren();
+    const managed = all.filter(org => org.ownerId === current || org.admins.includes(current));
+    if(!managed.length) list.appendChild(element("p","No organizations yet."));
+    managed.forEach(org => {
+        const owner = org.ownerId === current;
+        const card = element("div",undefined,"network-org-item");
+        card.appendChild(element("h4",org.name));
+        card.appendChild(element("p",(org.type === "team" ? "Management Team" : "Artist Collective") + " · " + (owner ? "Owner" : "Administrator")));
+        card.appendChild(element("p",org.members.length + " artists · " + org.admins.length + " administrators"));
+
+        if(owner) {
+            const codes = element("div",undefined,"network-org-codes");
+            const artistRow = element("div",undefined,"network-org-code-row");
+            artistRow.appendChild(element("span","Artist Code: " + org.artistCode));
+            action(artistRow,"Copy",() => copyCode(org.artistCode));
+            codes.appendChild(artistRow);
+            if(org.type === "collective") {
+                const adminRow = element("div",undefined,"network-org-code-row");
+                adminRow.appendChild(element("span","Admin Code: " + org.adminCode));
+                action(adminRow,"Copy",() => copyCode(org.adminCode));
+                codes.appendChild(adminRow);
+            }
+            card.appendChild(codes);
+        }
+
+        const roster = element("div",undefined,"network-org-roster");
+        roster.appendChild(element("h4","Artist Roster"));
+        if(!org.members.length) roster.appendChild(element("p","No artists have joined."));
+        org.members.forEach(member => {
+            const row = element("div",undefined,"network-org-member-row");
+            row.appendChild(element("span",member));
+            action(row,"Remove",() => removeMember(org.id,member,"artist"));
+            roster.appendChild(row);
+        });
+        if(org.type === "collective") {
+            roster.appendChild(element("h4","Administrators"));
+            if(!org.admins.length) roster.appendChild(element("p","No additional administrators."));
+            org.admins.forEach(admin => {
+                const row = element("div",undefined,"network-org-member-row");
+                row.appendChild(element("span",admin));
+                if(owner) action(row,"Remove",() => removeMember(org.id,admin,"admin"));
+                roster.appendChild(row);
+            });
+        }
+        card.appendChild(roster);
+        if(!owner) action(card,"Leave Collective",() => {
+            if(confirm("Leave " + org.name + "?")) leaveOrganization(org.id);
+        });
+        list.appendChild(card);
+    });
+}
+
+function person(idValue) {
+    return people.find(item => item.id === String(idValue));
+}
+function personName(idValue) {
+    return person(idValue)?.name || "Unknown";
+}
+function edges() {
+    return connections.filter(edge => edge.from !== edge.to && person(edge.from) && person(edge.to));
+}
+function historicalEdges() {
+    return edges().filter(edge => ["Introduced","Met Directly"].includes(edge.type));
+}
+function loadNetwork() {
+    const profile = read("conchordiaArtistProfile",{});
+    const user = account();
+    const selfName = profile.stageName || profile.name ||
+        [user.firstName,user.lastName].filter(Boolean).join(" ") || "You";
+    people = [{id:"self",name:selfName,role:"Your Profile",isSelf:true}];
+    const seen = new Set(["self"]);
+    readArray("conchordiaContacts").forEach((contact,index) => {
+        const contactId = String(contact.id ?? `contact-${index}`);
+        if(seen.has(contactId)) return;
+        seen.add(contactId);
+        people.push({
+            id:contactId,
+            name:String(contact.name || contact.fullName || contact.contactName || contact.stageName || contact.company || "Unnamed Contact"),
+            role:String(contact.role || contact.category || contact.type || contact.profession || "Industry Contact"),
+            email:contact.email || "",
+            phone:contact.phone || "",
+            isSelf:false
+        });
+    });
+    connections = readArray(CONNECTIONS_KEY).map(edge => ({
+        ...edge,
+        id:edge.id || id(),
+        from:String(edge.from ?? edge.contact1 ?? ""),
+        to:String(edge.to ?? edge.contact2 ?? ""),
+        type:edge.type || "Professional",
+        strength:edge.strength || "New",
+        date:edge.date || "",
+        notes:edge.notes || ""
+    }));
+    positions = read(POSITIONS_KEY,{});
+    if(!positions || typeof positions !== "object" || Array.isArray(positions)) positions = {};
+    if(!positions.self) positions.self = {x:500,y:325};
+    people.filter(item => !item.isSelf).forEach((item,index) => {
+        if(positions[item.id] && Number.isFinite(positions[item.id].x) && Number.isFinite(positions[item.id].y)) return;
+        const angle = index * 2.399963229728653;
+        const radius = 125 + 42 * Math.sqrt(index);
+        positions[item.id] = {x:500 + Math.cos(angle)*radius,y:325 + Math.sin(angle)*radius};
+    });
+}
+function svgNode(tag,attributes={}) {
+    const node = document.createElementNS(NS,tag);
+    Object.entries(attributes).forEach(([key,value]) => node.setAttribute(key,String(value)));
+    return node;
+}
+function svgPoint(event) {
+    const svg = $("networkSVG");
+    const point = svg.createSVGPoint();
+    point.x = event.clientX;
+    point.y = event.clientY;
+    const matrix = svg.getScreenCTM();
+    if(!matrix) return {x:0,y:0};
+    const result = point.matrixTransform(matrix.inverse());
+    return {x:result.x,y:result.y};
+}
+function graphPoint(event) {
+    const p = svgPoint(event);
+    return {x:(p.x-view.x)/view.scale,y:(p.y-view.y)/view.scale};
+}
+function updateView() {
+    $("networkViewport").setAttribute("transform",`translate(${view.x} ${view.y}) scale(${view.scale})`);
+}
+function renderGraph() {
+    const edgeLayer = $("networkEdges"), nodeLayer = $("networkNodes");
+    edgeLayer.replaceChildren();
+    nodeLayer.replaceChildren();
+    const query = $("networkSearch").value.trim().toLowerCase();
+    const filter = $("networkFilter").value;
+    const matched = new Set(people.filter(p => !query || p.name.toLowerCase().includes(query) || p.role.toLowerCase().includes(query)).map(p => p.id));
+    const visible = new Set(matched);
+    if(query) {
+        edges().forEach(edge => {
+            if(matched.has(edge.from)) visible.add(edge.to);
+            if(matched.has(edge.to)) visible.add(edge.from);
+        });
+    }
+    visible.add("self");
+    const pathLinks = new Set();
+    for(let i=0;i<highlightedPath.length-1;i++) pathLinks.add(highlightedPath[i]+"|"+highlightedPath[i+1]);
+    edges().forEach(edge => {
+        if(!visible.has(edge.from) || !visible.has(edge.to) || (filter && edge.strength !== filter)) return;
+        const a = positions[edge.from], b = positions[edge.to];
+        if(!a || !b) return;
+        const active = pathLinks.has(edge.from+"|"+edge.to);
+        const line = svgNode("line",{
+            x1:a.x,y1:a.y,x2:b.x,y2:b.y,
+            stroke:active ? "#f8d96a" : (COLORS[edge.strength] || "#a47fbc"),
+            "stroke-width":active ? 7 : 3,
+            "stroke-opacity":highlightedPath.length && !active ? .2 : .9,
+            "stroke-linecap":"round"
+        });
+        if(!["Introduced","Met Directly"].includes(edge.type)) line.setAttribute("stroke-dasharray","6 5");
+        const hit = svgNode("line",{
+            x1:a.x,y1:a.y,x2:b.x,y2:b.y,
+            stroke:"transparent","stroke-width":18
+        });
+        hit.style.cursor = "pointer";
+        hit.addEventListener("click",event => {
+            event.stopPropagation();
+            openConnection(edge);
+        });
+        edgeLayer.append(line,hit);
+    });
+    people.filter(p => visible.has(p.id)).forEach(p => {
+        const pos = positions[p.id];
+        if(!pos) return;
+        const group = svgNode("g",{transform:`translate(${pos.x} ${pos.y})`,
+            opacity:highlightedPath.length && !highlightedPath.includes(p.id) ? .35 : 1});
+        group.style.cursor = "grab";
+        const halo = svgNode("circle",{r:p.isSelf?38:30,fill:"none",
+            stroke:highlightedPath.includes(p.id)?"#f8d96a":selectedId===p.id?"#fff":"transparent","stroke-width":3});
+        const circle = svgNode("circle",{r:p.isSelf?32:24,
+            fill:p.isSelf?"#9239c2":"#176c8d",
+            stroke:p.isSelf?"#dca4ff":"#9bd5e8","stroke-width":2.5});
+        const initials = svgNode("text",{y:5,"text-anchor":"middle",class:"network-node-initials"});
+        initials.textContent = p.name.split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase();
+        const name = svgNode("text",{y:p.isSelf?51:43,"text-anchor":"middle",class:"network-node-name"});
+        name.textContent = p.name.length>22?p.name.slice(0,20)+"…":p.name;
+        const title = svgNode("title");
+        title.textContent = p.name+" — "+p.role;
+        group.append(halo,circle,initials,name,title);
+        group.addEventListener("pointerdown",event => {
+            if(event.button!==0) return;
+            event.stopPropagation();
+            dragging = {type:"node",id:p.id,pointerId:event.pointerId,
+                start:graphPoint(event),original:{...positions[p.id]},moved:false};
+            $("networkSVG").setPointerCapture(event.pointerId);
+        });
+        nodeLayer.appendChild(group);
+    });
+    updateView();
+}
+function renderStats() {
+    const history = historicalEdges();
+    const direct = new Set(history.filter(e=>e.from==="self").map(e=>e.to));
+    const reached = new Set(["self"]);
+    const queue = ["self"];
+    while(queue.length) {
+        const current = queue.shift();
+        history.filter(e=>e.from===current).forEach(e => {
+            if(!reached.has(e.to)) {reached.add(e.to);queue.push(e.to);}
+        });
+    }
+    $("statPeople").textContent = Math.max(0,people.length-1);
+    $("statConnections").textContent = edges().length;
+    $("statDirect").textContent = direct.size;
+    $("statIndirect").textContent = Math.max(0,reached.size-1-direct.size);
+}
+function renderConnections() {
+    const list = $("connectionList");
+    list.replaceChildren();
+    if(!edges().length) list.appendChild(element("p","No connections recorded."));
+    edges().forEach(edge => {
+        const button = element("button",undefined,"network-connection-item");
+        button.type = "button";
+        button.appendChild(element("strong",personName(edge.from)+" → "+personName(edge.to)));
+        button.appendChild(element("span",edge.type+" · "+edge.strength+(edge.date?" · "+edge.date:"")));
+        button.onclick = () => openConnection(edge);
+        list.appendChild(button);
+    });
+}
+function selectPerson(personId) {
+    selectedId = personId;
+    const p = person(personId);
+    if(!p) return;
+    const panel = $("personDetails");
+    panel.replaceChildren();
+    panel.appendChild(element("h3",p.name));
+    panel.appendChild(element("p",p.role));
+    const related = edges().filter(e=>e.from===personId || e.to===personId);
+    panel.appendChild(element("p",related.length+" recorded connections"));
+    related.forEach(edge => {
+        action(panel,personName(edge.from===personId?edge.to:edge.from)+" · "+edge.type,
+            ()=>openConnection(edge),"network-person-link");
+    });
+    if(!p.isSelf) action(panel,"Trace Connection History",()=>{
+        $("pathTarget").value=personId;
+        traceHistory();
+    },"network-primary network-full");
+    renderGraph();
+}
+function tracePath(start,target) {
+    const queue = [start], visited = new Set([start]), previous = new Map();
+    while(queue.length) {
+        const current = queue.shift();
+        for(const edge of historicalEdges().filter(e=>e.from===current)) {
+            if(visited.has(edge.to)) continue;
+            visited.add(edge.to);
+            previous.set(edge.to,current);
+            if(edge.to===target) {
+                const path = [target];
+                let cursor=target;
+                while(cursor!==start) {cursor=previous.get(cursor);path.unshift(cursor);}
+                return path;
+            }
+            queue.push(edge.to);
+        }
+    }
+    return null;
+}
+function traceHistory() {
+    const target = $("pathTarget").value;
+    const result = $("pathResult");
+    result.replaceChildren();
+    highlightedPath = [];
+    if(!target) {result.textContent="Select a person first.";renderGraph();return;}
+    const path = tracePath("self",target);
+    if(!path) {
+        result.textContent="No documented introduction trail to "+personName(target)+".";
+        renderGraph();
+        return;
+    }
+    highlightedPath=path;
+    result.appendChild(element("strong","Documented Connection History"));
+    path.forEach((personId,index)=>{
+        const row=element("div",undefined,"network-path-step");
+        row.appendChild(element("span",String(index+1)));
+        const info=element("div");
+        info.appendChild(element("strong",personName(personId)));
+        if(index>0) {
+            const edge=historicalEdges().find(e=>e.from===path[index-1]&&e.to===personId);
+            if(edge) {
+                info.appendChild(element("p",edge.type==="Introduced"?
+                    "Introduced by "+personName(edge.from):
+                    "Met directly through "+personName(edge.from)));
+                if(edge.date) info.appendChild(element("p","Date: "+edge.date));
+                if(edge.notes) info.appendChild(element("p",edge.notes));
             }
         }
-
-        function readArray(key) {
-            const value = readJSON(key, []);
-            return Array.isArray(value) ? value : [];
-        }
-
-        function makeId() {
-            return crypto.randomUUID();
-        }
-
-        function getName(contact) {
-            return String(
-                contact.name ||
-                contact.fullName ||
-                contact.contactName ||
-                contact.stageName ||
-                contact.company ||
-                "Unnamed Contact"
-            );
-        }
-
-        function getRole(contact) {
-            return String(
-                contact.role ||
-                contact.type ||
-                contact.category ||
-                contact.profession ||
-                "Industry Contact"
-            );
-        }
-
-        function loadData() {
-            contacts = readArray("conchordiaContacts");
-            const profile = readJSON("conchordiaArtistProfile", {});
-
-            const profileName =
-                profile.stageName ||
-                profile.name ||
-                profile.artistName ||
-                "You";
-
-            people = [{
-                id: "self",
-                name: profileName,
-                role: "Your Profile",
-                isSelf: true
-            }];
-
-            const used = new Set(["self"]);
-
-            contacts.forEach((contact, index) => {
-                const id = String(contact.id ?? `contact-${index}`);
-
-                if (used.has(id)) return;
-                used.add(id);
-
-                people.push({
-                    id,
-                    name: getName(contact),
-                    role: getRole(contact),
-                    email: contact.email || "",
-                    phone: contact.phone || "",
-                    isSelf: false
-                });
-            });
-
-            connections = readArray(STORAGE_KEY).map(edge => ({
-                ...edge,
-                id: edge.id || makeId(),
-                from: String(edge.from ?? edge.contact1 ?? ""),
-                to: String(edge.to ?? edge.contact2 ?? ""),
-                type: edge.type || "Professional",
-                strength: edge.strength || "New",
-                date: edge.date || "",
-                notes: edge.notes || ""
-            }));
-
-            positions = readJSON(POSITION_KEY, {});
-
-            if (!positions || typeof positions !== "object" ||
-                Array.isArray(positions)) {
-                positions = {};
-            }
-
-            initializePositions();
-        }
-
-        function personById(id) {
-            return people.find(person => person.id === String(id));
-        }
-
-        function personName(id) {
-            return personById(id)?.name || "Unknown Person";
-        }
-
-        function validEdges() {
-            return connections.filter(edge =>
-                edge.from !== edge.to &&
-                personById(edge.from) &&
-                personById(edge.to)
-            );
-        }
-
-        function historicalEdges() {
-            return validEdges().filter(edge =>
-                edge.type === "Introduced" ||
-                edge.type === "Met Directly"
-            );
-        }
-
-        function initializePositions() {
-            if (!positions.self ||
-                !Number.isFinite(positions.self.x) ||
-                !Number.isFinite(positions.self.y)) {
-                positions.self = { x: 500, y: 325 };
-            }
-
-            const others = people.filter(person => !person.isSelf);
-
-            others.forEach((person, index) => {
-                if (positions[person.id] &&
-                    Number.isFinite(positions[person.id].x) &&
-                    Number.isFinite(positions[person.id].y)) {
-                    return;
-                }
-
-                const angle = index * 2.399963229728653;
-                const radius = 125 + 42 * Math.sqrt(index);
-
-                positions[person.id] = {
-                    x: 500 + Math.cos(angle) * radius,
-                    y: 325 + Math.sin(angle) * radius
-                };
-            });
-        }
-
-        function saveConnections() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(connections));
-        }
-
-        function savePositions() {
-            localStorage.setItem(POSITION_KEY, JSON.stringify(positions));
-        }
-
-        function svgElement(tag, attributes = {}) {
-            const element = document.createElementNS(SVG_NS, tag);
-
-            Object.entries(attributes).forEach(([key, value]) => {
-                element.setAttribute(key, String(value));
-            });
-
-            return element;
-        }
-
-        function updateTransform() {
-            $("networkViewport").setAttribute(
-                "transform",
-                `translate(${transform.x} ${transform.y}) scale(${transform.scale})`
-            );
-        }
-
-        function clientToSVG(event) {
-            const svg = $("networkSVG");
-            const point = svg.createSVGPoint();
-
-            point.x = event.clientX;
-            point.y = event.clientY;
-
-            const matrix = svg.getScreenCTM();
-
-            if (!matrix) return { x: 0, y: 0 };
-
-            const result = point.matrixTransform(matrix.inverse());
-
-            return { x: result.x, y: result.y };
-        }
-
-        function clientToGraph(event) {
-            const point = clientToSVG(event);
-
-            return {
-                x: (point.x - transform.x) / transform.scale,
-                y: (point.y - transform.y) / transform.scale
-            };
-        }
-
-        function visiblePeople() {
-            const query = $("networkSearch").value.trim().toLowerCase();
-
-            if (!query) return people;
-
-            const matching = new Set(
-                people.filter(person =>
-                    person.name.toLowerCase().includes(query) ||
-                    person.role.toLowerCase().includes(query)
-                ).map(person => person.id)
-            );
-
-            const neighbors = new Set(matching);
-
-            validEdges().forEach(edge => {
-                if (matching.has(edge.from)) neighbors.add(edge.to);
-                if (matching.has(edge.to)) neighbors.add(edge.from);
-            });
-
-            neighbors.add("self");
-
-            return people.filter(person => neighbors.has(person.id));
-        }
-
-        function renderGraph() {
-            const edgesLayer = $("networkEdges");
-            const nodesLayer = $("networkNodes");
-
-            edgesLayer.replaceChildren();
-            nodesLayer.replaceChildren();
-
-            const visible = visiblePeople();
-            const visibleIds = new Set(visible.map(person => person.id));
-            const filter = $("networkFilter").value;
-            const pathEdges = new Set();
-
-            for (let i = 0; i < highlightedPath.length - 1; i++) {
-                pathEdges.add(
-                    highlightedPath[i] + "|" + highlightedPath[i + 1]
-                );
-            }
-
-            const pathNodes = new Set(highlightedPath);
-
-            validEdges().forEach(edge => {
-                if (!visibleIds.has(edge.from) ||
-                    !visibleIds.has(edge.to)) return;
-
-                if (filter && edge.strength !== filter) return;
-
-                const start = positions[edge.from];
-                const end = positions[edge.to];
-
-                if (!start || !end) return;
-
-                const isPath = pathEdges.has(edge.from + "|" + edge.to);
-
-                const line = svgElement("line", {
-                    x1: start.x,
-                    y1: start.y,
-                    x2: end.x,
-                    y2: end.y,
-                    stroke: isPath
-                        ? "#f8d96a"
-                        : strengthColors[edge.strength] || "#a47fbc",
-                    "stroke-width": isPath
-                        ? 7
-                        : {
-                            New: 2,
-                            Warm: 3,
-                            Active: 4,
-                            Frequent: 5
-                        }[edge.strength] || 2,
-                    "stroke-opacity":
-                        highlightedPath.length && !isPath ? 0.2 : 0.85,
-                    "stroke-linecap": "round",
-                    class: isPath
-                        ? "network-highlight-line"
-                        : "network-edge-line"
-                });
-
-                if (edge.type !== "Introduced" &&
-                    edge.type !== "Met Directly") {
-                    line.setAttribute("stroke-dasharray", "6 5");
-                }
-
-                const hitLine = svgElement("line", {
-                    x1: start.x,
-                    y1: start.y,
-                    x2: end.x,
-                    y2: end.y,
-                    stroke: "transparent",
-                    "stroke-width": 18,
-                    class: "network-edge-hit"
-                });
-
-                const title = svgElement("title");
-                title.textContent =
-                    `${personName(edge.from)} → ${personName(edge.to)} (${edge.type})`;
-
-                hitLine.appendChild(title);
-
-                hitLine.addEventListener("click", event => {
-                    event.stopPropagation();
-                    openConnectionForm(edge);
-                });
-
-                edgesLayer.append(line, hitLine);
-            });
-
-            visible.forEach(person => {
-                const position = positions[person.id];
-                if (!position) return;
-
-                const onPath = pathNodes.has(person.id);
-                const dim = highlightedPath.length && !onPath;
-
-                const group = svgElement("g", {
-                    class: "network-person-node",
-                    transform: `translate(${position.x} ${position.y})`,
-                    opacity: dim ? 0.35 : 1
-                });
-
-                const halo = svgElement("circle", {
-                    r: person.isSelf ? 38 : 30,
-                    fill: "none",
-                    stroke: onPath ? "#f8d96a" :
-                        selectedId === person.id ? "#ffffff" : "transparent",
-                    "stroke-width": 3
-                });
-
-                const circle = svgElement("circle", {
-                    r: person.isSelf ? 32 : 24,
-                    fill: person.isSelf ? "#9239c2" : "#176c8d",
-                    stroke: person.isSelf ? "#dca4ff" : "#9bd5e8",
-                    "stroke-width": 2.5
-                });
-
-                const initials = person.name.trim().split(/\s+/)
-                    .slice(0, 2)
-                    .map(word => word[0] || "")
-                    .join("")
-                    .toUpperCase();
-
-                const initialText = svgElement("text", {
-                    y: 5,
-                    class: "network-node-initials",
-                    "text-anchor": "middle"
-                });
-
-                initialText.textContent = initials;
-
-                const nameText = svgElement("text", {
-                    y: person.isSelf ? 51 : 43,
-                    class: "network-node-name",
-                    "text-anchor": "middle"
-                });
-
-                nameText.textContent = person.name.length > 22
-                    ? person.name.slice(0, 20) + "…"
-                    : person.name;
-
-                const title = svgElement("title");
-                title.textContent = person.name + " — " + person.role;
-
-                group.append(halo, circle, initialText, nameText, title);
-
-                group.addEventListener("pointerdown", event => {
-                    if (event.button !== 0) return;
-                    event.stopPropagation();
-
-                    dragging = {
-                        type: "node",
-                        id: person.id,
-                        pointerId: event.pointerId,
-                        start: clientToGraph(event),
-                        original: { ...positions[person.id] },
-                        moved: false
-                    };
-
-                    $("networkSVG").setPointerCapture(event.pointerId);
-                });
-
-                group.addEventListener("click", event => {
-                    event.stopPropagation();
-
-                    if (suppressClick) {
-                        suppressClick = false;
-                        return;
-                    }
-
-                    selectPerson(person.id);
-                });
-
-                nodesLayer.appendChild(group);
-            });
-
-            updateTransform();
-        }
-
-        function renderStats() {
-            const edges = historicalEdges();
-            const direct = new Set();
-            const reachable = new Set(["self"]);
-            const queue = ["self"];
-
-            edges.forEach(edge => {
-                if (edge.from === "self") direct.add(edge.to);
-            });
-
-            while (queue.length) {
-                const current = queue.shift();
-
-                edges.forEach(edge => {
-                    if (edge.from === current &&
-                        !reachable.has(edge.to)) {
-                        reachable.add(edge.to);
-                        queue.push(edge.to);
-                    }
-                });
-            }
-
-            $("statPeople").textContent = Math.max(0, people.length - 1);
-            $("statConnections").textContent = validEdges().length;
-            $("statDirect").textContent = direct.size;
-            $("statIndirect").textContent =
-                Math.max(0, reachable.size - 1 - direct.size);
-        }
-
-        function renderConnectionList() {
-            const list = $("connectionList");
-            list.replaceChildren();
-
-            const edges = validEdges();
-
-            if (!edges.length) {
-                const empty = document.createElement("p");
-                empty.textContent = "No connections recorded yet.";
-                list.appendChild(empty);
-                return;
-            }
-
-            edges.forEach(edge => {
-                const button = document.createElement("button");
-                button.type = "button";
-                button.className = "network-connection-item";
-
-                const names = document.createElement("strong");
-                names.textContent =
-                    `${personName(edge.from)} → ${personName(edge.to)}`;
-
-                const meta = document.createElement("span");
-                meta.textContent =
-                    `${edge.type} · ${edge.strength}` +
-                    (edge.date ? ` · ${edge.date}` : "");
-
-                meta.style.color =
-                    strengthColors[edge.strength] || "#e4c7f4";
-
-                button.append(names, meta);
-                button.onclick = () => openConnectionForm(edge);
-
-                list.appendChild(button);
-            });
-        }
-
-        function selectPerson(id) {
-            selectedId = id;
-
-            const person = personById(id);
-            if (!person) return;
-
-            const details = $("personDetails");
-            details.replaceChildren();
-
-            const name = document.createElement("h3");
-            name.textContent = person.name;
-
-            const role = document.createElement("p");
-            role.textContent = person.role;
-
-            details.append(name, role);
-
-            const relationships = validEdges().filter(edge =>
-                edge.from === id || edge.to === id
-            );
-
-            const count = document.createElement("p");
-            count.textContent =
-                `${relationships.length} recorded connection(s)`;
-
-            details.appendChild(count);
-
-            relationships.forEach(edge => {
-                const other = edge.from === id ? edge.to : edge.from;
-
-                const item = document.createElement("button");
-                item.className = "network-person-link";
-                item.textContent =
-                    `${personName(other)} · ${edge.type} · ${edge.strength}`;
-
-                item.onclick = () => openConnectionForm(edge);
-                details.appendChild(item);
-            });
-
-            if (!person.isSelf) {
-                const pathButton = document.createElement("button");
-                pathButton.className = "network-primary network-full";
-                pathButton.textContent = "Trace Connection History";
-
-                pathButton.onclick = () => {
-                    $("pathTarget").value = id;
-                    findPath();
-                };
-
-                details.appendChild(pathButton);
-            }
-
+        row.appendChild(info);
+        result.appendChild(row);
+    });
+    renderGraph();
+}
+function fillPeople(select) {
+    select.replaceChildren();
+    people.forEach(p=>{
+        const option=element("option",p.name);
+        option.value=p.id;
+        select.appendChild(option);
+    });
+}
+function openConnection(edge=null) {
+    if(people.length<2) {$("networkStatus").textContent="Add contacts first.";return;}
+    editingId=edge?.id||null;
+    fillPeople($("connectionFrom"));
+    fillPeople($("connectionTo"));
+    $("connectionForm").reset();
+    $("modalTitle").textContent=edge?"Edit Connection History":"Record Connection";
+    $("connectionFrom").value=edge?.from||"self";
+    $("connectionTo").value=edge?.to||people.find(p=>!p.isSelf)?.id;
+    $("connectionType").value=["Introduced","Met Directly"].includes(edge?.type)?edge.type:"Introduced";
+    $("connectionStrength").value=edge?.strength||"New";
+    $("connectionDate").value=edge?.date||"";
+    $("connectionNotes").value=edge?.notes||"";
+    $("deleteConnectionBtn").hidden=!edge;
+    $("connectionModal").hidden=false;
+}
+function closeConnection() {
+    $("connectionModal").hidden=true;
+    editingId=null;
+}
+function saveConnection(event) {
+    event.preventDefault();
+    const from=$("connectionFrom").value,to=$("connectionTo").value;
+    const type=$("connectionType").value;
+    if(from===to) {$("networkStatus").textContent="Choose different people.";return;}
+    if(type==="Met Directly"&&from!=="self") {
+        $("networkStatus").textContent="For a direct meeting, select yourself as Person 1.";
+        return;
+    }
+    if(edges().some(e=>e.id!==editingId&&e.from===from&&e.to===to)) {
+        $("networkStatus").textContent="Connection already recorded.";
+        return;
+    }
+    const data={id:editingId||id(),from,to,type,
+        strength:$("connectionStrength").value,
+        date:$("connectionDate").value,
+        notes:$("connectionNotes").value.trim()};
+    const old=[...connections];
+    connections=editingId?connections.map(e=>e.id===editingId?data:e):[...connections,data];
+    try {
+        save(CONNECTIONS_KEY,connections);
+        highlightedPath=[];
+        closeConnection();
+        renderNetwork();
+        $("networkStatus").textContent="Connection saved.";
+    } catch {
+        connections=old;
+        $("networkStatus").textContent="Unable to save connection.";
+    }
+}
+function deleteConnection() {
+    if(!editingId||!confirm("Delete this connection?")) return;
+    const old=[...connections];
+    connections=connections.filter(e=>e.id!==editingId);
+    try {
+        save(CONNECTIONS_KEY,connections);
+        highlightedPath=[];
+        closeConnection();
+        renderNetwork();
+        $("networkStatus").textContent="Connection deleted.";
+    } catch {
+        connections=old;
+        $("networkStatus").textContent="Unable to delete connection.";
+    }
+}
+function zoom(factor,x=500,y=325) {
+    const next=Math.max(.25,Math.min(3,view.scale*factor));
+    const ratio=next/view.scale;
+    view.x=x-(x-view.x)*ratio;
+    view.y=y-(y-view.y)*ratio;
+    view.scale=next;
+    updateView();
+}
+function setupGraph() {
+    const svg=$("networkSVG");
+    svg.addEventListener("pointerdown",event=>{
+        if(dragging||event.button!==0)return;
+        dragging={type:"pan",pointerId:event.pointerId,
+            start:svgPoint(event),original:{...view}};
+        svg.setPointerCapture(event.pointerId);
+    });
+    svg.addEventListener("pointermove",event=>{
+        if(!dragging||dragging.pointerId!==event.pointerId)return;
+        if(dragging.type==="node") {
+            const p=graphPoint(event);
+            const dx=p.x-dragging.start.x,dy=p.y-dragging.start.y;
+            if(Math.abs(dx)+Math.abs(dy)>3)dragging.moved=true;
+            positions[dragging.id]={x:dragging.original.x+dx,y:dragging.original.y+dy};
             renderGraph();
+        } else {
+            const p=svgPoint(event);
+            view.x=dragging.original.x+p.x-dragging.start.x;
+            view.y=dragging.original.y+p.y-dragging.start.y;
+            updateView();
         }
-
-        function shortestPath(start, target) {
-            if (start === target) return [start];
-
-            const adjacency = new Map(
-                people.map(person => [person.id, []])
-            );
-
-            historicalEdges().forEach(edge => {
-                adjacency.get(edge.from).push(edge.to);
-            });
-
-            const queue = [start];
-            const visited = new Set([start]);
-            const previous = new Map();
-
-            while (queue.length) {
-                const current = queue.shift();
-
-                for (const next of adjacency.get(current) || []) {
-                    if (visited.has(next)) continue;
-
-                    visited.add(next);
-                    previous.set(next, current);
-
-                    if (next === target) {
-                        const path = [target];
-                        let step = target;
-
-                        while (step !== start) {
-                            step = previous.get(step);
-                            path.unshift(step);
-                        }
-
-                        return path;
-                    }
-
-                    queue.push(next);
-                }
-            }
-
-            return null;
+    });
+    svg.addEventListener("pointerup",event=>{
+        if(!dragging||dragging.pointerId!==event.pointerId)return;
+        const completed=dragging;
+        dragging=null;
+        if(completed.type==="node") {
+            if(completed.moved) {
+                try {save(POSITIONS_KEY,positions);}
+                catch {$("networkStatus").textContent="Unable to save positions.";}
+            } else selectPerson(completed.id);
         }
-
-        function findPath() {
-            const target = $("pathTarget").value;
-            const result = $("pathResult");
-
-            result.replaceChildren();
-            highlightedPath = [];
-
-            if (!target) {
-                result.textContent = "Select a person first.";
-                renderGraph();
-                return;
-            }
-
-            const path = shortestPath("self", target);
-
-            if (!path) {
-                result.textContent =
-                    `No documented connection trail to ${personName(target)}. Record how this relationship began.`;
-                renderGraph();
-                return;
-            }
-
-            highlightedPath = path;
-
-            const heading = document.createElement("strong");
-            heading.textContent = path.length === 2
-                ? "Direct Connection"
-                : "Documented Connection History";
-
-            result.appendChild(heading);
-
-            path.forEach((id, index) => {
-                const step = document.createElement("div");
-                step.className = "network-path-step";
-
-                const number = document.createElement("span");
-                number.textContent = String(index + 1);
-
-                const information = document.createElement("div");
-
-                const name = document.createElement("strong");
-                name.textContent = personName(id);
-
-                information.appendChild(name);
-
-                if (index > 0) {
-                    const previous = path[index - 1];
-
-                    const edge = historicalEdges().find(connection =>
-                        connection.from === previous &&
-                        connection.to === id
-                    );
-
-                    if (edge) {
-                        const description = document.createElement("p");
-
-                        description.textContent =
-                            edge.type === "Introduced"
-                                ? `Introduced by ${personName(previous)}`
-                                : `Met directly through ${personName(previous)}`;
-
-                        information.appendChild(description);
-
-                        if (edge.date) {
-                            const date = document.createElement("p");
-                            date.textContent = `Date: ${edge.date}`;
-                            information.appendChild(date);
-                        }
-
-                        if (edge.notes) {
-                            const notes = document.createElement("p");
-                            notes.textContent = edge.notes;
-                            information.appendChild(notes);
-                        }
-                    }
-                }
-
-                step.append(number, information);
-                result.appendChild(step);
-            });
-
-            renderGraph();
-        }
-
-        function populateSelect(select) {
-            select.replaceChildren();
-
-            people.forEach(person => {
-                const option = document.createElement("option");
-                option.value = person.id;
-                option.textContent = person.name;
-                select.appendChild(option);
-            });
-        }
-
-        function populatePathTargets() {
-            const select = $("pathTarget");
-            const oldValue = select.value;
-
-            select.replaceChildren();
-
-            const placeholder = document.createElement("option");
-            placeholder.value = "";
-            placeholder.textContent = "Select a person";
-            select.appendChild(placeholder);
-
-            people.filter(person => !person.isSelf).forEach(person => {
-                const option = document.createElement("option");
-                option.value = person.id;
-                option.textContent = person.name;
-                select.appendChild(option);
-            });
-
-            if (oldValue && personById(oldValue)) {
-                select.value = oldValue;
-            }
-        }
-
-        function openConnectionForm(edge = null) {
-            if (people.length < 2) {
-                $("networkStatus").textContent =
-                    "Add people on the Contacts page first.";
-                return;
-            }
-
-            editingId = edge?.id || null;
-
-            populateSelect($("connectionFrom"));
-            populateSelect($("connectionTo"));
-
-            $("connectionForm").reset();
-
-            $("modalTitle").textContent =
-                edge ? "Edit Connection History" : "Record Connection";
-
-            $("connectionFrom").value = edge?.from || "self";
-            $("connectionTo").value = edge?.to ||
-                people.find(person => !person.isSelf)?.id;
-
-            $("connectionType").value =
-                ["Introduced", "Met Directly"].includes(edge?.type)
-                    ? edge.type
-                    : "Introduced";
-
-            $("connectionStrength").value = edge?.strength || "New";
-            $("connectionDate").value = edge?.date || "";
-            $("connectionNotes").value = edge?.notes || "";
-
-            $("deleteConnectionBtn").hidden = !edge;
-            $("connectionModal").hidden = false;
-            $("connectionFrom").focus();
-        }
-
-        function closeConnectionForm() {
-            $("connectionModal").hidden = true;
-            editingId = null;
-        }
-
-        function saveConnection(event) {
-            event.preventDefault();
-
-            const from = $("connectionFrom").value;
-            const to = $("connectionTo").value;
-            const type = $("connectionType").value;
-
-            if (!personById(from) || !personById(to) || from === to) {
-                $("networkStatus").textContent =
-                    "Choose two different people.";
-                return;
-            }
-
-            if (type === "Met Directly" && from !== "self") {
-                $("networkStatus").textContent =
-                    "For a direct meeting, select yourself as Person 1.";
-                return;
-            }
-
-            const duplicate = validEdges().some(edge =>
-                edge.id !== editingId &&
-                edge.from === from &&
-                edge.to === to
-            );
-
-            if (duplicate) {
-                $("networkStatus").textContent =
-                    "This connection has already been recorded.";
-                return;
-            }
-
-            const data = {
-                id: editingId || makeId(),
-                from,
-                to,
-                type,
-                strength: $("connectionStrength").value,
-                date: $("connectionDate").value,
-                notes: $("connectionNotes").value.trim()
-            };
-
-            const previous = [...connections];
-
-            if (editingId) {
-                connections = connections.map(edge =>
-                    edge.id === editingId ? data : edge
-                );
-            } else {
-                connections.push(data);
-            }
-
-            try {
-                saveConnections();
-                highlightedPath = [];
-                closeConnectionForm();
-                renderAll();
-                $("networkStatus").textContent =
-                    "Connection history saved.";
-            } catch {
-                connections = previous;
-                $("networkStatus").textContent =
-                    "Unable to save connection history.";
-            }
-        }
-
-        function deleteConnection() {
-            if (!editingId || !confirm("Delete this connection?")) return;
-
-            const previous = [...connections];
-
-            connections = connections.filter(edge =>
-                edge.id !== editingId
-            );
-
-            try {
-                saveConnections();
-                highlightedPath = [];
-                closeConnectionForm();
-                renderAll();
-                $("networkStatus").textContent = "Connection deleted.";
-            } catch {
-                connections = previous;
-                $("networkStatus").textContent =
-                    "Unable to delete connection.";
-            }
-        }
-
-        function zoomAt(factor, x = 500, y = 325) {
-            const oldScale = transform.scale;
-            const nextScale = Math.max(
-                0.25,
-                Math.min(3, oldScale * factor)
-            );
-
-            const ratio = nextScale / oldScale;
-
-            transform.x = x - (x - transform.x) * ratio;
-            transform.y = y - (y - transform.y) * ratio;
-            transform.scale = nextScale;
-
-            updateTransform();
-        }
-
-        function setupGraphInteraction() {
-            const svg = $("networkSVG");
-
-            svg.addEventListener("pointerdown", event => {
-                if (dragging || event.button !== 0) return;
-
-                dragging = {
-                    type: "pan",
-                    pointerId: event.pointerId,
-                    start: clientToSVG(event),
-                    original: { ...transform }
-                };
-
-                svg.setPointerCapture(event.pointerId);
-            });
-
-            svg.addEventListener("pointermove", event => {
-                if (!dragging ||
-                    dragging.pointerId !== event.pointerId) return;
-
-                if (dragging.type === "node") {
-                    const point = clientToGraph(event);
-
-                    const dx = point.x - dragging.start.x;
-                    const dy = point.y - dragging.start.y;
-
-                    if (Math.abs(dx) + Math.abs(dy) > 3) {
-                        dragging.moved = true;
-                    }
-
-                    positions[dragging.id] = {
-                        x: dragging.original.x + dx,
-                        y: dragging.original.y + dy
-                    };
-
-                    renderGraph();
-                } else {
-                    const point = clientToSVG(event);
-
-                    transform.x = dragging.original.x +
-                        point.x - dragging.start.x;
-
-                    transform.y = dragging.original.y +
-                        point.y - dragging.start.y;
-
-                    updateTransform();
-                }
-            });
-
-            svg.addEventListener("pointerup", event => {
-                if (!dragging ||
-                    dragging.pointerId !== event.pointerId) return;
-
-                if (dragging.type === "node") {
-                    suppressClick = dragging.moved;
-
-                    try {
-                        savePositions();
-                    } catch {
-                        $("networkStatus").textContent =
-                            "Unable to save node positions.";
-                    }
-
-                    if (!dragging.moved) {
-                        selectPerson(dragging.id);
-                    }
-                }
-
-                dragging = null;
-
-                if (svg.hasPointerCapture(event.pointerId)) {
-                    svg.releasePointerCapture(event.pointerId);
-                }
-            });
-
-            svg.addEventListener("pointercancel", () => {
-                dragging = null;
-            });
-
-            svg.addEventListener("wheel", event => {
-                event.preventDefault();
-
-                const point = clientToSVG(event);
-
-                zoomAt(
-                    event.deltaY < 0 ? 1.12 : 0.89,
-                    point.x,
-                    point.y
-                );
-            }, { passive: false });
-        }
-
-        function renderAll() {
-            renderStats();
-            renderConnectionList();
-            populatePathTargets();
-            renderGraph();
-        }
-
-        $("sidebarToggle").addEventListener("click", () => {
-            document.querySelector(".sidebar").classList.toggle("collapsed");
-        });
-
-        $("networkSearch").addEventListener("input", renderGraph);
-        $("networkFilter").addEventListener("change", renderGraph);
-
-        $("addConnectionBtn").onclick = () => openConnectionForm();
-        $("closeModal").onclick = closeConnectionForm;
-        $("cancelModal").onclick = closeConnectionForm;
-        $("connectionForm").onsubmit = saveConnection;
-        $("deleteConnectionBtn").onclick = deleteConnection;
-
-        $("connectionModal").addEventListener("click", event => {
-            if (event.target === $("connectionModal")) {
-                closeConnectionForm();
-            }
-        });
-
-        document.addEventListener("keydown", event => {
-            if (event.key === "Escape") {
-                closeConnectionForm();
-            }
-        });
-
-        $("findPathBtn").onclick = findPath;
-
-        $("clearPathBtn").onclick = () => {
-            highlightedPath = [];
-            $("pathResult").textContent =
-                "Select someone to view their introduction history.";
-            renderGraph();
-        };
-
-        $("zoomIn").onclick = () => zoomAt(1.2);
-        $("zoomOut").onclick = () => zoomAt(0.8);
-
-        $("zoomReset").onclick = () => {
-            transform = { x: 0, y: 0, scale: 1 };
-            updateTransform();
-        };
-
-        window.addEventListener("pageshow", () => {
-            loadData();
-            renderAll();
-        });
-
-        window.addEventListener("storage", () => {
-            loadData();
-            renderAll();
-        });
-
-        loadData();
-        setupGraphInteraction();
-        renderAll();
-    </script>
+        if(svg.hasPointerCapture(event.pointerId))svg.releasePointerCapture(event.pointerId);
+    });
+    svg.addEventListener("pointercancel",()=>dragging=null);
+    svg.addEventListener("wheel",event=>{
+        event.preventDefault();
+        const p=svgPoint(event);
+        zoom(event.deltaY<0?1.12:.89,p.x,p.y);
+    },{passive:false});
+}
+function renderNetwork() {
+    renderStats();
+    renderConnections();
+    const selected=$("pathTarget").value;
+    const target=$("pathTarget");
+    target.replaceChildren();
+    const placeholder=element("option","Select a person");
+    placeholder.value="";
+    target.appendChild(placeholder);
+    people.filter(p=>!p.isSelf).forEach(p=>{
+        const option=element("option",p.name);
+        option.value=p.id;
+        target.appendChild(option);
+    });
+    if(person(selected))target.value=selected;
+    renderGraph();
+}
+$("sidebarToggle").onclick=()=>document.querySelector(".sidebar").classList.toggle("collapsed");
+$("createOrgForm").onsubmit=createOrganization;
+$("joinArtistForm").onsubmit=joinArtist;
+$("joinAdminForm").onsubmit=joinAdmin;
+$("networkSearch").oninput=renderGraph;
+$("networkFilter").onchange=renderGraph;
+$("addConnectionBtn").onclick=()=>openConnection();
+$("closeModal").onclick=closeConnection;
+$("cancelModal").onclick=closeConnection;
+$("connectionForm").onsubmit=saveConnection;
+$("deleteConnectionBtn").onclick=deleteConnection;
+$("findPathBtn").onclick=traceHistory;
+$("clearPathBtn").onclick=()=>{
+    highlightedPath=[];
+    $("pathResult").textContent="Select someone to view their introduction history.";
+    renderGraph();
+};
+$("zoomIn").onclick=()=>zoom(1.2);
+$("zoomOut").onclick=()=>zoom(.8);
+$("zoomReset").onclick=()=>{
+    view={x:0,y:0,scale:1};
+    updateView();
+};
+$("connectionModal").onclick=event=>{
+    if(event.target===$("connectionModal"))closeConnection();
+};
+document.addEventListener("keydown",event=>{
+    if(event.key==="Escape")closeConnection();
+});
+window.addEventListener("pageshow",()=>{
+    loadNetwork();
+    renderNetwork();
+    renderOrganizations();
+});
+window.addEventListener("storage",()=>{
+    loadNetwork();
+    renderNetwork();
+    renderOrganizations();
+});
+loadNetwork();
+setupGraph();
+renderNetwork();
+renderOrganizations();
+</script>
 </body>
 </html>

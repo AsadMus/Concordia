@@ -22,6 +22,79 @@ h1, h2, h3, h4 {
     background-color: #2e0342;
     font-family: "Baumans", sans-serif;
 }
+
+.account-type-section {
+    width: 100%;
+    margin: 20px 0 10px;
+    text-align: center;
+}
+.account-type-section h3 {
+    color: #fff;
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+.account-type-options {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+.account-type-card {
+    flex: 1;
+    max-width: 280px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 18px;
+    border: 1px solid #70418a;
+    border-radius: 12px;
+    background: #220331;
+    text-align: left;
+    transition: border-color 0.2s, background 0.2s;
+}
+.account-type-card:hover {
+    border-color: #d38aff;
+}
+.account-type-card:has(input:checked) {
+    border-color: #d38aff;
+    background: #3c1554;
+}
+.account-type-card input {
+    margin-top: 4px;
+    accent-color: #d38aff;
+}
+.account-type-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.account-type-content strong {
+    color: #fff;
+    font-size: 16px;
+}
+.account-type-content small {
+    color: #cdb4df;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.signup-error {
+    width: 100%;
+    text-align: center;
+    color: #ff8c9b;
+    font-size: 13px;
+    margin: 8px 0;
+}
+@media (max-width: 600px) {
+    .account-type-options {
+        flex-direction: column;
+        align-items: center;
+    }
+    .account-type-card {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+}
 /* Purple login/sign-up container */
 .auth-body .page {
     width: 100%;
@@ -1836,3 +1909,181 @@ nav a:not(.active):hover {
     margin: 4px 0;
     line-height: 1.5;
 }
+.network-organizations {
+    background: #190b28;
+    border: 1px solid #59346d;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 25px;
+    color: white;
+}
+.network-org-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.network-org-heading h2 {
+    margin: 0 0 8px;
+    color: white;
+}
+.network-org-heading p {
+    margin: 0;
+    color: #cdb4df;
+    font-size: 13px;
+}
+#accountRoleBadge {
+    background: #3c1554;
+    color: #e4b6ff;
+    border: 1px solid #70418a;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.network-org-card {
+    background: #220f35;
+    border: 1px solid #70418a;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+.network-org-card h3 {
+    color: white;
+    margin: 0 0 12px;
+    font-size: 18px;
+}
+.network-org-card p {
+    color: #cdb4df;
+    font-size: 13px;
+    line-height: 1.6;
+}
+.network-org-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.network-org-form label {
+    color: #e4c7f4;
+    font-size: 13px;
+}
+.network-org-form input,
+.network-org-form select,
+.network-org-item input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    background: #160923;
+    border: 1px solid #70418a;
+    border-radius: 8px;
+    padding: 12px;
+    color: white;
+    font-family: inherit;
+    font-size: 13px;
+}
+.network-org-form input:focus,
+.network-org-form select:focus {
+    outline: none;
+    border-color: #d38aff;
+}
+.network-org-inline {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+}
+.network-org-inline input {
+    flex: 1;
+}
+.network-org-item {
+    background: #170923;
+    border: 1px solid #59346d;
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 12px;
+}
+.network-org-item h4 {
+    color: white;
+    margin: 0 0 8px;
+    font-size: 15px;
+}
+.network-org-item p {
+    margin: 6px 0;
+}
+.network-org-codes {
+    margin: 15px 0;
+}
+.network-org-code-row,
+.network-org-member-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #59346d;
+    padding: 10px 0;
+    color: #e4c7f4;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+.network-org-code-row button,
+.network-org-member-row button {
+    flex-shrink: 0;
+}
+.network-org-roster {
+    margin-top: 18px;
+}
+.network-org-roster h4 {
+    margin-top: 14px;
+}
+.network-org-item > button {
+    margin-top: 12px;
+}
+#organizationStatus {
+    color: #d38aff;
+    font-size: 13px;
+    min-height: 18px;
+}
+.network-organizations [hidden] {
+    display: none !important;
+}
+.network-modal-overlay[hidden] {
+    display: none !important;
+}
+.network-modal input[type="date"] {
+    width: 100%;
+    box-sizing: border-box;
+    background: #220331;
+    border: 1px solid #70418a;
+    border-radius: 8px;
+    padding: 11px 12px;
+    color: white;
+    font-family: inherit;
+    font-size: 13px;
+    color-scheme: dark;
+}
+.network-path-step > div {
+    flex: 1;
+    min-width: 0;
+}
+.network-path-step > div strong {
+    color: white;
+    font-size: 13px;
+}
+.network-path-step > div p {
+    color: #cdb4df;
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 4px 0;
+}
+@media (max-width: 650px) {
+    .network-org-heading,
+    .network-org-inline {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .network-organizations {
+        padding: 16px;
+    }
+}
+
