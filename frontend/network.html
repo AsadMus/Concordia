@@ -1,0 +1,1089 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network | ConChordia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+        <div class="logo">
+            <img src="images/logo.png" alt="ConChordia">
+        </div>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="artist-profile.html">Artist Profile</a>
+            <a href="contacts.html">Contacts</a>
+            <a href="projects.html">Projects</a>
+            <a href="calendar.html">Calendar</a>
+            <a href="opportunities.html">Opportunities</a>
+            <a href="revenue.html">Revenue</a>
+            <a href="network.html" class="active">Network</a>
+            <a href="settings.html">Settings</a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <h1>Network</h1>
+                <p>Discover who you know through who.</p>
+            </div>
+        </header>
+
+        <section class="network-stats">
+            <div class="network-stat">
+                <span>People</span>
+                <strong id="statPeople">0</strong>
+            </div>
+            <div class="network-stat">
+                <span>Connections</span>
+                <strong id="statConnections">0</strong>
+            </div>
+            <div class="network-stat">
+                <span>Direct Contacts</span>
+                <strong id="statDirect">0</strong>
+            </div>
+            <div class="network-stat">
+                <span>Indirect Reach</span>
+                <strong id="statIndirect">0</strong>
+            </div>
+        </section>
+
+        <section class="network-workspace">
+            <div class="network-graph-panel">
+                <div class="network-toolbar">
+                    <div>
+                        <h2>Connection Web</h2>
+                        <p>Drag people to explore your network.</p>
+                    </div>
+                    <button class="network-primary" id="addConnectionBtn">
+                        + Add Connection
+                    </button>
+                </div>
+
+                <div class="network-search-row">
+                    <input id="networkSearch" type="search"
+                        placeholder="Search people by name or role...">
+
+                    <select id="networkFilter">
+                        <option value="">All Relationships</option>
+                        <option value="New">New</option>
+                        <option value="Warm">Warm</option>
+                        <option value="Active">Active</option>
+                        <option value="Frequent">Frequent</option>
+                    </select>
+                </div>
+
+                <div class="network-canvas" id="networkCanvas">
+                    <svg id="networkSVG"
+                        viewBox="0 0 1000 650"
+                        aria-label="Interactive professional relationship graph">
+                        <g id="networkViewport">
+                            <g id="networkEdges"></g>
+                            <g id="networkNodes"></g>
+                        </g>
+                    </svg>
+
+                    <div class="network-zoom">
+                        <button id="zoomIn" title="Zoom in">+</button>
+                        <button id="zoomOut" title="Zoom out">−</button>
+                        <button id="zoomReset" title="Reset view">⟲</button>
+                    </div>
+
+                    <div class="network-hint">
+                        Scroll to zoom · Drag background to pan · Drag people to move
+                    </div>
+                </div>
+
+                <div class="network-legend">
+                    <span><i class="network-key self"></i> You</span>
+                    <span><i class="network-key person"></i> Person</span>
+                    <span><i class="network-key direct"></i> Direct</span>
+                    <span><i class="network-key path"></i> Introduction Path</span>
+                </div>
+            </div>
+
+            <aside class="network-side-panel">
+                <section class="network-side-card">
+                    <h2>Find Connection Path</h2>
+                    <p>See how you can reach someone through people you know.</p>
+
+                    <label for="pathTarget">Who do you want to reach?</label>
+                    <select id="pathTarget">
+                        <option value="">Select a person</option>
+                    </select>
+
+                    <button class="network-primary network-full" id="findPathBtn">
+                        Find Introduction Path
+                    </button>
+
+                    <div id="pathResult" class="network-path-result">
+                        Select someone to find a connection.
+                    </div>
+
+                    <button class="network-secondary network-full"
+                        id="clearPathBtn">
+                        Clear Highlight
+                    </button>
+                </section>
+
+                <section class="network-side-card">
+                    <h2>Person Details</h2>
+                    <div id="personDetails" class="network-person-details">
+                        Select a person in the web.
+                    </div>
+                </section>
+
+                <section class="network-side-card">
+                    <h2>Confirmed Connections</h2>
+                    <div id="connectionList" class="network-connection-list"></div>
+                </section>
+            </aside>
+        </section>
+
+        <div class="network-modal-overlay" id="connectionModal" hidden>
+            <div class="network-modal" role="dialog" aria-modal="true"
+                aria-labelledby="modalTitle">
+                <div class="network-modal-header">
+                    <h2 id="modalTitle">Add Connection</h2>
+                    <button id="closeModal" class="network-close"
+                        aria-label="Close">×</button>
+                </div>
+
+                <form id="connectionForm">
+                    <label for="connectionFrom">Person 1</label>
+                    <select id="connectionFrom" required></select>
+
+                    <label for="connectionTo">Person 2</label>
+                    <select id="connectionTo" required></select>
+
+                    <label for="connectionType">Relationship Type</label>
+                    <select id="connectionType">
+                        <option>Professional</option>
+                        <option>Collaborator</option>
+                        <option>Referral</option>
+                        <option>Business Partner</option>
+                        <option>Personal</option>
+                        <option>Other</option>
+                    </select>
+
+                    <label for="connectionStrength">Relationship Strength</label>
+                    <select id="connectionStrength">
+                        <option>New</option>
+                        <option>Warm</option>
+                        <option>Active</option>
+                        <option>Frequent</option>
+                    </select>
+
+                    <label for="connectionNotes">How do they know each other?</label>
+                    <textarea id="connectionNotes"
+                        placeholder="Example: Danny worked with this producer on an album."></textarea>
+
+                    <div class="network-modal-actions">
+                        <button type="button" class="network-danger"
+                            id="deleteConnectionBtn" hidden>Delete</button>
+                        <button type="button" class="network-secondary"
+                            id="cancelModal">Cancel</button>
+                        <button type="submit" class="network-primary">
+                            Save Connection
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <p id="networkStatus" class="network-status" role="status"></p>
+    </main>
+
+    <script>
+        "use strict";
+
+        const SVG_NS = "http://www.w3.org/2000/svg";
+        const STORAGE_KEY = "conchordiaNetworkConnections";
+        const POSITION_KEY = "conchordiaNetworkPositions";
+
+        const $ = id => document.getElementById(id);
+
+        const strengthColors = {
+            New: "#b88b55",
+            Warm: "#e0aa4f",
+            Active: "#59bd9a",
+            Frequent: "#d38aff"
+        };
+
+        function readJSON(key, fallback) {
+            try {
+                const value = JSON.parse(localStorage.getItem(key));
+                return value ?? fallback;
+            } catch {
+                return fallback;
+            }
+        }
+
+        function readArray(key) {
+            const value = readJSON(key, []);
+            return Array.isArray(value) ? value : [];
+        }
+
+        function makeId() {
+            return crypto.randomUUID();
+        }
+
+        function getName(contact) {
+            return String(
+                contact.name ||
+                contact.fullName ||
+                contact.contactName ||
+                contact.stageName ||
+                contact.company ||
+                "Unnamed Contact"
+            );
+        }
+
+        function getRole(contact) {
+            return String(
+                contact.role ||
+                contact.type ||
+                contact.category ||
+                contact.profession ||
+                "Industry Contact"
+            );
+        }
+
+        let contacts = [];
+        let people = [];
+        let connections = [];
+        let positions = {};
+        let editingId = null;
+        let selectedId = null;
+        let highlightedPath = [];
+        let transform = { x: 0, y: 0, scale: 1 };
+        let dragging = null;
+        let movedDuringDrag = false;
+
+        function loadData() {
+            contacts = readArray("conchordiaContacts");
+
+            const profile = readJSON("conchordiaArtistProfile", {});
+
+            const profileName = profile.stageName ||
+                profile.name ||
+                profile.artistName ||
+                "You";
+
+            people = [{
+                id: "self",
+                name: profileName,
+                role: "Your Profile",
+                isSelf: true
+            }];
+
+            const used = new Set(["self"]);
+
+            contacts.forEach((contact, index) => {
+                const id = String(contact.id ?? `contact-${index}`);
+
+                if (used.has(id)) return;
+                used.add(id);
+
+                people.push({
+                    id,
+                    name: getName(contact),
+                    role: getRole(contact),
+                    email: contact.email || "",
+                    phone: contact.phone || "",
+                    isSelf: false
+                });
+            });
+
+            connections = readArray(STORAGE_KEY).map(edge => ({
+                ...edge,
+                from: String(edge.from ?? edge.contact1 ?? ""),
+                to: String(edge.to ?? edge.contact2 ?? ""),
+                strength: edge.strength || "New",
+                type: edge.type || "Professional",
+                notes: edge.notes || ""
+            }));
+
+            positions = readJSON(POSITION_KEY, {});
+            if (!positions || typeof positions !== "object" ||
+                Array.isArray(positions)) positions = {};
+
+            initializePositions();
+        }
+
+        function personById(id) {
+            return people.find(person => person.id === String(id));
+        }
+
+        function personName(id) {
+            return personById(id)?.name || "Unknown Person";
+        }
+
+        function validEdges() {
+            return connections.filter(edge =>
+                edge.from !== edge.to &&
+                personById(edge.from) &&
+                personById(edge.to)
+            );
+        }
+
+        function initializePositions() {
+            const center = { x: 500, y: 325 };
+
+            if (!positions.self ||
+                !Number.isFinite(positions.self.x) ||
+                !Number.isFinite(positions.self.y)) {
+                positions.self = center;
+            }
+
+            const others = people.filter(person => !person.isSelf);
+
+            others.forEach((person, index) => {
+                if (positions[person.id] &&
+                    Number.isFinite(positions[person.id].x) &&
+                    Number.isFinite(positions[person.id].y)) return;
+
+                const angle = index * 2.399963229728653;
+                const radius = 125 + 42 * Math.sqrt(index);
+
+                positions[person.id] = {
+                    x: center.x + Math.cos(angle) * radius,
+                    y: center.y + Math.sin(angle) * radius
+                };
+            });
+        }
+
+        function savePositions() {
+            localStorage.setItem(POSITION_KEY, JSON.stringify(positions));
+        }
+
+        function saveConnections() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(connections));
+        }
+
+        function svgElement(tag, attributes = {}) {
+            const element = document.createElementNS(SVG_NS, tag);
+            for (const [key, value] of Object.entries(attributes)) {
+                element.setAttribute(key, String(value));
+            }
+            return element;
+        }
+
+        function updateTransform() {
+            $("networkViewport").setAttribute(
+                "transform",
+                `translate(${transform.x} ${transform.y}) scale(${transform.scale})`
+            );
+        }
+
+        function screenToGraph(event) {
+            const svg = $("networkSVG");
+            const point = svg.createSVGPoint();
+
+            point.x = event.clientX;
+            point.y = event.clientY;
+
+            const matrix = svg.getScreenCTM();
+            if (!matrix) return { x: 0, y: 0 };
+
+            const local = point.matrixTransform(matrix.inverse());
+
+            return {
+                x: (local.x - transform.x) / transform.scale,
+                y: (local.y - transform.y) / transform.scale
+            };
+        }
+
+        function visiblePeople() {
+            const search = $("networkSearch").value.trim().toLowerCase();
+
+            if (!search) return people;
+
+            const matching = new Set(
+                people.filter(person =>
+                    person.name.toLowerCase().includes(search) ||
+                    person.role.toLowerCase().includes(search)
+                ).map(person => person.id)
+            );
+
+            // Keep people directly connected to search matches visible.
+            validEdges().forEach(edge => {
+                if (matching.has(edge.from)) matching.add(edge.to);
+                if (matching.has(edge.to)) matching.add(edge.from);
+            });
+
+            matching.add("self");
+            return people.filter(person => matching.has(person.id));
+        }
+
+        function renderGraph() {
+            const edgesLayer = $("networkEdges");
+            const nodesLayer = $("networkNodes");
+
+            edgesLayer.replaceChildren();
+            nodesLayer.replaceChildren();
+
+            const visible = visiblePeople();
+            const visibleIds = new Set(visible.map(person => person.id));
+            const filter = $("networkFilter").value;
+            const pathEdges = new Set();
+
+            for (let i = 0; i < highlightedPath.length - 1; i++) {
+                const a = highlightedPath[i];
+                const b = highlightedPath[i + 1];
+                pathEdges.add([a, b].sort().join("|"));
+            }
+
+            const pathNodes = new Set(highlightedPath);
+
+            validEdges().forEach(edge => {
+                if (!visibleIds.has(edge.from) ||
+                    !visibleIds.has(edge.to)) return;
+
+                if (filter && edge.strength !== filter) return;
+
+                const start = positions[edge.from];
+                const end = positions[edge.to];
+                if (!start || !end) return;
+
+                const edgeKey = [edge.from, edge.to].sort().join("|");
+                const isPath = pathEdges.has(edgeKey);
+
+                const line = svgElement("line", {
+                    x1: start.x,
+                    y1: start.y,
+                    x2: end.x,
+                    y2: end.y,
+                    stroke: isPath
+                        ? "#f8d96a"
+                        : strengthColors[edge.strength] || "#a47fbc",
+                    "stroke-width": isPath
+                        ? 7
+                        : { New: 2, Warm: 3, Active: 4, Frequent: 5 }[edge.strength] || 2,
+                    "stroke-opacity": highlightedPath.length && !isPath ? 0.2 : 0.85,
+                    "stroke-linecap": "round",
+                    class: isPath ? "network-highlight-line" : "network-edge-line"
+                });
+
+                const hitLine = svgElement("line", {
+                    x1: start.x,
+                    y1: start.y,
+                    x2: end.x,
+                    y2: end.y,
+                    stroke: "transparent",
+                    "stroke-width": 18,
+                    class: "network-edge-hit"
+                });
+
+                const title = svgElement("title");
+                title.textContent =
+                    `${personName(edge.from)} ↔ ${personName(edge.to)} (${edge.strength})`;
+                hitLine.appendChild(title);
+
+                hitLine.addEventListener("click", event => {
+                    event.stopPropagation();
+                    openConnectionForm(edge);
+                });
+
+                edgesLayer.appendChild(line);
+                edgesLayer.appendChild(hitLine);
+            });
+
+            visible.forEach(person => {
+                const position = positions[person.id];
+                if (!position) return;
+
+                const isSelected = selectedId === person.id;
+                const onPath = pathNodes.has(person.id);
+                const dim = highlightedPath.length && !onPath;
+
+                const group = svgElement("g", {
+                    class: "network-person-node",
+                    transform: `translate(${position.x} ${position.y})`,
+                    "data-person": person.id,
+                    opacity: dim ? 0.35 : 1
+                });
+
+                const halo = svgElement("circle", {
+                    r: person.isSelf ? 38 : 30,
+                    fill: "none",
+                    stroke: onPath ? "#f8d96a" :
+                        isSelected ? "#ffffff" : "transparent",
+                    "stroke-width": 3
+                });
+
+                const circle = svgElement("circle", {
+                    r: person.isSelf ? 32 : 24,
+                    fill: person.isSelf ? "#9239c2" : "#176c8d",
+                    stroke: person.isSelf ? "#dca4ff" : "#9bd5e8",
+                    "stroke-width": 2.5
+                });
+
+                const initials = person.name.trim().split(/\s+/)
+                    .slice(0, 2)
+                    .map(word => word[0] || "")
+                    .join("")
+                    .toUpperCase();
+
+                const initialText = svgElement("text", {
+                    y: 5,
+                    class: "network-node-initials",
+                    "text-anchor": "middle"
+                });
+                initialText.textContent = initials;
+
+                const nameText = svgElement("text", {
+                    y: person.isSelf ? 51 : 43,
+                    class: "network-node-name",
+                    "text-anchor": "middle"
+                });
+                nameText.textContent = person.name.length > 22
+                    ? person.name.slice(0, 20) + "…"
+                    : person.name;
+
+                const title = svgElement("title");
+                title.textContent = `${person.name} — ${person.role}`;
+
+                group.append(halo, circle, initialText, nameText, title);
+
+                group.addEventListener("pointerdown", event => {
+                    if (event.button !== 0) return;
+                    event.stopPropagation();
+
+                    dragging = {
+                        type: "node",
+                        id: person.id,
+                        pointerId: event.pointerId,
+                        start: screenToGraph(event),
+                        original: { ...positions[person.id] }
+                    };
+
+                    movedDuringDrag = false;
+                    $("networkSVG").setPointerCapture(event.pointerId);
+                });
+
+                group.addEventListener("click", event => {
+                    event.stopPropagation();
+                    if (!movedDuringDrag) selectPerson(person.id);
+                });
+
+                nodesLayer.appendChild(group);
+            });
+
+            updateTransform();
+        }
+
+        function renderStats() {
+            const edges = validEdges();
+            const direct = new Set();
+            const reachable = new Set(["self"]);
+            const queue = ["self"];
+
+            edges.forEach(edge => {
+                if (edge.from === "self") direct.add(edge.to);
+                if (edge.to === "self") direct.add(edge.from);
+            });
+
+            while (queue.length) {
+                const current = queue.shift();
+
+                edges.forEach(edge => {
+                    const next = edge.from === current ? edge.to :
+                        edge.to === current ? edge.from : null;
+
+                    if (next && !reachable.has(next)) {
+                        reachable.add(next);
+                        queue.push(next);
+                    }
+                });
+            }
+
+            $("statPeople").textContent = Math.max(0, people.length - 1);
+            $("statConnections").textContent = edges.length;
+            $("statDirect").textContent = direct.size;
+            $("statIndirect").textContent =
+                Math.max(0, reachable.size - 1 - direct.size);
+        }
+
+        function renderConnectionList() {
+            const list = $("connectionList");
+            list.replaceChildren();
+
+            const edges = validEdges();
+
+            if (!edges.length) {
+                const empty = document.createElement("p");
+                empty.textContent = "No confirmed connections yet.";
+                list.appendChild(empty);
+                return;
+            }
+
+            edges.forEach(edge => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "network-connection-item";
+
+                const names = document.createElement("strong");
+                names.textContent =
+                    `${personName(edge.from)} ↔ ${personName(edge.to)}`;
+
+                const meta = document.createElement("span");
+                meta.textContent = `${edge.type} · ${edge.strength}`;
+                meta.style.color =
+                    strengthColors[edge.strength] || "#e4c7f4";
+
+                button.append(names, meta);
+                button.addEventListener("click", () => openConnectionForm(edge));
+                list.appendChild(button);
+            });
+        }
+
+        function selectPerson(id) {
+            selectedId = id;
+            const person = personById(id);
+            if (!person) return;
+
+            const details = $("personDetails");
+            details.replaceChildren();
+
+            const name = document.createElement("h3");
+            name.textContent = person.name;
+
+            const role = document.createElement("p");
+            role.textContent = person.role;
+
+            details.append(name, role);
+
+            const relationships = validEdges().filter(edge =>
+                edge.from === id || edge.to === id
+            );
+
+            const count = document.createElement("p");
+            count.textContent =
+                `${relationships.length} confirmed connection(s)`;
+            details.appendChild(count);
+
+            relationships.forEach(edge => {
+                const other = edge.from === id ? edge.to : edge.from;
+                const item = document.createElement("button");
+                item.className = "network-person-link";
+                item.textContent =
+                    `${personName(other)} · ${edge.strength}`;
+                item.onclick = () => selectPerson(other);
+                details.appendChild(item);
+            });
+
+            if (!person.isSelf) {
+                const pathButton = document.createElement("button");
+                pathButton.className = "network-primary network-full";
+                pathButton.textContent = "Find Path to This Person";
+                pathButton.onclick = () => {
+                    $("pathTarget").value = id;
+                    findPath();
+                };
+                details.appendChild(pathButton);
+            }
+
+            renderGraph();
+        }
+
+        function shortestPath(start, target) {
+            if (start === target) return [start];
+
+            const adjacency = new Map(
+                people.map(person => [person.id, []])
+            );
+
+            validEdges().forEach(edge => {
+                adjacency.get(edge.from).push(edge.to);
+                adjacency.get(edge.to).push(edge.from);
+            });
+
+            const queue = [start];
+            const visited = new Set([start]);
+            const previous = new Map();
+
+            while (queue.length) {
+                const current = queue.shift();
+
+                for (const next of adjacency.get(current) || []) {
+                    if (visited.has(next)) continue;
+
+                    visited.add(next);
+                    previous.set(next, current);
+
+                    if (next === target) {
+                        const path = [target];
+                        let step = target;
+
+                        while (step !== start) {
+                            step = previous.get(step);
+                            path.unshift(step);
+                        }
+
+                        return path;
+                    }
+
+                    queue.push(next);
+                }
+            }
+
+            return null;
+        }
+
+        function findPath() {
+            const target = $("pathTarget").value;
+            const result = $("pathResult");
+            result.replaceChildren();
+
+            highlightedPath = [];
+
+            if (!target) {
+                result.textContent = "Select someone first.";
+                renderGraph();
+                return;
+            }
+
+            const path = shortestPath("self", target);
+
+            if (!path) {
+                result.textContent =
+                    `No confirmed introduction path to ${personName(target)}. Add relationships to connect your network.`;
+                renderGraph();
+                return;
+            }
+
+            highlightedPath = path;
+
+            const heading = document.createElement("strong");
+            heading.textContent = path.length === 2
+                ? "Direct Connection"
+                : `${path.length - 2} Introduction(s) Needed`;
+            result.appendChild(heading);
+
+            path.forEach((id, index) => {
+                const step = document.createElement("div");
+                step.className = "network-path-step";
+
+                const number = document.createElement("span");
+                number.textContent = String(index + 1);
+
+                const name = document.createElement("span");
+                name.textContent = personName(id);
+
+                step.append(number, name);
+                result.appendChild(step);
+            });
+
+            renderGraph();
+        }
+
+        function populateSelect(select, includeSelf = true) {
+            select.replaceChildren();
+
+            people.filter(person => includeSelf || !person.isSelf)
+                .forEach(person => {
+                    const option = document.createElement("option");
+                    option.value = person.id;
+                    option.textContent = person.name;
+                    select.appendChild(option);
+                });
+        }
+
+        function populatePathTargets() {
+            const select = $("pathTarget");
+            const oldValue = select.value;
+
+            select.replaceChildren();
+
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.textContent = "Select a person";
+            select.appendChild(placeholder);
+
+            people.filter(person => !person.isSelf).forEach(person => {
+                const option = document.createElement("option");
+                option.value = person.id;
+                option.textContent = person.name;
+                select.appendChild(option);
+            });
+
+            if (personById(oldValue)) select.value = oldValue;
+        }
+
+        function openConnectionForm(edge = null) {
+            if (people.length < 2) {
+                $("networkStatus").textContent =
+                    "Add people on the Contacts page first.";
+                return;
+            }
+
+            editingId = edge?.id || null;
+
+            populateSelect($("connectionFrom"));
+            populateSelect($("connectionTo"));
+
+            $("connectionForm").reset();
+            $("modalTitle").textContent =
+                edge ? "Edit Connection" : "Add Connection";
+
+            $("connectionFrom").value = edge?.from || "self";
+            $("connectionTo").value = edge?.to ||
+                people.find(person => !person.isSelf)?.id;
+
+            $("connectionType").value = edge?.type || "Professional";
+            $("connectionStrength").value = edge?.strength || "New";
+            $("connectionNotes").value = edge?.notes || "";
+
+            $("deleteConnectionBtn").hidden = !edge;
+            $("connectionModal").hidden = false;
+            $("connectionFrom").focus();
+        }
+
+        function closeConnectionForm() {
+            $("connectionModal").hidden = true;
+            editingId = null;
+        }
+
+        function saveConnection(event) {
+            event.preventDefault();
+
+            const from = $("connectionFrom").value;
+            const to = $("connectionTo").value;
+
+            if (!personById(from) || !personById(to) || from === to) {
+                $("networkStatus").textContent =
+                    "Choose two different people.";
+                return;
+            }
+
+            const duplicate = validEdges().some(edge =>
+                edge.id !== editingId &&
+                ((edge.from === from && edge.to === to) ||
+                 (edge.from === to && edge.to === from))
+            );
+
+            if (duplicate) {
+                $("networkStatus").textContent =
+                    "These people already have a confirmed connection.";
+                return;
+            }
+
+            const data = {
+                id: editingId || makeId(),
+                from,
+                to,
+                type: $("connectionType").value,
+                strength: $("connectionStrength").value,
+                notes: $("connectionNotes").value.trim()
+            };
+
+            if (editingId) {
+                connections = connections.map(edge =>
+                    edge.id === editingId ? data : edge
+                );
+            } else {
+                connections.push(data);
+            }
+
+            try {
+                saveConnections();
+                highlightedPath = [];
+                closeConnectionForm();
+                renderAll();
+                $("networkStatus").textContent = "Connection saved.";
+            } catch {
+                $("networkStatus").textContent =
+                    "Unable to save connection. Check browser storage.";
+            }
+        }
+
+        function deleteConnection() {
+            if (!editingId || !confirm("Delete this connection?")) return;
+
+            connections = connections.filter(edge => edge.id !== editingId);
+
+            try {
+                saveConnections();
+                highlightedPath = [];
+                closeConnectionForm();
+                renderAll();
+                $("networkStatus").textContent = "Connection deleted.";
+            } catch {
+                $("networkStatus").textContent =
+                    "Unable to delete connection.";
+            }
+        }
+
+        function zoomAt(factor, x = 500, y = 325) {
+            const oldScale = transform.scale;
+            const nextScale = Math.max(
+                0.25, Math.min(3, oldScale * factor)
+            );
+
+            const ratio = nextScale / oldScale;
+
+            transform.x = x - (x - transform.x) * ratio;
+            transform.y = y - (y - transform.y) * ratio;
+            transform.scale = nextScale;
+
+            updateTransform();
+        }
+
+        function setupGraphInteraction() {
+            const svg = $("networkSVG");
+
+            svg.addEventListener("pointerdown", event => {
+                if (dragging || event.button !== 0) return;
+
+                dragging = {
+                    type: "pan",
+                    pointerId: event.pointerId,
+                    start: screenToGraph(event),
+                    original: { ...transform }
+                };
+
+                svg.setPointerCapture(event.pointerId);
+            });
+
+            svg.addEventListener("pointermove", event => {
+                if (!dragging || dragging.pointerId !== event.pointerId) return;
+
+                const point = screenToGraph(event);
+
+                if (dragging.type === "node") {
+                    const dx = point.x - dragging.start.x;
+                    const dy = point.y - dragging.start.y;
+
+                    if (Math.abs(dx) + Math.abs(dy) > 3) {
+                        movedDuringDrag = true;
+                    }
+
+                    positions[dragging.id] = {
+                        x: dragging.original.x + dx,
+                        y: dragging.original.y + dy
+                    };
+
+                    renderGraph();
+                } else {
+                    const rect = svg.getBoundingClientRect();
+                    const scaleX = 1000 / rect.width;
+                    const scaleY = 650 / rect.height;
+
+                    transform.x = dragging.original.x +
+                        (event.clientX - dragging.clientX) * scaleX;
+
+                    transform.y = dragging.original.y +
+                        (event.clientY - dragging.clientY) * scaleY;
+
+                    updateTransform();
+                }
+            });
+
+            svg.addEventListener("pointerup", event => {
+                if (!dragging || dragging.pointerId !== event.pointerId) return;
+
+                if (dragging.type === "node") {
+                    try { savePositions(); } catch {}
+                }
+
+                dragging = null;
+
+                if (svg.hasPointerCapture(event.pointerId)) {
+                    svg.releasePointerCapture(event.pointerId);
+                }
+            });
+
+            svg.addEventListener("pointercancel", () => {
+                dragging = null;
+            });
+
+            // Record pointer position for background panning.
+            svg.addEventListener("pointerdown", event => {
+                if (dragging?.type === "pan") {
+                    dragging.clientX = event.clientX;
+                    dragging.clientY = event.clientY;
+                }
+            });
+
+            svg.addEventListener("wheel", event => {
+                event.preventDefault();
+
+                const point = svg.createSVGPoint();
+                point.x = event.clientX;
+                point.y = event.clientY;
+
+                const matrix = svg.getScreenCTM();
+                if (!matrix) return;
+
+                const local = point.matrixTransform(matrix.inverse());
+
+                zoomAt(event.deltaY < 0 ? 1.12 : 0.89, local.x, local.y);
+            }, { passive: false });
+        }
+
+        function renderAll() {
+            renderStats();
+            renderConnectionList();
+            populatePathTargets();
+            renderGraph();
+        }
+
+        $("sidebarToggle").addEventListener("click", () => {
+            document.querySelector(".sidebar").classList.toggle("collapsed");
+        });
+
+        $("networkSearch").addEventListener("input", renderGraph);
+        $("networkFilter").addEventListener("change", renderGraph);
+
+        $("addConnectionBtn").onclick = () => openConnectionForm();
+        $("closeModal").onclick = closeConnectionForm;
+        $("cancelModal").onclick = closeConnectionForm;
+        $("connectionForm").onsubmit = saveConnection;
+        $("deleteConnectionBtn").onclick = deleteConnection;
+
+        $("connectionModal").addEventListener("click", event => {
+            if (event.target === $("connectionModal")) closeConnectionForm();
+        });
+
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape") closeConnectionForm();
+        });
+
+        $("findPathBtn").onclick = findPath;
+
+        $("clearPathBtn").onclick = () => {
+            highlightedPath = [];
+            $("pathResult").textContent =
+                "Select someone to find a connection.";
+            renderGraph();
+        };
+
+        $("zoomIn").onclick = () => zoomAt(1.2);
+        $("zoomOut").onclick = () => zoomAt(0.8);
+        $("zoomReset").onclick = () => {
+            transform = { x: 0, y: 0, scale: 1 };
+            updateTransform();
+        };
+
+        window.addEventListener("pageshow", () => {
+            loadData();
+            renderAll();
+        });
+
+        window.addEventListener("storage", () => {
+            loadData();
+            renderAll();
+        });
+
+        loadData();
+        setupGraphInteraction();
+        renderAll();
+    </script>
+</body>
+</html>
