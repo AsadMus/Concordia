@@ -1,0 +1,825 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings | ConChordia</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="sidebar">
+    <button class="sidebar-toggle" id="sidebarToggle" type="button">☰</button>
+    <div class="logo">
+        <img src="images/logo.png" alt="ConChordia">
+    </div>
+    <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="artist-profile.html">Artist Profile</a>
+        <a href="contacts.html">Contacts</a>
+        <a href="projects.html">Projects</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="opportunities.html">Opportunities</a>
+        <a href="revenue.html">Revenue</a>
+        <a href="network.html">Network</a>
+        <a href="settings.html" class="active">Settings</a>
+    </nav>
+</div>
+
+<main class="main-content settings-main">
+    <header class="topbar">
+        <div>
+            <h1>Settings</h1>
+            <p>Manage your account, preferences, security, and organization.</p>
+        </div>
+        <span id="settingsRoleBadge" class="settings-role-badge">Artist</span>
+    </header>
+
+    <div class="settings-layout">
+        <nav class="settings-menu" aria-label="Settings sections">
+            <a href="#accountSettings">Account Settings</a>
+            <a href="#notificationSettings">Notifications</a>
+            <a href="#appearanceSettings">Appearance</a>
+            <a href="#securitySettings">Privacy & Security</a>
+            <a href="#staffSettings" id="staffNavLink" hidden>Team Staff Management</a>
+            <a href="#dataSettings">Data Management</a>
+            <a href="#aboutSettings">About ConChordia</a>
+        </nav>
+
+        <div class="settings-content">
+
+            <section class="settings-card" id="accountSettings">
+                <div class="settings-card-header">
+                    <h2>Account Settings</h2>
+                    <p>Update your personal account information.</p>
+                </div>
+                <form id="accountForm" class="settings-form">
+                    <div class="settings-two-columns">
+                        <div class="settings-field">
+                            <label for="settingsFirstName">First Name</label>
+                            <input type="text" id="settingsFirstName" autocomplete="given-name" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="settingsLastName">Last Name</label>
+                            <input type="text" id="settingsLastName" autocomplete="family-name" required>
+                        </div>
+                    </div>
+                    <div class="settings-two-columns">
+                        <div class="settings-field">
+                            <label for="settingsEmail">Email Address</label>
+                            <input type="email" id="settingsEmail" autocomplete="email" required>
+                        </div>
+                        <div class="settings-field">
+                            <label for="settingsPhone">Phone Number</label>
+                            <input type="tel" id="settingsPhone" autocomplete="tel">
+                        </div>
+                    </div>
+                    <div class="settings-field">
+                        <label for="settingsAccountType">Account Type</label>
+                        <input type="text" id="settingsAccountType" readonly>
+                        <small>Account type is selected during registration.</small>
+                    </div>
+                    <button type="submit" class="settings-primary">Save Account Changes</button>
+                </form>
+            </section>
+
+            <section class="settings-card" id="notificationSettings">
+                <div class="settings-card-header">
+                    <h2>Notifications</h2>
+                    <p>Choose which activity you want to be notified about.</p>
+                </div>
+                <div class="settings-toggle-list">
+                    <label class="settings-toggle-row">
+                        <span>
+                            <strong>Follow-Up Reminders</strong>
+                            <small>Reminders for upcoming contact follow-ups.</small>
+                        </span>
+                        <input type="checkbox" id="notifyFollowups">
+                    </label>
+                    <label class="settings-toggle-row">
+                        <span>
+                            <strong>Booking Updates</strong>
+                            <small>Notifications about upcoming shows and bookings.</small>
+                        </span>
+                        <input type="checkbox" id="notifyBookings">
+                    </label>
+                    <label class="settings-toggle-row">
+                        <span>
+                            <strong>Project Updates</strong>
+                            <small>Reminders for project deadlines and progress.</small>
+                        </span>
+                        <input type="checkbox" id="notifyProjects">
+                    </label>
+                    <label class="settings-toggle-row">
+                        <span>
+                            <strong>Opportunity Updates</strong>
+                            <small>Notifications about opportunities and their deadlines.</small>
+                        </span>
+                        <input type="checkbox" id="notifyOpportunities">
+                    </label>
+                </div>
+                <button type="button" class="settings-primary" id="saveNotifications">Save Notification Preferences</button>
+                <p class="settings-help">These preferences are saved locally. Automated notifications require integration with the reminder system.</p>
+            </section>
+
+            <section class="settings-card" id="appearanceSettings">
+                <div class="settings-card-header">
+                    <h2>Appearance</h2>
+                    <p>Customize how ConChordia looks on this device.</p>
+                </div>
+                <div class="settings-field">
+                    <label for="settingsTheme">Theme</label>
+                    <select id="settingsTheme">
+                        <option value="dark">Dark Purple</option>
+                        <option value="light">Light Purple</option>
+                    </select>
+                </div>
+                <div class="settings-field">
+                    <label for="settingsDensity">Display Density</label>
+                    <select id="settingsDensity">
+                        <option value="comfortable">Comfortable</option>
+                        <option value="compact">Compact</option>
+                    </select>
+                </div>
+                <button type="button" class="settings-primary" id="saveAppearance">Save Appearance</button>
+            </section>
+
+            <section class="settings-card" id="securitySettings">
+                <div class="settings-card-header">
+                    <h2>Privacy & Security</h2>
+                    <p>Manage account security and privacy preferences.</p>
+                </div>
+                <div class="settings-subsection">
+                    <h3>Change Password</h3>
+                    <p>Password changes will become available after account authentication is connected to the backend.</p>
+                    <button type="button" class="settings-secondary" disabled>Change Password</button>
+                </div>
+                <div class="settings-subsection">
+                    <h3>Privacy Preferences</h3>
+                    <label class="settings-toggle-row">
+                        <span>
+                            <strong>Profile Visibility</strong>
+                            <small>Preference for whether your professional profile can be discovered by other users.</small>
+                        </span>
+                        <input type="checkbox" id="profileVisibility">
+                    </label>
+                    <label class="settings-toggle-row">
+                        <span>
+                            <strong>Share Contact Information</strong>
+                            <small>Preference for sharing contact details with authorized organization members.</small>
+                        </span>
+                        <input type="checkbox" id="shareContactInfo">
+                    </label>
+                    <button type="button" class="settings-primary" id="savePrivacy">Save Privacy Preferences</button>
+                    <p class="settings-help">Privacy preferences are stored locally and do not yet enforce access restrictions.</p>
+                </div>
+            </section>
+
+            <section class="settings-card" id="staffSettings" hidden>
+                <div class="settings-card-header">
+                    <h2>Team Staff Management</h2>
+                    <p>Invite administrators and customize their access to your organizations.</p>
+                </div>
+
+                <div class="settings-field">
+                    <label for="staffOrganization">Select Organization</label>
+                    <select id="staffOrganization"></select>
+                </div>
+
+                <div id="staffOwnerPanel" hidden>
+                    <div class="settings-subsection">
+                        <h3>Add Administrator</h3>
+                        <p>Administrators receive only the permissions you assign.</p>
+                        <form id="addAdminForm" class="settings-form">
+                            <div class="settings-field">
+                                <label for="adminEmail">Administrator Email</label>
+                                <input type="email" id="adminEmail" placeholder="manager@example.com" required>
+                            </div>
+                            <h3>Admin Permissions</h3>
+                            <div class="settings-permission-list">
+                                <label><input type="checkbox" name="newAdminPermission" value="viewArtists" checked> View artists</label>
+                                <label><input type="checkbox" name="newAdminPermission" value="manageArtists"> Manage assigned artists</label>
+                                <label><input type="checkbox" name="newAdminPermission" value="manageProjects"> Manage projects</label>
+                                <label><input type="checkbox" name="newAdminPermission" value="manageBookings"> Manage bookings</label>
+                                <label><input type="checkbox" name="newAdminPermission" value="manageContacts"> Manage contacts</label>
+                                <label><input type="checkbox" name="newAdminPermission" value="inviteArtists"> Invite artists</label>
+                                <label><input type="checkbox" name="newAdminPermission" value="viewRevenue"> View revenue</label>
+                                <label><input type="checkbox" name="newAdminPermission" value="manageRevenue"> Manage revenue</label>
+                            </div>
+                            <button type="submit" class="settings-primary">Add Administrator</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="settings-subsection">
+                    <h3>Organization Staff</h3>
+                    <div id="staffList"></div>
+                </div>
+                <p class="settings-help">Staff invitations are simulated locally. Adding an email here does not send an invitation or grant real account access.</p>
+            </section>
+
+            <section class="settings-card" id="dataSettings">
+                <div class="settings-card-header">
+                    <h2>Data Management</h2>
+                    <p>Back up, restore, or reset your local ConChordia data.</p>
+                </div>
+                <div class="settings-data-row">
+                    <div>
+                        <h3>Export Data</h3>
+                        <p>Download a JSON backup of ConChordia data stored in this browser.</p>
+                    </div>
+                    <button type="button" class="settings-secondary" id="exportData">Export</button>
+                </div>
+                <div class="settings-data-row">
+                    <div>
+                        <h3>Import Data</h3>
+                        <p>Restore data from a previously exported JSON backup.</p>
+                    </div>
+                    <button type="button" class="settings-secondary" id="importData">Import</button>
+                    <input type="file" id="importFile" accept=".json,application/json" hidden>
+                </div>
+                <div class="settings-data-row">
+                    <div>
+                        <h3>Reset Local Data</h3>
+                        <p>Delete ConChordia data saved in this browser, including your local account preferences.</p>
+                    </div>
+                    <button type="button" class="settings-danger" id="resetData">Reset</button>
+                </div>
+            </section>
+
+            <section class="settings-card" id="aboutSettings">
+                <div class="settings-card-header">
+                    <h2>About ConChordia</h2>
+                    <p>A Music Industry Customer Relationship Management System.</p>
+                </div>
+                <div class="settings-about">
+                    <img src="images/logo.png" alt="ConChordia Logo">
+                    <div>
+                        <h3>ConChordia</h3>
+                        <p>Music Industry CRM</p>
+                        <p>Manage professional relationships, collaborations, bookings, opportunities, revenue, and organization memberships in one place.</p>
+                        <small>CSUSB · CSE 4050 Web Application Development</small>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+    <p id="settingsStatus" role="status" aria-live="polite"></p>
+</main>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+const ACCOUNT_KEY = "conchordiaAccount";
+const SETTINGS_KEY = "conchordiaSettings";
+const ORGANIZATIONS_KEY = "conchordiaOrganizations";
+
+const defaultSettings = {
+    notifications: {
+        followups: true,
+        bookings: true,
+        projects: true,
+        opportunities: true
+    },
+    appearance: {
+        theme: "dark",
+        density: "comfortable"
+    },
+    privacy: {
+        profileVisibility: false,
+        shareContactInfo: false
+    }
+};
+
+function readJSON(key, fallback) {
+    try {
+        return JSON.parse(localStorage.getItem(key)) ?? fallback;
+    } catch {
+        return fallback;
+    }
+}
+
+function saveJSON(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getAccount() {
+    const value = readJSON(ACCOUNT_KEY, {});
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function getRole() {
+    return getAccount().role ||
+        localStorage.getItem("conchordiaAccountType") ||
+        "artist";
+}
+
+function getAccountId() {
+    return String(getAccount().email || "").trim().toLowerCase();
+}
+
+function getSettings() {
+    const saved = readJSON(SETTINGS_KEY, {});
+    return {
+        notifications: {
+            ...defaultSettings.notifications,
+            ...(saved.notifications || {})
+        },
+        appearance: {
+            ...defaultSettings.appearance,
+            ...(saved.appearance || {})
+        },
+        privacy: {
+            ...defaultSettings.privacy,
+            ...(saved.privacy || {})
+        }
+    };
+}
+
+function getOrganizations() {
+    const value = readJSON(ORGANIZATIONS_KEY, []);
+    return Array.isArray(value) ? value : [];
+}
+
+function showStatus(message) {
+    $("settingsStatus").textContent = message;
+}
+
+function makeElement(tag, text, className = "") {
+    const element = document.createElement(tag);
+    if (text !== undefined) element.textContent = text;
+    if (className) element.className = className;
+    return element;
+}
+
+function makeButton(text, handler, className = "settings-secondary") {
+    const button = makeElement("button", text, className);
+    button.type = "button";
+    button.addEventListener("click", handler);
+    return button;
+}
+
+function loadAccount() {
+    const account = getAccount();
+    $("settingsFirstName").value = account.firstName || "";
+    $("settingsLastName").value = account.lastName || "";
+    $("settingsEmail").value = account.email || "";
+    $("settingsPhone").value = account.phone || "";
+    $("settingsAccountType").value = getRole() === "manager" ? "Manager" : "Artist";
+    $("settingsRoleBadge").textContent = getRole() === "manager" ? "Manager Mode" : "Artist Mode";
+}
+
+function saveAccount(event) {
+    event.preventDefault();
+
+    const previous = getAccount();
+    const oldEmail = getAccountId();
+    const newEmail = $("settingsEmail").value.trim().toLowerCase();
+
+    if (oldEmail && oldEmail !== newEmail) {
+        showStatus("Email changes require backend account management because organization memberships use your email as an identifier.");
+        return;
+    }
+
+    const updated = {
+        ...previous,
+        firstName: $("settingsFirstName").value.trim(),
+        lastName: $("settingsLastName").value.trim(),
+        email: newEmail,
+        phone: $("settingsPhone").value.trim(),
+        role: getRole()
+    };
+
+    try {
+        saveJSON(ACCOUNT_KEY, updated);
+        localStorage.setItem("conchordiaAccountType", updated.role);
+        showStatus("Account information saved.");
+    } catch {
+        showStatus("Unable to save account information.");
+    }
+}
+
+function loadPreferences() {
+    const settings = getSettings();
+
+    $("notifyFollowups").checked = settings.notifications.followups;
+    $("notifyBookings").checked = settings.notifications.bookings;
+    $("notifyProjects").checked = settings.notifications.projects;
+    $("notifyOpportunities").checked = settings.notifications.opportunities;
+
+    $("settingsTheme").value = settings.appearance.theme;
+    $("settingsDensity").value = settings.appearance.density;
+
+    $("profileVisibility").checked = settings.privacy.profileVisibility;
+    $("shareContactInfo").checked = settings.privacy.shareContactInfo;
+
+    applyAppearance(settings.appearance);
+}
+
+function applyAppearance(appearance) {
+    document.body.classList.toggle("settings-light", appearance.theme === "light");
+    document.body.classList.toggle("settings-compact", appearance.density === "compact");
+}
+
+function saveNotifications() {
+    const settings = getSettings();
+
+    settings.notifications = {
+        followups: $("notifyFollowups").checked,
+        bookings: $("notifyBookings").checked,
+        projects: $("notifyProjects").checked,
+        opportunities: $("notifyOpportunities").checked
+    };
+
+    saveJSON(SETTINGS_KEY, settings);
+    showStatus("Notification preferences saved.");
+}
+
+function saveAppearance() {
+    const settings = getSettings();
+
+    settings.appearance = {
+        theme: $("settingsTheme").value,
+        density: $("settingsDensity").value
+    };
+
+    saveJSON(SETTINGS_KEY, settings);
+    applyAppearance(settings.appearance);
+    showStatus("Appearance preferences saved.");
+}
+
+function savePrivacy() {
+    const settings = getSettings();
+
+    settings.privacy = {
+        profileVisibility: $("profileVisibility").checked,
+        shareContactInfo: $("shareContactInfo").checked
+    };
+
+    saveJSON(SETTINGS_KEY, settings);
+    showStatus("Privacy preferences saved locally.");
+}
+
+const PERMISSIONS = {
+    viewArtists: "View artists",
+    manageArtists: "Manage assigned artists",
+    manageProjects: "Manage projects",
+    manageBookings: "Manage bookings",
+    manageContacts: "Manage contacts",
+    inviteArtists: "Invite artists",
+    viewRevenue: "View revenue",
+    manageRevenue: "Manage revenue"
+};
+
+function managedOrganizations() {
+    const current = getAccountId();
+
+    return getOrganizations().filter(org =>
+        org.ownerId === current ||
+        (Array.isArray(org.admins) && org.admins.includes(current)) ||
+        (Array.isArray(org.staff) && org.staff.some(staff =>
+            staff.email === current && staff.status === "active"
+        ))
+    );
+}
+
+function loadStaffOrganizations() {
+    const manager = getRole() === "manager";
+
+    $("staffSettings").hidden = !manager;
+    $("staffNavLink").hidden = !manager;
+
+    if (!manager) return;
+
+    const select = $("staffOrganization");
+    const previous = select.value;
+    select.replaceChildren();
+
+    const organizations = managedOrganizations();
+
+    if (!organizations.length) {
+        const option = makeElement("option", "No organizations available");
+        option.value = "";
+        select.appendChild(option);
+    } else {
+        organizations.forEach(org => {
+            const option = makeElement("option", org.name);
+            option.value = org.id;
+            select.appendChild(option);
+        });
+    }
+
+    if (organizations.some(org => org.id === previous)) {
+        select.value = previous;
+    }
+
+    renderStaff();
+}
+
+function renderStaff() {
+    const org = getOrganizations().find(item =>
+        item.id === $("staffOrganization").value
+    );
+
+    const list = $("staffList");
+    list.replaceChildren();
+
+    if (!org) {
+        $("staffOwnerPanel").hidden = true;
+        list.appendChild(makeElement("p", "Create or join an organization in Network first."));
+        return;
+    }
+
+    const owner = org.ownerId === getAccountId();
+    $("staffOwnerPanel").hidden = !owner;
+
+    const ownerRow = makeElement("div", undefined, "settings-staff-item");
+    ownerRow.appendChild(makeElement("strong", org.ownerId));
+    ownerRow.appendChild(makeElement("span", "Owner · Full Access"));
+    list.appendChild(ownerRow);
+
+    const staff = Array.isArray(org.staff) ? org.staff : [];
+    const legacyAdmins = Array.isArray(org.admins) ? org.admins : [];
+    const combinedEmails = [...new Set([
+        ...staff.map(member => member.email),
+        ...legacyAdmins
+    ])];
+
+    if (!combinedEmails.length) {
+        list.appendChild(makeElement("p", "No administrators added."));
+    }
+
+    combinedEmails.forEach(email => {
+        const member = staff.find(item => item.email === email);
+        const row = makeElement("div", undefined, "settings-staff-item");
+
+        row.appendChild(makeElement("strong", email));
+        row.appendChild(makeElement("span",
+            "Admin · " + (member?.status === "pending" ? "Pending (Local Demo)" : "Listed")
+        ));
+
+        const permissions = member?.permissions || {};
+        const permissionBox = makeElement("div", undefined, "settings-permission-list");
+
+        Object.entries(PERMISSIONS).forEach(([key, label]) => {
+            const option = makeElement("label");
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = Boolean(permissions[key]);
+            checkbox.disabled = !owner;
+
+            checkbox.addEventListener("change", () => {
+                updateStaffPermission(org.id, email, key, checkbox.checked);
+            });
+
+            option.append(checkbox, document.createTextNode(" " + label));
+            permissionBox.appendChild(option);
+        });
+
+        row.appendChild(permissionBox);
+
+        if (owner) {
+            row.appendChild(makeButton("Remove Admin", () => {
+                if (confirm("Remove " + email + " from this organization?")) {
+                    removeAdmin(org.id, email);
+                }
+            }, "settings-danger"));
+        }
+
+        list.appendChild(row);
+    });
+}
+
+function addAdmin(event) {
+    event.preventDefault();
+
+    const orgId = $("staffOrganization").value;
+    const email = $("adminEmail").value.trim().toLowerCase();
+    const all = getOrganizations();
+    const org = all.find(item => item.id === orgId);
+
+    if (!org || org.ownerId !== getAccountId()) {
+        showStatus("Only the organization owner can add administrators.");
+        return;
+    }
+
+    if (email === org.ownerId) {
+        showStatus("The owner already has full access.");
+        return;
+    }
+
+    if (!Array.isArray(org.staff)) org.staff = [];
+    if (!Array.isArray(org.admins)) org.admins = [];
+
+    if (org.staff.some(member => member.email === email) ||
+        org.admins.includes(email)) {
+        showStatus("This administrator is already listed.");
+        return;
+    }
+
+    const permissions = {};
+
+    document.querySelectorAll('[name="newAdminPermission"]').forEach(input => {
+        permissions[input.value] = input.checked;
+    });
+
+    org.staff.push({
+        email,
+        role: "admin",
+        status: "pending",
+        permissions,
+        createdAt: new Date().toISOString()
+    });
+
+    saveJSON(ORGANIZATIONS_KEY, all);
+    $("addAdminForm").reset();
+    showStatus("Administrator added to the local invitation list. No invitation was sent.");
+    renderStaff();
+}
+
+function updateStaffPermission(orgId, email, permission, enabled) {
+    const all = getOrganizations();
+    const org = all.find(item => item.id === orgId);
+
+    if (!org || org.ownerId !== getAccountId()) return;
+
+    if (!Array.isArray(org.staff)) org.staff = [];
+
+    let member = org.staff.find(item => item.email === email);
+
+    if (!member) {
+        member = {
+            email,
+            role: "admin",
+            status: "active",
+            permissions: {}
+        };
+        org.staff.push(member);
+    }
+
+    member.permissions = {
+        ...member.permissions,
+        [permission]: enabled
+    };
+
+    saveJSON(ORGANIZATIONS_KEY, all);
+    showStatus("Administrator permissions updated locally.");
+}
+
+function removeAdmin(orgId, email) {
+    const all = getOrganizations();
+    const org = all.find(item => item.id === orgId);
+
+    if (!org || org.ownerId !== getAccountId()) return;
+
+    org.staff = (org.staff || []).filter(member => member.email !== email);
+    org.admins = (org.admins || []).filter(admin => admin !== email);
+
+    saveJSON(ORGANIZATIONS_KEY, all);
+    showStatus("Administrator removed from the local roster.");
+    renderStaff();
+}
+
+const BACKUP_KEYS = [
+    "conchordiaAccount",
+    "conchordiaAccountType",
+    "conchordiaSettings",
+    "conchordiaContacts",
+    "conchordiaArtistProfile",
+    "conchordiaProjects",
+    "conchordiaOpportunities",
+    "conchordiaCalendarEvents",
+    "conchordiaCategoryColors",
+    "conchordiaTransactions",
+    "conchordiaNetworkConnections",
+    "conchordiaNetworkPositions",
+    "conchordiaOrganizations",
+    "conchordiaMemberships",
+    "conchordiaInvitations"
+];
+
+function exportData() {
+    const data = {};
+
+    BACKUP_KEYS.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value !== null) data[key] = value;
+    });
+
+    const backup = {
+        application: "ConChordia",
+        formatVersion: 1,
+        exportedAt: new Date().toISOString(),
+        data
+    };
+
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {
+        type: "application/json"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "conchordia-backup-" +
+        new Date().toISOString().slice(0, 10) + ".json";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+
+    showStatus("Backup exported.");
+}
+
+async function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+        if (file.size > 5 * 1024 * 1024) {
+            throw new Error("Backup file is too large.");
+        }
+
+        const backup = JSON.parse(await file.text());
+
+        if (backup.application !== "ConChordia" ||
+            backup.formatVersion !== 1 ||
+            !backup.data ||
+            typeof backup.data !== "object" ||
+            Array.isArray(backup.data)) {
+            throw new Error("Invalid ConChordia backup.");
+        }
+
+        const entries = Object.entries(backup.data);
+
+        if (entries.some(([key, value]) =>
+            !BACKUP_KEYS.includes(key) || typeof value !== "string"
+        )) {
+            throw new Error("Backup contains unsupported data.");
+        }
+
+        if (!confirm("Import this backup? Existing matching data will be replaced.")) {
+            return;
+        }
+
+        const previous = new Map(
+            BACKUP_KEYS.map(key => [key, localStorage.getItem(key)])
+        );
+
+        try {
+            entries.forEach(([key, value]) => localStorage.setItem(key, value));
+        } catch (error) {
+            previous.forEach((value, key) => {
+                if (value === null) localStorage.removeItem(key);
+                else localStorage.setItem(key, value);
+            });
+            throw error;
+        }
+
+        showStatus("Backup imported. Reloading...");
+        window.location.reload();
+    } catch (error) {
+        showStatus(error.message || "Unable to import backup.");
+    } finally {
+        event.target.value = "";
+    }
+}
+
+function resetData() {
+    if (!confirm("Delete all local ConChordia data? This cannot be undone without a backup.")) {
+        return;
+    }
+
+    if (!confirm("Confirm permanent deletion of local ConChordia data?")) {
+        return;
+    }
+
+    BACKUP_KEYS.forEach(key => localStorage.removeItem(key));
+    window.location.reload();
+}
+
+$("sidebarToggle").addEventListener("click", () => {
+    document.querySelector(".sidebar").classList.toggle("collapsed");
+});
+
+$("accountForm").addEventListener("submit", saveAccount);
+$("saveNotifications").addEventListener("click", saveNotifications);
+$("saveAppearance").addEventListener("click", saveAppearance);
+$("savePrivacy").addEventListener("click", savePrivacy);
+
+$("staffOrganization").addEventListener("change", renderStaff);
+$("addAdminForm").addEventListener("submit", addAdmin);
+
+$("exportData").addEventListener("click", exportData);
+$("importData").addEventListener("click", () => $("importFile").click());
+$("importFile").addEventListener("change", importData);
+$("resetData").addEventListener("click", resetData);
+
+loadAccount();
+loadPreferences();
+loadStaffOrganizations();
+</script>
+</body>
+</html>
