@@ -1,4 +1,4 @@
-/* Global Styles */
+﻿/* Global Styles */
 @import url('https://fonts.googleapis.com/css2?family=Baumans&family=Fascinate&display=swap');
 * {
     box-sizing: border-box;
@@ -112,11 +112,15 @@ h1, h2, h3, h4 {
 .auth-body .login-form {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
+    width: 100%;
+    max-width: 390px;
+    margin: 0 auto;
+    gap: 20px;
 }
 .auth-body input {
-    width: 225px;
-    height: 55px;
+    width: 320px;
+    height: 60px;
     margin: 9px;
     padding: 8px;
     background: transparent;
@@ -124,13 +128,22 @@ h1, h2, h3, h4 {
     border-radius: 0;
     color: white;
     font-family: "Baumans", sans-serif;
-    font-size: 21px;
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 400;
     outline: none;
 }
 .auth-body input::placeholder {
     color: white;
+    font-size: 18px;
     opacity: 1;
+}
+.auth-body .login-form label {
+    display: block;
+    text-align: left;
+    font-size: 25px;
+}
+.forgot-password {
+    color: white;
 }
 .auth-body input:focus {
     border-color: #d9c6e8;
@@ -144,6 +157,8 @@ h1, h2, h3, h4 {
     font-family: "Baumans", sans-serif;
     font-size: 24px;
     cursor: pointer;
+    width: 150px;
+    align-self: center;
 }
 .auth-body button:hover {
     background-color: white;
@@ -151,8 +166,8 @@ h1, h2, h3, h4 {
 }
 .auth-body .account-text {
     margin-top: 20px;
-    font-size: 23px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 400;
 }
 .auth-body .account-text a {
     margin-left: 8px;
@@ -212,7 +227,7 @@ h1, h2, h3, h4 {
 /* Shared Layout & Navigation */
 .sidebar {
     position: fixed;
-    top: 0;&#x20;
+    top: 0; 
     left: 0;
     width: 240px;
     height: 100vh;
@@ -234,18 +249,18 @@ h1, h2, h3, h4 {
     margin-top: 15px;
 }
 nav {
-    display: flex;&#x20;
+    display: flex; 
     flex-direction: column;
 }
 nav a {
     color: rgb(184,182,182);
     text-decoration: none;
-    padding: 12px 15px;&#x20;
+    padding: 12px 15px; 
     margin-bottom: 5px;
     border-radius: 8px;
     transition: transform 0.9s ease-in, opacity 0.7s ease-in;
 }
-nav a.active {&#x20;
+nav a.active { 
     background-color: #5a0880;
     color: white;
 }
@@ -269,7 +284,7 @@ nav a:not(.active):hover {
     transition-delay: 0.55s;
 }
 .sidebar.collapsed .logo {
-    opacity: 0;&#x20;
+    opacity: 0; 
 }
 .sidebar.collapsed nav a {
     transform: translateY(100vh);
@@ -306,7 +321,7 @@ nav a:not(.active):hover {
     transition-delay: 0s;
 }
 .sidebar.collapsed + .main-content {
-    margin-left: 70px;&#x20;
+    margin-left: 70px; 
     transition-delay: 0.55s;
 }
 .topbar {
@@ -425,7 +440,7 @@ nav a:not(.active):hover {
     color: #e9c9ff;
     font-weight: bold;
 }
-.dashboard-card td small {&#x20;
+.dashboard-card td small { 
     display: block;
     color: #cbb0d8;
     margin-top: 4px;
@@ -2379,3 +2394,4 @@ nav a:not(.active):hover {
         align-items: flex-start;
     }
 }
+
