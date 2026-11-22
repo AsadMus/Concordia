@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ConChordia Login</title>
     <link rel="stylesheet" href="style.css">
+    <script src="js/api.js"></script>
+    <script>api.redirectIfLoggedIn();</script>
 </head>
 <body class="auth-body login-page">
     <main class="page login-page-content">
@@ -27,7 +29,6 @@
         </form>
         <p class="account-text">Don't have an account? <a href="signup.html">Sign Up</a></p>
     </main>
-    <script src="js/api.js"></script>
     <script>
         const loginForm = document.getElementById('loginForm');
         const loginButton = document.getElementById('loginButton');
@@ -38,15 +39,16 @@
             const password = document.getElementById('passwordInput').value;
             loginError.hidden = true;
             loginError.textContent = '';
+            if (!login || !password) {
+                loginError.textContent = 'Please enter your email/phone and password.';
+                loginError.hidden = false;
+                return;
+            }
             loginButton.disabled = true;
             loginButton.textContent = 'Logging in...';
             try {
-                const user = await api.login(login, password);
-                localStorage.setItem('conchordiaAccount', JSON.stringify(user));
-                if (user.role) {
-                    localStorage.setItem('conchordiaAccountType', user.role);
-                }
-                window.location.href = 'dashboard.html';
+                await api.login(login, password); // saves the token + account info (see js/api.js)
+                window.location.replace('dashboard.html');
             } catch (error) {
                 loginError.textContent = error.message || 'Unable to log in.';
                 loginError.hidden = false;

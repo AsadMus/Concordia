@@ -9,6 +9,8 @@
     <title>Artist Profile - ConChordia</title>
 
     <link rel="stylesheet" href="style.css">
+    <script src="js/api.js"></script>
+    <script>api.requireLogin();</script>
 </head>
 
 <body>
@@ -160,61 +162,76 @@
             sidebar.classList.toggle("collapsed");
         });
 
-        // Artist Profile - Temporary Browser Storage
+        // Artist Profile - saved to the logged-in user's account
+        // GET /api/auth/me loads it, PUT /api/auth/me saves it.
         const profileForm = document.getElementById("artistProfileForm");
         const saveMessage = document.getElementById("saveMessage");
+        const saveButton = profileForm.querySelector("button[type=submit]");
+        const socialFields = ["instagram", "tiktok", "youtube", "spotify"];
 
-        const profileFields = [
-            "stageName",
-            "legalName",
-            "genre",
-            "location",
-            "email",
-            "phone",
-            "instagram",
-            "tiktok",
-            "youtube",
-            "spotify",
-            "bio"
-        ];
+        const field = (id) => document.getElementById(id);
 
-        // Load previously saved information
-        try {
-            const savedProfile = JSON.parse(
-                localStorage.getItem("conchordiaArtistProfile") || "{}"
-            );
-
-            profileFields.forEach(function(field) {
-                if (typeof savedProfile[field] === "string") {
-                    document.getElementById(field).value = savedProfile[field];
-                }
+        function fillForm(user) {
+            field("stageName").value = user.stageName || "";
+            field("legalName").value = [user.firstName, user.lastName].filter(Boolean).join(" ");
+            field("genre").value = (user.genres || []).join(", ");
+            field("location").value = user.location || "";
+            field("email").value = user.email || "";
+            field("phone").value = user.phone || "";
+            field("bio").value = user.bio || "";
+            socialFields.forEach(function(name) {
+                field(name).value = (user.socials || {})[name] || "";
             });
-        } catch (error) {
-            console.error("Could not load artist profile:", error);
         }
 
-        // Save information
-        profileForm.addEventListener("submit", function(event) {
+        async function loadProfile() {
+            try {
+                fillForm(await api.get("/auth/me"));
+            } catch (error) {
+                saveMessage.textContent = "Unable to load profile: " + error.message;
+            }
+        }
+
+        profileForm.addEventListener("submit", async function(event) {
             event.preventDefault();
 
-            const profileData = {};
+            // "Legal Name" is one box; the account stores first and last name separately.
+            const nameParts = field("legalName").value.trim().split(/\s+/).filter(Boolean);
+            if (nameParts.length < 2) {
+                saveMessage.textContent = "Please enter your first and last legal name.";
+                return;
+            }
 
-            profileFields.forEach(function(field) {
-                profileData[field] = document.getElementById(field).value;
+            const socials = {};
+            socialFields.forEach(function(name) {
+                socials[name] = field(name).value.trim();
             });
 
-            try {
-                localStorage.setItem(
-                    "conchordiaArtistProfile",
-                    JSON.stringify(profileData)
-                );
+            const profileData = {
+                stageName: field("stageName").value,
+                firstName: nameParts[0],
+                lastName: nameParts.slice(1).join(" "),
+                genres: field("genre").value,          // "R&B, Pop" -> ["R&B", "Pop"] on the server
+                location: field("location").value,
+                email: field("email").value,
+                phone: field("phone").value,
+                bio: field("bio").value,
+                socials: socials
+            };
 
+            saveMessage.textContent = "Saving...";
+            saveButton.disabled = true;
+            try {
+                fillForm(await api.put("/auth/me", profileData));
                 saveMessage.textContent = "Profile saved successfully!";
             } catch (error) {
-                saveMessage.textContent = "Unable to save profile.";
-                console.error(error);
+                saveMessage.textContent = "Unable to save profile: " + error.message;
+            } finally {
+                saveButton.disabled = false;
             }
         });
+
+        loadProfile();
 
     </script>
 
