@@ -34,9 +34,9 @@ const toJson = (r) => ({
 
 const SELECT_WITH_PERFORMERS = `
 SELECT b.*,
-vc.name AS venue_name, 
-    COALESCE(json_agg(json_build_object('contactId', c.id, 'name', c.name, 'stageName', c.stage_name)) 
-        ORDER BY c.name)
+COALESCE(b.venue_name, vc.name) AS venue_name,
+    COALESCE(
+        json_agg(json_build_object('contactId', c.id, 'name', c.name, 'stageName', c.stage_name) ORDER BY c.name)
         FILTER (WHERE c.id IS NOT NULL), '[]') AS performers
 FROM bookings b
 LEFT JOIN contacts vc ON vc.id = b.venue_contact_id
@@ -50,13 +50,13 @@ router.get('/', asyncHandler(async (req, res) => {
     const params = [req.user.id];
     
     if (from) {
-        where.push('b.starts_at >= $${params.length}');
         params.push(from);
+        where.push(`b.starts_at >= $${params.length}`);
     }
 
     if (to) {
-        where.push('b.starts_at <= $${params.length}');
         params.push(to);
+        where.push(`b.starts_at <= $${params.length}`);
     }
 
     if(upcoming === 'true') {
@@ -64,8 +64,8 @@ router.get('/', asyncHandler(async (req, res) => {
     }
 
     if (status) {
-        where.push('b.status = $${params.length}');
         params.push(status);
+        where.push(`b.status = $${params.length}`);
     }
 
     const { rows } = await db.query(
@@ -81,8 +81,8 @@ router.get('/', asyncHandler(async (req, res) => {
 router.get('/:id', asyncHandler(async (req, res) => {
     const { rows } = await db.query(
         `${SELECT_WITH_PERFORMERS} 
-        WHERE b.id = $1 
-        GROUP BY b.id, vc.name`, 
+        WHERE b.id = $1 AND b.user_id = $2
+        GROUP BY b.id, vc.name`,
         [req.params.id, req.user.id]
     );
     if (!rows[0]) throw httpError(404, 'Booking not found');
@@ -124,7 +124,7 @@ router.post('/', asyncHandler(async (req, res) => {
     const full = await db.query(
         `${SELECT_WITH_PERFORMERS} 
         WHERE b.id = $1 AND b.user_id = $2 
-        GROUP BY b.id, vc.n`,
+        GROUP BY b.id, vc.name`,
         [rows[0].id, req.user.id]
     );
     res.status(201).json(toJson(full.rows[0]));
@@ -146,7 +146,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
     for (const [field, col] of Object.entries(FIELDS)) {
         if (req.body[field] !== undefined) {
             vals.push(req.body[field] === '' ? null : req.body[field]);
-            sets.push('${col} = $${vals.length}');
+            sets.push(`${col} = $${vals.length}`);
         }
     }
     if (!sets.length) throw httpError(400, 'Nothing to update');
@@ -164,7 +164,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
     const full = await db.query(
         `${SELECT_WITH_PERFORMERS} 
         WHERE b.id = $1 AND b.user_id = $2 
-        GROUP BY b.id, vc.n`, 
+        GROUP BY b.id, vc.name`, 
         [req.params.id, req.user.id]
     );
     res.json(toJson(full.rows[0]));
@@ -187,7 +187,7 @@ router.post('/:id/performers', asyncHandler(async (req, res) => {
     const booking = await db.query(
         `SELECT id FROM bookings 
         WHERE id = $1 AND user_id = $2`, 
-        [req.parms.id, req.user.id]
+        [req.params.id, req.user.id]
     );
     if (!booking.rows[0]) throw httpError(404, 'Booking not found');
 
