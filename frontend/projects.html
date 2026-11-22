@@ -1,21 +1,25 @@
 
 <!DOCTYPE html>
 <html lang="en">
-    
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projects - ConChordia</title>
     <link rel="stylesheet" href="style.css">
     <script src="js/api.js"></script>
-    <script>api.requireLogin();</script>
 </head>
+
 <body>
+
+    <!-- Sidebar -->
     <div class="sidebar">
         <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+
         <div class="logo">
             <img src="images/logo.png" alt="ConChordia Logo">
         </div>
+
         <nav>
             <a href="dashboard.html">Dashboard</a>
             <a href="artist-profile.html">Artist Profile</a>
@@ -29,7 +33,9 @@
         </nav>
     </div>
 
+    <!-- Main Content -->
     <main class="main-content">
+
         <header class="topbar">
             <div>
                 <h1>Projects</h1>
@@ -39,28 +45,44 @@
 
         <div class="projects-header">
             <h2 class="section-title">Your Projects</h2>
-            <button class="save-profile-button" id="addProjectButton">+ Add Project</button>
+            <button class="save-profile-button" id="addProjectButton">
+                + Add Project
+            </button>
         </div>
 
+        <!-- Project Statistics -->
         <div class="projects-summary">
+
             <section class="dashboard-card">
                 <h3>Total Projects</h3>
                 <p class="project-stat" id="totalProjects">0</p>
             </section>
+
             <section class="dashboard-card">
                 <h3>Active Projects</h3>
                 <p class="project-stat" id="activeProjects">0</p>
             </section>
+
             <section class="dashboard-card">
                 <h3>Completed Projects</h3>
                 <p class="project-stat" id="completedProjects">0</p>
             </section>
+
         </div>
 
+        <!-- Project List -->
         <section class="dashboard-card">
+
             <h2>Project List</h2>
+
             <div class="project-filters">
-                <input type="search" id="projectSearch" placeholder="Search projects or collaborators...">
+
+                <input
+                    type="search"
+                    id="projectSearch"
+                    placeholder="Search projects or collaborators..."
+                >
+
                 <select id="projectTypeFilter">
                     <option value="">All Types</option>
                     <option>Song</option>
@@ -70,6 +92,7 @@
                     <option>Music Video</option>
                     <option>Other</option>
                 </select>
+
                 <select id="projectStatusFilter">
                     <option value="">All Statuses</option>
                     <option>Not Started</option>
@@ -77,9 +100,13 @@
                     <option>On Hold</option>
                     <option>Completed</option>
                 </select>
+
             </div>
+
             <div class="projects-table-wrapper">
+
                 <table class="projects-table">
+
                     <thead>
                         <tr>
                             <th>Project</th>
@@ -91,19 +118,40 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
+
                     <tbody id="projectsTableBody"></tbody>
+
                 </table>
+
             </div>
-            <p id="emptyProjects" class="projects-empty">No projects added yet.</p>
+
+            <p id="emptyProjects" class="projects-empty">
+                No projects added yet.
+            </p>
+
         </section>
 
-        <section class="dashboard-card project-form-card" id="projectFormCard" hidden>
+        <!-- Add/Edit Project Form -->
+        <section
+            class="dashboard-card project-form-card"
+            id="projectFormCard"
+            hidden
+        >
+
             <h2 id="projectFormTitle">Add Project</h2>
+
             <form class="project-form" id="projectForm">
+
                 <label for="projectName">Project Name *</label>
-                <input type="text" id="projectName" placeholder="Enter project name" required>
+                <input
+                    type="text"
+                    id="projectName"
+                    placeholder="Enter project name"
+                    required
+                >
 
                 <div class="project-form-row">
+
                     <div>
                         <label for="projectType">Project Type</label>
                         <select id="projectType">
@@ -115,6 +163,7 @@
                             <option>Other</option>
                         </select>
                     </div>
+
                     <div>
                         <label for="projectStatus">Status</label>
                         <select id="projectStatus">
@@ -124,36 +173,87 @@
                             <option>Completed</option>
                         </select>
                     </div>
+
                 </div>
 
                 <label for="projectDeadline">Deadline</label>
                 <input type="date" id="projectDeadline">
 
+                <!-- Collaborators -->
                 <h3>Collaborators</h3>
-                <label for="savedContactSelect">Select from Saved Contacts</label>
+
+                <label for="savedContactSelect">
+                    Select from Saved Contacts
+                </label>
+
                 <div class="collaborator-controls">
+
                     <select id="savedContactSelect">
                         <option value="">Select a contact</option>
                     </select>
-                    <button type="button" class="project-small-button" id="addSavedCollaboratorButton">Add</button>
+
+                    <button
+                        type="button"
+                        class="project-small-button"
+                        id="addSavedCollaboratorButton"
+                    >
+                        Add
+                    </button>
+
                 </div>
 
-                <label for="manualCollaborator">Or Add Collaborator Manually</label>
+                <label for="manualCollaborator">
+                    Or Add Collaborator Manually
+                </label>
+
                 <div class="collaborator-controls">
-                    <input type="text" id="manualCollaborator" placeholder="Enter collaborator name">
-                    <button type="button" class="project-small-button" id="addManualCollaboratorButton">Add</button>
-                </div>
-                <p class="project-helper">Contacts are loaded from your Contacts page.</p>
-                <div class="collaborator-list" id="collaboratorList"></div>
 
+                    <input
+                        type="text"
+                        id="manualCollaborator"
+                        placeholder="Enter collaborator name"
+                    >
+
+                    <button
+                        type="button"
+                        class="project-small-button"
+                        id="addManualCollaboratorButton"
+                    >
+                        Add
+                    </button>
+
+                </div>
+
+                <p class="project-helper">
+                    Contacts are loaded from your Contacts page.
+                </p>
+
+                <div
+                    class="collaborator-list"
+                    id="collaboratorList"
+                ></div>
+
+                <!-- Payment Tracking -->
                 <h3>Payment Tracking</h3>
+
                 <div class="project-form-row">
+
                     <div>
                         <label for="projectFee">Agreed Fee ($)</label>
-                        <input type="number" id="projectFee" min="0" step="0.01" placeholder="0.00">
+                        <input
+                            type="number"
+                            id="projectFee"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                        >
                     </div>
+
                     <div>
-                        <label for="projectPaymentStatus">Payment Status</label>
+                        <label for="projectPaymentStatus">
+                            Payment Status
+                        </label>
+
                         <select id="projectPaymentStatus">
                             <option>Not Applicable</option>
                             <option>Unpaid</option>
@@ -161,27 +261,66 @@
                             <option>Paid</option>
                         </select>
                     </div>
+
                 </div>
 
                 <label for="projectNotes">Project Notes</label>
-                <textarea id="projectNotes" rows="5" placeholder="Project details, tasks, agreements, or updates..."></textarea>
+
+                <textarea
+                    id="projectNotes"
+                    rows="5"
+                    placeholder="Project details, tasks, agreements, or updates..."
+                ></textarea>
 
                 <div class="project-form-actions">
-                    <button type="submit" class="save-profile-button">Save Project</button>
-                    <button type="button" class="project-cancel-button" id="cancelProjectButton">Cancel</button>
-                    <button type="button" class="project-delete-button" id="deleteProjectButton" hidden>Delete Project</button>
+
+                    <button
+                        type="submit"
+                        class="save-profile-button"
+                    >
+                        Save Project
+                    </button>
+
+                    <button
+                        type="button"
+                        class="project-cancel-button"
+                        id="cancelProjectButton"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="button"
+                        class="project-delete-button"
+                        id="deleteProjectButton"
+                        hidden
+                    >
+                        Delete Project
+                    </button>
+
                 </div>
+
+                <p id="projectFormMessage" role="status"></p>
+
             </form>
+
         </section>
+
         <p id="projectsMessage" role="status"></p>
+
     </main>
 
     <script>
-        const sidebar = document.querySelector(".sidebar");
-        document.getElementById("sidebarToggle").addEventListener("click", function() {
-            sidebar.classList.toggle("collapsed");
-        });
 
+        // Sidebar
+        const sidebar = document.querySelector(".sidebar");
+
+        document.getElementById("sidebarToggle")
+            .addEventListener("click", function() {
+                sidebar.classList.toggle("collapsed");
+            });
+
+        // Elements
         const projectForm = document.getElementById("projectForm");
         const formCard = document.getElementById("projectFormCard");
         const tableBody = document.getElementById("projectsTableBody");
@@ -189,22 +328,13 @@
         const typeFilter = document.getElementById("projectTypeFilter");
         const statusFilter = document.getElementById("projectStatusFilter");
         const message = document.getElementById("projectsMessage");
+        const formMessage = document.getElementById("projectFormMessage");
         const deleteButton = document.getElementById("deleteProjectButton");
         const contactSelect = document.getElementById("savedContactSelect");
         const collaboratorList = document.getElementById("collaboratorList");
 
-        function loadData(key) {
-            try {
-                const data = JSON.parse(localStorage.getItem(key) || "[]");
-                return Array.isArray(data) ? data : [];
-            } catch (error) {
-                console.error(error);
-                return [];
-            }
-        }
-
-        let projects = loadData("conchordiaProjects");
-        let contacts = loadData("conchordiaContacts");
+        let projects = [];
+        let contacts = [];
         let collaborators = [];
         let editingId = null;
 
@@ -212,32 +342,111 @@
             return document.getElementById(id).value.trim();
         }
 
-        function saveProjects() {
+        // Authenticated API request
+        async function apiRequest(path, options = {}) {
+
+            const token = localStorage.getItem("conchordiaToken");
+
+            if (!token) {
+                window.location.replace("login.html");
+                throw new Error("Please log in.");
+            }
+
+            const response = await fetch("/api" + path, {
+                ...options,
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                    ...options.headers
+                }
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                window.location.replace("login.html");
+                throw new Error("Your session has expired.");
+            }
+
+            if (response.status === 204) {
+                return null;
+            }
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                const details =
+                    typeof data.error === "string"
+                        ? data.error
+                        : data.message || "Request failed.";
+
+                throw new Error(details);
+            }
+
+            return data;
+        }
+
+        // Load Projects
+        async function loadProjects() {
+
             try {
-                localStorage.setItem("conchordiaProjects", JSON.stringify(projects));
-                return true;
+                message.textContent = "";
+
+                const result = await apiRequest("/projects");
+
+                projects = Array.isArray(result)
+                    ? result
+                    : result.projects || [];
+
+                showProjects();
+
             } catch (error) {
-                message.textContent = "Could not save project.";
-                return false;
+                console.error("Unable to load projects:", error);
+                message.textContent = error.message;
             }
         }
 
-        function loadContacts() {
-            contacts = loadData("conchordiaContacts");
-            contactSelect.innerHTML = '<option value="">Select a contact</option>';
+        // Load Contacts from PostgreSQL
+        async function loadContacts() {
 
-            contacts.forEach(function(contact) {
-                const option = document.createElement("option");
-                option.value = contact.id;
-                option.textContent = contact.name + (contact.role ? " (" + contact.role + ")" : "");
-                contactSelect.appendChild(option);
-            });
+            try {
+                const result = await apiRequest("/contacts");
+
+                contacts = Array.isArray(result)
+                    ? result
+                    : result.contacts || [];
+
+                contactSelect.replaceChildren();
+
+                const firstOption = document.createElement("option");
+                firstOption.value = "";
+                firstOption.textContent = "Select a contact";
+                contactSelect.appendChild(firstOption);
+
+                contacts.forEach(function(contact) {
+
+                    const option = document.createElement("option");
+
+                    option.value = contact.id;
+
+                    option.textContent =
+                        contact.name +
+                        (contact.role ? " (" + contact.role + ")" : "");
+
+                    contactSelect.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error("Unable to load contacts:", error);
+                formMessage.textContent = error.message;
+            }
         }
 
+        // Show Collaborators
         function showCollaborators() {
+
             collaboratorList.replaceChildren();
 
             collaborators.forEach(function(person, index) {
+
                 const chip = document.createElement("span");
                 chip.className = "collaborator-chip";
 
@@ -247,241 +456,530 @@
                 const remove = document.createElement("button");
                 remove.type = "button";
                 remove.textContent = "×";
-                remove.setAttribute("aria-label", "Remove " + person.name);
-                remove.onclick = function() {
+
+                remove.setAttribute(
+                    "aria-label",
+                    "Remove " + person.name
+                );
+
+                remove.addEventListener("click", function() {
                     collaborators.splice(index, 1);
                     showCollaborators();
-                };
+                });
 
                 chip.append(name, remove);
                 collaboratorList.appendChild(chip);
             });
         }
 
-        document.getElementById("addSavedCollaboratorButton").onclick = function() {
-            const id = contactSelect.value;
-            const contact = contacts.find(function(person) {
-                return person.id === id;
+        // Add Collaborator from Contacts
+        document.getElementById("addSavedCollaboratorButton")
+            .addEventListener("click", function() {
+
+                const id = contactSelect.value;
+
+                const contact = contacts.find(function(person) {
+                    return String(person.id) === String(id);
+                });
+
+                if (!contact) return;
+
+                const exists = collaborators.some(function(person) {
+                    return String(person.contactId) === String(id);
+                });
+
+                if (exists) return;
+
+                collaborators.push({
+                    name: contact.name,
+                    contactId: contact.id
+                });
+
+                contactSelect.value = "";
+                showCollaborators();
             });
-            if (!contact) return;
 
-            const exists = collaborators.some(function(person) {
-                return person.contactId === id;
-            });
-            if (exists) return;
+        // Add Manual Collaborator
+        function addManualCollaborator() {
 
-            collaborators.push({ name: contact.name, contactId: contact.id });
-            contactSelect.value = "";
-            showCollaborators();
-        };
-
-        function addManual() {
             const input = document.getElementById("manualCollaborator");
             const name = input.value.trim();
+
             if (!name) return;
 
             const exists = collaborators.some(function(person) {
                 return person.name.toLowerCase() === name.toLowerCase();
             });
+
             if (exists) return;
 
-            collaborators.push({ name: name, contactId: null });
+            collaborators.push({
+                name: name,
+                contactId: null
+            });
+
             input.value = "";
             showCollaborators();
         }
 
-        document.getElementById("addManualCollaboratorButton").onclick = addManual;
-        document.getElementById("manualCollaborator").onkeydown = function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                addManual();
-            }
-        };
+        document.getElementById("addManualCollaboratorButton")
+            .addEventListener("click", addManualCollaborator);
 
-        function openForm(project = null) {
+        document.getElementById("manualCollaborator")
+            .addEventListener("keydown", function(event) {
+
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    addManualCollaborator();
+                }
+            });
+
+        // Open Add/Edit Form
+        async function openForm(project = null) {
+
             projectForm.reset();
-            editingId = project ? project.id : null;
-            collaborators = project ? (project.collaborators || []).map(function(person) {
-                return { ...person };
-            }) : [];
+            formMessage.textContent = "";
 
-            document.getElementById("projectFormTitle").textContent = project ? "Edit Project" : "Add Project";
-            deleteButton.hidden = !project;
-            loadContacts();
+            editingId = project ? project.id : null;
+
+            collaborators = [];
 
             if (project) {
-                document.getElementById("projectName").value = project.name || "";
-                document.getElementById("projectType").value = project.type || "Song";
-                document.getElementById("projectStatus").value = project.status || "Not Started";
-                document.getElementById("projectDeadline").value = project.deadline || "";
-                document.getElementById("projectFee").value = project.fee ?? "";
-                document.getElementById("projectPaymentStatus").value = project.paymentStatus || "Not Applicable";
-                document.getElementById("projectNotes").value = project.notes || "";
+
+                const saved = Array.isArray(project.collaborators)
+                    ? project.collaborators
+                    : [];
+
+                const manual = Array.isArray(project.manualCollaborators)
+                    ? project.manualCollaborators
+                    : [];
+
+                collaborators = [
+                    ...saved.map(person => ({
+                        name: person.name,
+                        contactId: person.contactId
+                    })),
+                    ...manual.map(person => ({
+                        name: typeof person === "string"
+                            ? person
+                            : person.name,
+                        contactId: null
+                    }))
+                ];
+            }
+
+            document.getElementById("projectFormTitle").textContent =
+                project ? "Edit Project" : "Add Project";
+
+            deleteButton.hidden = !project;
+
+            if (project) {
+
+                document.getElementById("projectName").value =
+                    project.title || "";
+
+                document.getElementById("projectType").value =
+                    project.type || "Song";
+
+                document.getElementById("projectStatus").value =
+                    project.status || "Not Started";
+
+                document.getElementById("projectDeadline").value =
+                    project.deadline
+                        ? String(project.deadline).slice(0, 10)
+                        : "";
+
+                document.getElementById("projectFee").value =
+                    project.fee ?? "";
+
+                document.getElementById("projectPaymentStatus").value =
+                    project.paymentStatus || "Not Applicable";
+
+                document.getElementById("projectNotes").value =
+                    project.notes || "";
             }
 
             showCollaborators();
+
             formCard.hidden = false;
-            formCard.scrollIntoView({ behavior: "smooth" });
+
+            formCard.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+            await loadContacts();
         }
 
+        // Close Form
         function closeForm() {
+
             formCard.hidden = true;
             projectForm.reset();
+
             editingId = null;
             collaborators = [];
+
             deleteButton.hidden = true;
+            formMessage.textContent = "";
         }
 
-        document.getElementById("addProjectButton").onclick = function() {
-            openForm();
-        };
-        document.getElementById("cancelProjectButton").onclick = closeForm;
+        // Add Project Button
+        document.getElementById("addProjectButton")
+            .addEventListener("click", function() {
+                openForm();
+            });
 
-        projectForm.onsubmit = function(event) {
+        // Cancel Button
+        document.getElementById("cancelProjectButton")
+            .addEventListener("click", closeForm);
+
+        // Save Project
+        projectForm.addEventListener("submit", async function(event) {
+
             event.preventDefault();
 
             const feeInput = value("projectFee");
-            const fee = feeInput === "" ? null : Number(feeInput);
-            if (fee !== null && (!Number.isFinite(fee) || fee < 0)) {
-                message.textContent = "Enter a valid fee.";
+
+            const fee = feeInput === ""
+                ? null
+                : Number(feeInput);
+
+            if (
+                fee !== null &&
+                (!Number.isFinite(fee) || fee < 0)
+            ) {
+                formMessage.textContent = "Enter a valid fee.";
                 return;
             }
+
+            const savedCollaborators = collaborators.filter(
+                person => person.contactId != null
+            );
+
+            const manualCollaborators = collaborators
+                .filter(person => person.contactId == null)
+                .map(person => ({
+                    name: person.name
+                }));
 
             const project = {
-                id: editingId || crypto.randomUUID(),
-                name: value("projectName"),
+                title: value("projectName"),
                 type: value("projectType"),
                 status: value("projectStatus"),
-                deadline: value("projectDeadline"),
-                collaborators: collaborators.map(function(person) {
-                    return { ...person };
-                }),
+                deadline: value("projectDeadline") || null,
                 fee: fee,
                 paymentStatus: value("projectPaymentStatus"),
-                notes: value("projectNotes")
+                notes: value("projectNotes"),
+                manualCollaborators: manualCollaborators
             };
 
-            if (!project.name) return;
-            const oldProjects = [...projects];
-
-            if (editingId) {
-                projects = projects.map(function(item) {
-                    return item.id === editingId ? project : item;
-                });
-            } else {
-                projects.push(project);
-            }
-
-            if (!saveProjects()) {
-                projects = oldProjects;
+            if (!project.title) {
+                formMessage.textContent = "Project name is required.";
                 return;
             }
 
-            closeForm();
-            showProjects();
-            message.textContent = "Project saved!";
-        };
+            const saveButton = projectForm.querySelector(
+                'button[type="submit"]'
+            );
 
-        deleteButton.onclick = function() {
+            saveButton.disabled = true;
+            formMessage.textContent = "";
+
+            try {
+
+                const original = editingId
+                    ? projects.find(
+                        p => String(p.id) === String(editingId)
+                    )
+                    : null;
+
+                const savedProject = await apiRequest(
+                    editingId
+                        ? `/projects/${editingId}`
+                        : "/projects",
+                    {
+                        method: editingId ? "PUT" : "POST",
+                        body: JSON.stringify(project)
+                    }
+                );
+
+                const projectId = editingId || savedProject.id;
+
+                // Add newly selected saved contacts
+                const existingIds = new Set(
+                    (original?.collaborators || []).map(
+                        person => String(person.contactId)
+                    )
+                );
+
+                const selectedIds = new Set(
+                    savedCollaborators.map(
+                        person => String(person.contactId)
+                    )
+                );
+
+                for (const person of savedCollaborators) {
+
+                    if (!existingIds.has(String(person.contactId))) {
+
+                        await apiRequest(
+                            `/projects/${projectId}/collaborators`,
+                            {
+                                method: "POST",
+                                body: JSON.stringify({
+                                    contactId: person.contactId,
+                                    credit: null
+                                })
+                            }
+                        );
+                    }
+                }
+
+                // Remove unselected saved contacts
+                if (original) {
+
+                    for (const person of original.collaborators || []) {
+
+                        if (!selectedIds.has(String(person.contactId))) {
+
+                            await apiRequest(
+                                `/projects/${projectId}/collaborators/${person.contactId}`,
+                                {
+                                    method: "DELETE"
+                                }
+                            );
+                        }
+                    }
+                }
+
+                closeForm();
+                await loadProjects();
+
+                message.textContent = "Project saved successfully!";
+
+            } catch (error) {
+
+                console.error("Unable to save project:", error);
+
+                formMessage.textContent =
+                    "Unable to save project: " + error.message;
+
+                await loadProjects();
+
+            } finally {
+                saveButton.disabled = false;
+            }
+        });
+
+        // Delete Project
+        deleteButton.addEventListener("click", async function() {
+
             if (!editingId) return;
 
-            const project = projects.find(function(item) {
-                return item.id === editingId;
-            });
+            const project = projects.find(
+                item => String(item.id) === String(editingId)
+            );
+
             if (!project) return;
 
-            if (!confirm("Delete " + project.name + "? This cannot be undone.")) return;
+            const confirmed = confirm(
+                "Delete " + project.title +
+                "? This cannot be undone."
+            );
 
-            const oldProjects = [...projects];
-            projects = projects.filter(function(item) {
-                return item.id !== editingId;
-            });
+            if (!confirmed) return;
 
-            if (!saveProjects()) {
-                projects = oldProjects;
-                return;
+            deleteButton.disabled = true;
+
+            try {
+
+                await apiRequest(
+                    `/projects/${editingId}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+                closeForm();
+                await loadProjects();
+
+                message.textContent = "Project deleted successfully.";
+
+            } catch (error) {
+
+                console.error("Unable to delete project:", error);
+                formMessage.textContent = error.message;
+
+            } finally {
+                deleteButton.disabled = false;
             }
+        });
 
-            closeForm();
-            showProjects();
-            message.textContent = "Project deleted.";
-        };
-
+        // Create Table Cell
         function addCell(row, text) {
+
             const cell = document.createElement("td");
-            cell.textContent = text || "—";
+
+            cell.textContent =
+                text === null ||
+                text === undefined ||
+                text === ""
+                    ? "—"
+                    : String(text);
+
             row.appendChild(cell);
+
             return cell;
         }
 
+        // Format Date
+        function formatDate(date) {
+
+            if (!date) return "—";
+
+            const dateString = String(date).slice(0, 10);
+            const parts = dateString.split("-");
+
+            if (parts.length !== 3) return dateString;
+
+            return parts[1] + "/" + parts[2] + "/" + parts[0];
+        }
+
+        // Display Projects
         function showProjects() {
+
             const search = searchInput.value.toLowerCase().trim();
 
             const filtered = projects.filter(function(project) {
-                const names = (project.collaborators || []).map(function(person) {
-                    return person.name;
-                }).join(" ");
 
-                const text = [project.name, project.type, project.status, names].join(" ").toLowerCase();
-                return text.includes(search) &&
-                    (!typeFilter.value || project.type === typeFilter.value) &&
-                    (!statusFilter.value || project.status === statusFilter.value);
+                const savedNames = (
+                    Array.isArray(project.collaborators)
+                        ? project.collaborators
+                        : []
+                ).map(person => person.name);
+
+                const manualNames = (
+                    Array.isArray(project.manualCollaborators)
+                        ? project.manualCollaborators
+                        : []
+                ).map(person =>
+                    typeof person === "string"
+                        ? person
+                        : person.name
+                );
+
+                const searchable = [
+                    project.title,
+                    project.type,
+                    project.status,
+                    ...savedNames,
+                    ...manualNames
+                ].join(" ").toLowerCase();
+
+                return searchable.includes(search) &&
+                    (!typeFilter.value ||
+                        project.type === typeFilter.value) &&
+                    (!statusFilter.value ||
+                        project.status === statusFilter.value);
             });
 
             tableBody.replaceChildren();
 
             filtered.forEach(function(project) {
+
                 const row = document.createElement("tr");
-                addCell(row, project.name);
+
+                addCell(row, project.title);
                 addCell(row, project.type);
 
-                const names = (project.collaborators || []).map(function(person) {
-                    return person.name;
-                }).join(", ");
-                addCell(row, names);
+                const savedNames = (
+                    Array.isArray(project.collaborators)
+                        ? project.collaborators
+                        : []
+                ).map(person => person.name);
+
+                const manualNames = (
+                    Array.isArray(project.manualCollaborators)
+                        ? project.manualCollaborators
+                        : []
+                ).map(person =>
+                    typeof person === "string"
+                        ? person
+                        : person.name
+                );
+
+                addCell(
+                    row,
+                    [...savedNames, ...manualNames].join(", ")
+                );
 
                 const statusCell = addCell(row, project.status);
                 statusCell.className = "project-status";
 
-                const formattedDate = project.deadline
-                    ? project.deadline.split("-").slice(1).concat(project.deadline.split("-")[0]).join("/")
-                    : "—";
+                addCell(row, formatDate(project.deadline));
 
-                addCell(row, formattedDate);
+                const feeText = project.fee == null
+                    ? "No fee"
+                    : "$" + Number(project.fee).toFixed(2);
 
-                const fee = project.fee == null ? "No fee" : "$" + Number(project.fee).toFixed(2);
-                addCell(row, fee + " - " + (project.paymentStatus || "Not Applicable"));
+                addCell(
+                    row,
+                    feeText + " - " +
+                    (project.paymentStatus || "Not Applicable")
+                );
 
                 const actions = document.createElement("td");
-                const edit = document.createElement("button");
-                edit.type = "button";
-                edit.textContent = "Edit";
-                edit.className = "project-edit-button";
-                edit.onclick = function() {
+
+                const editButton = document.createElement("button");
+
+                editButton.type = "button";
+                editButton.textContent = "Edit";
+                editButton.className = "project-edit-button";
+
+                editButton.addEventListener("click", function() {
                     openForm(project);
-                };
-                actions.appendChild(edit);
+                });
+
+                actions.appendChild(editButton);
+
                 row.appendChild(actions);
                 tableBody.appendChild(row);
             });
 
-            document.getElementById("totalProjects").textContent = projects.length;
-            document.getElementById("activeProjects").textContent = projects.filter(function(p) {
-                return p.status === "In Progress";
-            }).length;
-            document.getElementById("completedProjects").textContent = projects.filter(function(p) {
-                return p.status === "Completed";
-            }).length;
+            // Project Statistics
+            document.getElementById("totalProjects").textContent =
+                projects.length;
 
+            document.getElementById("activeProjects").textContent =
+                projects.filter(
+                    project => project.status === "In Progress"
+                ).length;
+
+            document.getElementById("completedProjects").textContent =
+                projects.filter(
+                    project => project.status === "Completed"
+                ).length;
+
+            // Empty State
             const empty = document.getElementById("emptyProjects");
-            empty.textContent = projects.length === 0 ? "No projects added yet." : "No projects match your search.";
+
+            empty.textContent = projects.length === 0
+                ? "No projects added yet."
+                : "No projects match your search.";
+
             empty.hidden = filtered.length > 0;
         }
 
+        // Search and Filters
         searchInput.addEventListener("input", showProjects);
         typeFilter.addEventListener("change", showProjects);
         statusFilter.addEventListener("change", showProjects);
-        showProjects();
+
+        // Initial Load
+        loadProjects();
+
     </script>
+
 </body>
 </html>

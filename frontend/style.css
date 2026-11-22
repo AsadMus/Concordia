@@ -849,6 +849,10 @@ nav a:not(.active):hover {
         align-items: stretch;
     }
 }
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
 /* Calendar */
 .calendar-header {
     display: flex;

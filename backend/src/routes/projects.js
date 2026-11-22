@@ -12,6 +12,9 @@ const FIELDS = {
     status: 'status',
     deadline: 'deadline',
     notes: 'notes',
+    fee: 'fee',
+    paymentStatus: 'payment_status',
+    manualCollaborators: 'manual_collaborators',
 };
 
 const toJson = (r) => ({
@@ -23,6 +26,9 @@ const toJson = (r) => ({
     notes: r.notes,
     collaborators: r.collaborators || [],
     createdAt: r.created_at,
+    fee: r.fee,
+    paymentStatus: r.payment_status,
+    manualCollaborators: r.manual_collaborators || [],
 });
 
 const SELECT_WITH_COLLABS = `SELECT p.*, COALESCE(JSON_AGG(JSON_BUILD_OBJECT('contactId', c.id, 'name', c.name, 'stageName', c.stage_name, 'credit', pc.credit) ORDER BY c.name) FILTER (WHERE c.id IS NOT NULL), '[]') AS collaborators FROM projects p LEFT JOIN project_collaborators pc ON p.id = pc.project_id LEFT JOIN contacts c ON pc.contact_id = c.id`;
@@ -55,7 +61,12 @@ router.post('/', asyncHandler(async (req, res) => {
     for (const [field, col] of Object.entries(FIELDS)) {
         if (req.body[field] !== undefined) {
             cols.push(col);
-            vals.push(req.body[field] === '' ? null : req.body[field]);
+            const input = req.body[field];
+            vals.push(
+                field === 'manualCollaborators'
+                    ? JSON.stringify(input ?? [])
+                    : input === '' ? null : input
+            );
         }
     }
 
@@ -74,7 +85,12 @@ router.put('/:id', asyncHandler(async (req, res) => {
     const vals = [];
     for (const [field, col] of Object.entries(FIELDS)) {
         if (req.body[field] !== undefined) {
-            vals.push(req.body[field] === '' ? null : req.body[field]);
+            const input = req.body[field];
+            vals.push(
+                field === 'manualCollaborators'
+                    ? JSON.stringify(input ?? [])
+                    : input === '' ? null : input
+            );
             sets.push(`${col} = $${vals.length}`);
         }
     }
