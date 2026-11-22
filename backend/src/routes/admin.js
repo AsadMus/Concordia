@@ -42,7 +42,7 @@ router.patch('/users/:id/role', asyncHandler(async (req, res) => {
         SET role = $1
         WHERE id = $2
         RETURNING id, first_name, last_name, email, phone, role, stage_name, genres, bio, created_at`,
-        [role, req.parnams.id]
+        [role, req.params.id]
     );
 
     const row = result.rows.at(0);
