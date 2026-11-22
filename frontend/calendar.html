@@ -7,43 +7,6 @@
     <title>Calendar - ConChordia</title>
     <link rel="stylesheet" href="style.css">
     <script src="js/api.js"></script>
-    <script>api.requireLogin();</script>
-    <style>
-        .calendar-category-settings {
-            margin-bottom: 20px;
-        }
-        .calendar-category-settings summary {
-            color: white;
-            font-family: 'Baumans', sans-serif;
-            cursor: pointer;
-            padding: 12px 0;
-        }
-        .calendar-category-colors {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            padding: 15px 0;
-        }
-        .calendar-category-color {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-            font-family: 'Baumans', sans-serif;
-        }
-        .calendar-category-color input[type="color"] {
-            width: 45px;
-            height: 38px;
-            padding: 3px;
-            background: #2e0342;
-            border: 1px solid #743a91;
-            border-radius: 7px;
-            cursor: pointer;
-        }
-        .calendar-category-reset {
-            margin-bottom: 10px;
-        }
-    </style>
 </head>
 <body>
     <div class="sidebar">
@@ -190,674 +153,714 @@
     </main>
 
     <script>
-        document.getElementById("sidebarToggle").onclick = function() {
-            document.querySelector(".sidebar").classList.toggle("collapsed");
+    const $ = id => document.getElementById(id);
+
+    $("sidebarToggle").onclick = () => {
+        document.querySelector(".sidebar").classList.toggle("collapsed");
+    };
+
+    const calendarGrid = $("calendarGrid");
+    const selectedDateEvents = $("selectedDateEvents");
+    const eventForm = $("eventForm");
+    const eventFormCard = $("eventFormCard");
+    const calendarMessage = $("calendarMessage");
+
+    const defaultColors = {
+        "Booking": "#176c8d",
+        "Follow-Up": "#865a12",
+        "Project Deadline": "#9b315f",
+        "Opportunity": "#b45309",
+        "Personal": "#416a38"
+    };
+
+    function validColor(color) {
+        return typeof color === "string" &&
+            /^#[0-9a-fA-F]{6}$/.test(color);
+    }
+
+    function loadCategoryColors() {
+        try {
+            const saved = JSON.parse(
+                localStorage.getItem("conchordiaCategoryColors") || "{}"
+            );
+            const colors = { ...defaultColors };
+            for (const category of Object.keys(defaultColors)) {
+                if (validColor(saved[category])) {
+                    colors[category] = saved[category];
+                }
+            }
+            return colors;
+        } catch {
+            return { ...defaultColors };
+        }
+    }
+
+    let categoryColors = loadCategoryColors();
+    let events = [];
+    let projects = [];
+    let opportunities = [];
+    let editingId = null;
+
+    const today = new Date();
+    let currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    let selectedDate = dateKey(today);
+
+    function dateKey(date) {
+        return [
+            date.getFullYear(),
+            String(date.getMonth() + 1).padStart(2, "0"),
+            String(date.getDate()).padStart(2, "0")
+        ].join("-");
+    }
+
+    function displayDate(value) {
+        if (!value) return "—";
+        const parts = value.split("-");
+        return parts.length === 3
+            ? `${parts[1]}/${parts[2]}/${parts[0]}`
+            : value;
+    }
+
+    function formatTime12(time) {
+        if (!time) return "";
+
+        const [hours, minutes] = time.split(":").map(Number);
+        const period = hours >= 12 ? "PM" : "AM";
+        const hour = hours % 12 || 12;
+
+        return `${hour}:${String(minutes).padStart(2, "0")} ${period}`;
+    }
+
+    function dateFromDatabase(value) {
+        if (!value) return "";
+
+        // PostgreSQL timestamps are converted to the user's local date.
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? "" : dateKey(date);
+    }
+
+    function timeFromDatabase(value) {
+        if (!value) return "";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        return [
+            String(date.getHours()).padStart(2, "0"),
+            String(date.getMinutes()).padStart(2, "0")
+        ].join(":");
+    }
+
+    function bookingToEvent(booking) {
+        return {
+            id: booking.id,
+            name: booking.title,
+            title: booking.title,
+            category: booking.category || "Booking",
+            date: dateFromDatabase(booking.startsAt),
+            time: timeFromDatabase(booking.startsAt),
+            location: booking.venueName || booking.venueCity || "",
+            notes: booking.notes || "",
+            source: "calendar",
+            original: booking
         };
+    }
 
-        function loadData(key) {
-            try {
-                const data = JSON.parse(localStorage.getItem(key) || "[]");
-                return Array.isArray(data) ? data : [];
-            } catch (error) {
-                console.error(error);
-                return [];
-            }
-        }
-
-        const defaultColors = {
-            "Booking": "#176c8d",
-            "Follow-Up": "#865a12",
-            "Project Deadline": "#9b315f",
-            "Opportunity": "#b45309",
-            "Personal": "#416a38"
+    function projectToEvent(project) {
+        return {
+            id: "project-" + project.id,
+            name: project.title || "Project Deadline",
+            title: project.title || "Project Deadline",
+            category: "Project Deadline",
+            date: String(project.deadline || "").slice(0, 10),
+            time: "",
+            location: "",
+            notes: project.notes || "",
+            source: "project"
         };
+    }
 
-        function validColor(color) {
-            return typeof color === "string" &&
-                /^#[0-9a-fA-F]{6}$/.test(color);
+    function opportunityToEvent(opportunity) {
+        return {
+            id: "opportunity-" + opportunity.id,
+            name: opportunity.name || opportunity.title || "Opportunity",
+            title: opportunity.name || opportunity.title || "Opportunity",
+            category: "Opportunity",
+            date: String(opportunity.deadline || "").slice(0, 10),
+            time: "",
+            location: opportunity.organization || "",
+            notes: opportunity.notes || "",
+            source: "opportunity"
+        };
+    }
+
+    async function apiRequest(path, options = {}) {
+        const token = localStorage.getItem("conchordiaToken");
+
+        if (!token) {
+            window.location.href = "login.html";
+            throw new Error("Please log in.");
         }
 
-        function loadCategoryColors() {
-            try {
-                const saved = JSON.parse(
-                    localStorage.getItem("conchordiaCategoryColors") || "{}"
-                );
-
-                const colors = { ...defaultColors };
-
-                Object.keys(defaultColors).forEach(category => {
-                    if (validColor(saved[category])) {
-                        colors[category] = saved[category];
-                    }
-                });
-
-                return colors;
-            } catch (error) {
-                return { ...defaultColors };
+        const response = await fetch("/api" + path, {
+            ...options,
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + token,
+                ...options.headers
             }
-        }
-
-        let categoryColors = loadCategoryColors();
-
-        function saveCategoryColors() {
-            try {
-                localStorage.setItem(
-                    "conchordiaCategoryColors",
-                    JSON.stringify(categoryColors)
-                );
-                return true;
-            } catch (error) {
-                calendarMessage.textContent = "Unable to save calendar colors.";
-                return false;
-            }
-        }
-
-        function updateColorPickers() {
-            document.querySelectorAll("[data-category]").forEach(input => {
-                input.value = categoryColors[input.dataset.category];
-            });
-        }
-
-        document.querySelectorAll("[data-category]").forEach(input => {
-            input.addEventListener("input", function() {
-                const category = this.dataset.category;
-                categoryColors[category] = this.value;
-                saveCategoryColors();
-                renderCalendar();
-            });
         });
 
-        document.getElementById("resetCategoryColors").onclick = function() {
-            categoryColors = { ...defaultColors };
-
-            if (saveCategoryColors()) {
-                updateColorPickers();
-                renderCalendar();
-                calendarMessage.textContent = "Default calendar colors restored.";
-            }
-        };
-
-        let events = loadData("conchordiaCalendarEvents");
-        let editingId = null;
-
-        const today = new Date();
-        let currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        let selectedDate = dateKey(today);
-
-        const calendarGrid = document.getElementById("calendarGrid");
-        const selectedDateEvents = document.getElementById("selectedDateEvents");
-        const eventForm = document.getElementById("eventForm");
-        const eventFormCard = document.getElementById("eventFormCard");
-        const calendarMessage = document.getElementById("calendarMessage");
-
-        function dateKey(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, "0");
-            const day = String(date.getDate()).padStart(2, "0");
-
-            return `${year}-${month}-${day}`;
+        if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem("conchordiaToken");
+            window.location.href = "login.html";
+            throw new Error("Session expired.");
         }
 
-        function displayDate(dateString) {
-            if (!dateString) return "—";
-
-            const parts = dateString.split("-");
-
-            if (parts.length !== 3) return dateString;
-
-            return `${parts[1]}/${parts[2]}/${parts[0]}`;
+        if (!response.ok) {
+            const result = await response.json().catch(() => ({}));
+            throw new Error(result.error || `Request failed (${response.status})`);
         }
 
-        function saveEvents() {
+        if (response.status === 204) return null;
+        return response.json();
+    }
+
+    async function loadCalendar() {
+        calendarMessage.textContent = "Loading calendar...";
+
+        try {
+            // Bookings, Follow-Ups and Personal events share this table.
+            const [bookingsData, projectsData] = await Promise.all([
+                apiRequest("/bookings"),
+                apiRequest("/projects")
+            ]);
+
+            events = bookingsData.map(bookingToEvent);
+            projects = projectsData;
+
+            // Opportunities can be connected when that endpoint is ready.
             try {
-                localStorage.setItem(
-                    "conchordiaCalendarEvents",
-                    JSON.stringify(events)
-                );
-                return true;
+                opportunities = await apiRequest("/opportunities");
+                if (!Array.isArray(opportunities)) opportunities = [];
             } catch (error) {
-                calendarMessage.textContent = "Unable to save calendar event.";
-                return false;
+                console.warn("Opportunities unavailable:", error.message);
+                opportunities = [];
             }
+
+            calendarMessage.textContent = "";
+            renderCalendar();
+        } catch (error) {
+            calendarMessage.textContent = error.message;
+            console.error(error);
         }
+    }
 
-        function allEvents() {
-            const projects = loadData("conchordiaProjects");
-            const opportunities = loadData("conchordiaOpportunities");
+    function allEvents() {
+        const projectEvents = projects
+            .filter(project => project.deadline)
+            .map(projectToEvent);
 
-            const projectEvents = projects
-                .filter(project => project.deadline)
-                .map(project => ({
-                    id: "project-" + project.id,
-                    name: project.name || project.title || "Project Deadline",
-                    title: project.name || project.title || "Project Deadline",
-                    date: project.deadline,
-                    category: "Project Deadline",
-                    time: "",
-                    location: "",
-                    notes: "",
-                    source: "project"
-                }));
+        const opportunityEvents = opportunities
+            .filter(opportunity =>
+                opportunity.deadline &&
+                opportunity.status !== "Rejected" &&
+                opportunity.status !== "Closed"
+            )
+            .map(opportunityToEvent);
 
-            const opportunityEvents = opportunities
-                .filter(opportunity =>
-                    opportunity.deadline &&
-                    opportunity.status !== "Rejected" &&
-                    opportunity.status !== "Closed"
-                )
-                .map(opportunity => ({
-                    id: "opportunity-" + opportunity.id,
-                    name: opportunity.name || "Opportunity",
-                    title: opportunity.name || "Opportunity",
-                    date: opportunity.deadline,
-                    category: "Opportunity",
-                    time: "",
-                    location: opportunity.organization || "",
-                    notes: opportunity.notes || "",
-                    source: "opportunity"
-                }));
+        return [...events, ...projectEvents, ...opportunityEvents];
+    }
 
-            return [
-                ...events,
-                ...projectEvents,
-                ...opportunityEvents
-            ];
-        }
+    function visibleCategories() {
+        return Array.from(
+            document.querySelectorAll(".event-filter:checked")
+        ).map(input => input.value);
+    }
 
-        function visibleCategories() {
-            return Array.from(
-                document.querySelectorAll(".event-filter:checked")
-            ).map(input => input.value);
-        }
+    function visibleEvents() {
+        const categories = visibleCategories();
+        return allEvents().filter(event =>
+            categories.includes(event.category)
+        );
+    }
 
-        function visibleEvents() {
-            const categories = visibleCategories();
+    function eventClass(category) {
+        return {
+            "Booking": "booking",
+            "Follow-Up": "followup",
+            "Project Deadline": "deadline",
+            "Opportunity": "opportunity",
+            "Personal": "personal"
+        }[category] || "personal";
+    }
 
-            return allEvents().filter(event =>
-                categories.includes(event.category)
-            );
-        }
+    function renderCalendar() {
+        calendarGrid.replaceChildren();
 
-        function eventClass(category) {
-            if (category === "Booking") return "booking";
-            if (category === "Follow-Up") return "followup";
-            if (category === "Project Deadline") return "deadline";
-            if (category === "Opportunity") return "opportunity";
-            if (category === "Personal") return "personal";
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
 
-            return "personal";
-        }
+        $("monthTitle").textContent =
+            currentMonth.toLocaleDateString("en-US", {
+                month: "long",
+                year: "numeric"
+            });
 
-        function renderCalendar() {
-            calendarGrid.replaceChildren();
-
-            const year = currentMonth.getFullYear();
-            const month = currentMonth.getMonth();
-
-            document.getElementById("monthTitle").textContent =
-                currentMonth.toLocaleDateString("en-US", {
-                    month: "long",
-                    year: "numeric"
-                });
-
-            const weekdays = [
-                "Sun", "Mon", "Tue", "Wed",
-                "Thu", "Fri", "Sat"
-            ];
-
-            weekdays.forEach(day => {
+        ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+            .forEach(name => {
                 const header = document.createElement("div");
                 header.className = "calendar-day-name";
-                header.textContent = day;
+                header.textContent = name;
                 calendarGrid.appendChild(header);
             });
 
-            const firstDay = new Date(year, month, 1);
-            const startOffset = firstDay.getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const startOffset = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const totalCells = Math.ceil(
+            (startOffset + daysInMonth) / 7
+        ) * 7;
 
-            const totalCells = Math.ceil(
-                (startOffset + daysInMonth) / 7
-            ) * 7;
+        const calendarEvents = visibleEvents();
 
-            const calendarEvents = visibleEvents();
+        for (let i = 0; i < totalCells; i++) {
+            const date = new Date(year, month, i - startOffset + 1);
+            const key = dateKey(date);
 
-            for (let i = 0; i < totalCells; i++) {
-                const date = new Date(year, month, i - startOffset + 1);
-                const key = dateKey(date);
+            const day = document.createElement("button");
+            day.type = "button";
+            day.className = "calendar-day";
 
-                const day = document.createElement("button");
-                day.type = "button";
-                day.className = "calendar-day";
+            if (date.getMonth() !== month) {
+                day.classList.add("other-month");
+            }
+            if (key === dateKey(new Date())) {
+                day.classList.add("today");
+            }
+            if (key === selectedDate) {
+                day.classList.add("selected");
+            }
 
-                if (date.getMonth() !== month) {
-                    day.classList.add("other-month");
-                }
+            const number = document.createElement("span");
+            number.className = "day-number";
+            number.textContent = date.getDate();
+            day.appendChild(number);
 
-                if (key === dateKey(new Date())) {
-                    day.classList.add("today");
-                }
-
-                if (key === selectedDate) {
-                    day.classList.add("selected");
-                }
-
-                const dayNumber = document.createElement("span");
-                dayNumber.className = "day-number";
-                dayNumber.textContent = date.getDate();
-                day.appendChild(dayNumber);
-
-                const dayEvents = calendarEvents.filter(event =>
-                    event.date === key
-                );
-
-                dayEvents.forEach(event => {
-                    const eventLabel = document.createElement("span");
-
-                    eventLabel.className =
+            calendarEvents
+                .filter(event => event.date === key)
+                .forEach(event => {
+                    const label = document.createElement("span");
+                    label.className =
                         "calendar-event " + eventClass(event.category);
 
-                    eventLabel.textContent =
-                        event.time
-                            ? event.time + " " + (event.name || event.title)
-                            : (event.name || event.title);
+                    label.textContent = event.time
+                        ? `${formatTime12(event.time)} ${event.name}`
+                        : event.name;
 
-                    eventLabel.style.backgroundColor =
-                        categoryColors[event.category] || defaultColors.Personal;
+                    label.style.backgroundColor =
+                        categoryColors[event.category] ||
+                        defaultColors.Personal;
 
-                    day.appendChild(eventLabel);
+                    day.appendChild(label);
                 });
 
-                day.onclick = function() {
-                    selectedDate = key;
-                    renderCalendar();
-                };
-
-                calendarGrid.appendChild(day);
-            }
-
-            renderSelectedDate();
-        }
-
-        function renderSelectedDate() {
-            selectedDateEvents.replaceChildren();
-
-            document.getElementById("selectedDateTitle").textContent =
-                "Events for " + displayDate(selectedDate);
-
-            const dayEvents = visibleEvents()
-                .filter(event => event.date === selectedDate)
-                .sort((a, b) =>
-                    (a.time || "").localeCompare(b.time || "")
-                );
-
-            if (dayEvents.length === 0) {
-                const empty = document.createElement("p");
-                empty.className = "calendar-empty";
-                empty.textContent = "No events scheduled for this date.";
-                selectedDateEvents.appendChild(empty);
-                return;
-            }
-
-            dayEvents.forEach(event => {
-                const item = document.createElement("div");
-                item.className = "calendar-list-item";
-
-                const title = document.createElement("h3");
-                title.textContent = event.name || event.title || "Untitled Event";
-                item.appendChild(title);
-
-                const category = document.createElement("p");
-                category.textContent = "Category: " + event.category;
-                item.appendChild(category);
-
-                const colorIndicator = document.createElement("span");
-                colorIndicator.style.display = "inline-block";
-                colorIndicator.style.width = "16px";
-                colorIndicator.style.height = "16px";
-                colorIndicator.style.borderRadius = "4px";
-                colorIndicator.style.marginBottom = "8px";
-                colorIndicator.style.backgroundColor =
-                    categoryColors[event.category] || defaultColors.Personal;
-
-                item.appendChild(colorIndicator);
-
-                if (event.time) {
-                    const time = document.createElement("p");
-                    time.textContent = "Time: " + event.time;
-                    item.appendChild(time);
-                }
-
-                if (event.location) {
-                    const location = document.createElement("p");
-                    location.textContent = "Location: " + event.location;
-                    item.appendChild(location);
-                }
-
-                if (event.notes) {
-                    const notes = document.createElement("p");
-                    notes.textContent = "Notes: " + event.notes;
-                    item.appendChild(notes);
-                }
-
-                if (event.source === "project") {
-                    const source = document.createElement("p");
-                    source.textContent = "Imported from Projects";
-                    item.appendChild(source);
-
-                    const link = document.createElement("a");
-                    link.href = "projects.html";
-                    link.textContent = "View Projects";
-                    item.appendChild(link);
-
-                } else if (event.source === "opportunity") {
-                    const source = document.createElement("p");
-                    source.textContent = "Imported from Opportunities";
-                    item.appendChild(source);
-
-                    const link = document.createElement("a");
-                    link.href = "opportunities.html";
-                    link.textContent = "View Opportunities";
-                    item.appendChild(link);
-
-                } else {
-                    const editButton = document.createElement("button");
-                    editButton.type = "button";
-                    editButton.className = "calendar-btn";
-                    editButton.textContent = "Edit";
-
-                    editButton.onclick = function() {
-                        openForm(event);
-                    };
-
-                    item.appendChild(editButton);
-                }
-
-                selectedDateEvents.appendChild(item);
-            });
-        }
-
-        function openForm(event = null) {
-            if (event && (
-                event.source === "project" ||
-                event.source === "opportunity"
-            )) {
-                calendarMessage.textContent =
-                    "Edit imported events from their original page.";
-                return;
-            }
-
-            eventForm.reset();
-            editingId = event ? event.id : null;
-
-            document.getElementById("eventFormTitle").textContent =
-                event ? "Edit Event" : "Add Event";
-
-            document.getElementById("eventName").value =
-                event ? event.name || event.title || "" : "";
-
-            document.getElementById("eventCategory").value =
-                event ? event.category : "Booking";
-
-            document.getElementById("eventDate").value =
-                event ? event.date : selectedDate;
-
-            document.getElementById("eventTime").value =
-                event ? event.time || "" : "";
-
-            document.getElementById("eventLocation").value =
-                event ? event.location || "" : "";
-
-            document.getElementById("eventNotes").value =
-                event ? event.notes || "" : "";
-
-            document.getElementById("deleteEvent").hidden = !event;
-
-            eventFormCard.hidden = false;
-
-            eventFormCard.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-        }
-
-        function closeForm() {
-            eventFormCard.hidden = true;
-            editingId = null;
-            eventForm.reset();
-        }
-
-        document.getElementById("addEventButton").onclick = function() {
-            openForm();
-        };
-
-        document.getElementById("cancelEvent").onclick = closeForm;
-
-        eventForm.onsubmit = function(e) {
-            e.preventDefault();
-
-            const name = document.getElementById("eventName").value.trim();
-            const category = document.getElementById("eventCategory").value;
-            const date = document.getElementById("eventDate").value;
-            const time = document.getElementById("eventTime").value;
-            const location = document.getElementById("eventLocation").value.trim();
-            const notes = document.getElementById("eventNotes").value.trim();
-
-            if (!name || !date) {
-                calendarMessage.textContent = "Enter an event name and date.";
-                return;
-            }
-
-            const eventData = {
-                id: editingId || crypto.randomUUID(),
-                name: name,
-                title: name,
-                category: category,
-                date: date,
-                time: time,
-                location: location,
-                notes: notes,
-                source: "calendar"
+            day.onclick = () => {
+                selectedDate = key;
+                renderCalendar();
             };
 
-            const previousEvents = [...events];
+            calendarGrid.appendChild(day);
+        }
 
-            if (editingId) {
-                events = events.map(event =>
-                    event.id === editingId ? eventData : event
-                );
-            } else {
-                events.push(eventData);
+        renderSelectedDate();
+    }
+
+    function renderSelectedDate() {
+        selectedDateEvents.replaceChildren();
+
+        $("selectedDateTitle").textContent =
+            "Events for " + displayDate(selectedDate);
+
+        const dayEvents = visibleEvents()
+            .filter(event => event.date === selectedDate)
+            .sort((a, b) =>
+                (a.time || "").localeCompare(b.time || "")
+            );
+
+        if (!dayEvents.length) {
+            const empty = document.createElement("p");
+            empty.className = "calendar-empty";
+            empty.textContent = "No events scheduled for this date.";
+            selectedDateEvents.appendChild(empty);
+            return;
+        }
+
+        dayEvents.forEach(event => {
+            const item = document.createElement("div");
+            item.className = "calendar-list-item";
+
+            function addText(tag, content) {
+                const element = document.createElement(tag);
+                element.textContent = content;
+                item.appendChild(element);
             }
 
-            if (!saveEvents()) {
-                events = previousEvents;
-                return;
+            addText("h3", event.name || "Untitled Event");
+            addText("p", "Category: " + event.category);
+
+            const indicator = document.createElement("span");
+            indicator.style.cssText =
+                "display:inline-block;width:16px;height:16px;" +
+                "border-radius:4px;margin-bottom:8px;";
+            indicator.style.backgroundColor =
+                categoryColors[event.category] || defaultColors.Personal;
+            item.appendChild(indicator);
+
+            if (event.time) addText("p", "Time: " + formatTime12(event.time));
+            if (event.location) addText("p", "Location: " + event.location);
+            if (event.notes) addText("p", "Notes: " + event.notes);
+
+            if (event.source === "project" ||
+                event.source === "opportunity") {
+
+                const isProject = event.source === "project";
+                addText("p", isProject
+                    ? "Imported from Projects"
+                    : "Imported from Opportunities");
+
+                const link = document.createElement("a");
+                link.href = isProject
+                    ? "projects.html"
+                    : "opportunities.html";
+                link.textContent = isProject
+                    ? "View Projects"
+                    : "View Opportunities";
+                item.appendChild(link);
+            } else {
+                const editButton = document.createElement("button");
+                editButton.type = "button";
+                editButton.className = "calendar-btn";
+                editButton.textContent = "Edit";
+                editButton.onclick = () => openForm(event);
+                item.appendChild(editButton);
+            }
+
+            selectedDateEvents.appendChild(item);
+        });
+    }
+
+    function openForm(event = null) {
+        if (event && event.source !== "calendar") {
+            calendarMessage.textContent =
+                "Edit imported events from their original page.";
+            return;
+        }
+
+        eventForm.reset();
+        editingId = event ? event.id : null;
+
+        $("eventFormTitle").textContent =
+            event ? "Edit Event" : "Add Event";
+
+        $("eventName").value = event ? event.name : "";
+        $("eventCategory").value =
+            event ? event.category : "Booking";
+        $("eventDate").value =
+            event ? event.date : selectedDate;
+        $("eventTime").value = event ? event.time : "";
+        $("eventLocation").value = event ? event.location : "";
+        $("eventNotes").value = event ? event.notes : "";
+        $("deleteEvent").hidden = !event;
+
+        eventFormCard.hidden = false;
+        eventFormCard.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+
+    function closeForm() {
+        eventFormCard.hidden = true;
+        editingId = null;
+        eventForm.reset();
+    }
+
+    $("addEventButton").onclick = () => openForm();
+    $("cancelEvent").onclick = closeForm;
+
+    eventForm.onsubmit = async function(e) {
+        e.preventDefault();
+
+        const name = $("eventName").value.trim();
+        const category = $("eventCategory").value;
+        const date = $("eventDate").value;
+        const time = $("eventTime").value;
+        const location = $("eventLocation").value.trim();
+        const notes = $("eventNotes").value.trim();
+
+        if (!name || !date) {
+            calendarMessage.textContent =
+                "Enter an event name and date.";
+            return;
+        }
+
+        // Convert local date/time to a PostgreSQL-compatible timestamp.
+        // A date without a time is stored at local midnight.
+        const startsAt = new Date(
+            `${date}T${time || "00:00"}:00`
+        ).toISOString();
+
+        const existing = editingId
+            ? events.find(event => event.id === editingId)
+            : null;
+
+        const payload = {
+            title: name,
+            category,
+            startsAt,
+            venueName: location || null,
+            venueCity: existing?.original?.venueCity || null,
+            venueContactId:
+                existing?.original?.venueContactId || null,
+            status: existing?.original?.status || "Confirmed",
+            fee: existing?.original?.fee || 0,
+            notes
+        };
+
+        try {
+            calendarMessage.textContent = "Saving event...";
+
+            if (editingId) {
+                await apiRequest("/bookings/" + editingId, {
+                    method: "PUT",
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                await apiRequest("/bookings", {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
             }
 
             selectedDate = date;
-
-            const parts = date.split("-");
-            currentMonth = new Date(
-                Number(parts[0]),
-                Number(parts[1]) - 1,
-                1
-            );
+            const [year, month] = date.split("-").map(Number);
+            currentMonth = new Date(year, month - 1, 1);
 
             closeForm();
-            renderCalendar();
-
+            await loadCalendar();
             calendarMessage.textContent = "Event saved successfully.";
-        };
+        } catch (error) {
+            calendarMessage.textContent = error.message;
+            console.error(error);
+        }
+    };
 
-        document.getElementById("deleteEvent").onclick = function() {
-            if (!editingId) return;
+    $("deleteEvent").onclick = async function() {
+        if (!editingId) return;
+        if (!confirm("Are you sure you want to delete this event?")) {
+            return;
+        }
 
-            if (!confirm("Are you sure you want to delete this event?")) {
-                return;
-            }
-
-            const previousEvents = [...events];
-
-            events = events.filter(event =>
-                event.id !== editingId
-            );
-
-            if (!saveEvents()) {
-                events = previousEvents;
-                return;
-            }
+        try {
+            await apiRequest("/bookings/" + editingId, {
+                method: "DELETE"
+            });
 
             closeForm();
-            renderCalendar();
-
+            await loadCalendar();
             calendarMessage.textContent = "Event deleted.";
-        };
+        } catch (error) {
+            calendarMessage.textContent = error.message;
+            console.error(error);
+        }
+    };
 
-        document.getElementById("prevMonth").onclick = function() {
-            currentMonth = new Date(
-                currentMonth.getFullYear(),
-                currentMonth.getMonth() - 1,
-                1
+    $("prevMonth").onclick = () => {
+        currentMonth = new Date(
+            currentMonth.getFullYear(),
+            currentMonth.getMonth() - 1,
+            1
+        );
+        renderCalendar();
+    };
+
+    $("nextMonth").onclick = () => {
+        currentMonth = new Date(
+            currentMonth.getFullYear(),
+            currentMonth.getMonth() + 1,
+            1
+        );
+        renderCalendar();
+    };
+
+    $("todayButton").onclick = () => {
+        const now = new Date();
+        currentMonth = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            1
+        );
+        selectedDate = dateKey(now);
+        renderCalendar();
+    };
+
+    document.querySelectorAll(".event-filter").forEach(filter => {
+        filter.addEventListener("change", renderCalendar);
+    });
+
+    function saveCategoryColors() {
+        try {
+            localStorage.setItem(
+                "conchordiaCategoryColors",
+                JSON.stringify(categoryColors)
             );
+            return true;
+        } catch {
+            calendarMessage.textContent =
+                "Unable to save calendar colors.";
+            return false;
+        }
+    }
 
-            renderCalendar();
-        };
-
-        document.getElementById("nextMonth").onclick = function() {
-            currentMonth = new Date(
-                currentMonth.getFullYear(),
-                currentMonth.getMonth() + 1,
-                1
-            );
-
-            renderCalendar();
-        };
-
-        document.getElementById("todayButton").onclick = function() {
-            const now = new Date();
-
-            currentMonth = new Date(
-                now.getFullYear(),
-                now.getMonth(),
-                1
-            );
-
-            selectedDate = dateKey(now);
-            renderCalendar();
-        };
-
-        document.querySelectorAll(".event-filter").forEach(filter => {
-            filter.addEventListener("change", renderCalendar);
+    function updateColorPickers() {
+        document.querySelectorAll("[data-category]").forEach(input => {
+            input.value = categoryColors[input.dataset.category];
         });
 
-        function escapeICS(text) {
-            return String(text || "")
-                .replace(/\\/g, "\\\\")
-                .replace(/\r?\n/g, "\\n")
-                .replace(/,/g, "\\,")
-                .replace(/;/g, "\\;");
+        document.querySelectorAll(".event-filter").forEach(input => {
+            input.style.setProperty(
+                "--category-color",
+                categoryColors[input.value] || defaultColors.Personal
+            );
+        });
+    }
+
+    document.querySelectorAll("[data-category]").forEach(input => {
+        input.addEventListener("input", function() {
+            categoryColors[this.dataset.category] = this.value;
+            saveCategoryColors();
+            updateColorPickers();
+            renderCalendar();
+        });
+    });
+
+    $("resetCategoryColors").onclick = () => {
+        categoryColors = { ...defaultColors };
+        if (saveCategoryColors()) {
+            updateColorPickers();
+            renderCalendar();
+            calendarMessage.textContent =
+                "Default calendar colors restored.";
+        }
+    };
+
+    // Export displayed categories as an .ics calendar file.
+    function escapeICS(value) {
+        return String(value || "")
+            .replace(/\\/g, "\\\\")
+            .replace(/\r?\n/g, "\\n")
+            .replace(/,/g, "\\,")
+            .replace(/;/g, "\\;");
+    }
+
+    function exportCalendar() {
+        const calendarEvents = visibleEvents()
+            .filter(event => event.date);
+
+        if (!calendarEvents.length) {
+            calendarMessage.textContent = "No events to export.";
+            return;
         }
 
-        function exportCalendar() {
-            const calendarEvents = visibleEvents();
+        const lines = [
+            "BEGIN:VCALENDAR",
+            "VERSION:2.0",
+            "PRODID:-//ConChordia//Calendar//EN",
+            "CALSCALE:GREGORIAN"
+        ];
 
-            if (calendarEvents.length === 0) {
-                calendarMessage.textContent = "No events to export.";
-                return;
+        const timestamp = new Date()
+            .toISOString()
+            .replace(/[-:]/g, "")
+            .replace(/\.\d{3}/, "");
+
+        calendarEvents.forEach(event => {
+            const date = event.date.replace(/-/g, "");
+            const title = event.name || event.title || "Event";
+            let start, end;
+
+            if (event.time) {
+                start = date + "T" +
+                    event.time.replace(":", "") + "00";
+
+                const [year, month, day] =
+                    event.date.split("-").map(Number);
+                const [hour, minute] =
+                    event.time.split(":").map(Number);
+
+                const endDate = new Date(
+                    year, month - 1, day, hour + 1, minute
+                );
+
+                end = dateKey(endDate).replace(/-/g, "") +
+                    "T" +
+                    String(endDate.getHours()).padStart(2, "0") +
+                    String(endDate.getMinutes()).padStart(2, "0") +
+                    "00";
+            } else {
+                start = date;
+                const [year, month, day] =
+                    event.date.split("-").map(Number);
+                end = dateKey(
+                    new Date(year, month - 1, day + 1)
+                ).replace(/-/g, "");
             }
 
-            const lines = [
-                "BEGIN:VCALENDAR",
-                "VERSION:2.0",
-                "PRODID:-//ConChordia//Calendar//EN",
-                "CALSCALE:GREGORIAN"
-            ];
+            lines.push("BEGIN:VEVENT");
+            lines.push("UID:" + String(event.id) + "@conchordia");
+            lines.push("DTSTAMP:" + timestamp);
 
-            const timestamp = new Date()
-                .toISOString()
-                .replace(/[-:]/g, "")
-                .replace(/\.\d{3}/, "");
+            if (event.time) {
+                lines.push("DTSTART:" + start);
+                lines.push("DTEND:" + end);
+            } else {
+                lines.push("DTSTART;VALUE=DATE:" + start);
+                lines.push("DTEND;VALUE=DATE:" + end);
+            }
 
-            calendarEvents.forEach(event => {
-                const date = event.date.replace(/-/g, "");
-                const title = event.name || event.title || "Event";
+            lines.push("SUMMARY:" + escapeICS(title));
+            lines.push("DESCRIPTION:" + escapeICS(
+                event.category +
+                (event.notes ? "\n" + event.notes : "")
+            ));
+            lines.push("LOCATION:" + escapeICS(event.location));
+            lines.push("END:VEVENT");
+        });
 
-                let start;
-                let end;
+        lines.push("END:VCALENDAR");
 
-                if (event.time) {
-                    const time = event.time.replace(":", "") + "00";
-                    start = date + "T" + time;
+        const blob = new Blob(
+            [lines.join("\r\n") + "\r\n"],
+            { type: "text/calendar;charset=utf-8" }
+        );
 
-                    const [year, month, day] = event.date.split("-").map(Number);
-                    const [hour, minute] = event.time.split(":").map(Number);
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "ConChordia-Calendar.ics";
 
-                    const endDate = new Date(
-                        year, month - 1, day, hour + 1, minute
-                    );
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
 
-                    end = dateKey(endDate).replace(/-/g, "") +
-                        "T" +
-                        String(endDate.getHours()).padStart(2, "0") +
-                        String(endDate.getMinutes()).padStart(2, "0") +
-                        "00";
-                } else {
-                    start = date;
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        calendarMessage.textContent =
+            "Calendar exported successfully.";
+    }
 
-                    const [year, month, day] = event.date.split("-").map(Number);
-                    const nextDay = new Date(year, month - 1, day + 1);
+    $("exportButton").onclick = exportCalendar;
 
-                    end = dateKey(nextDay).replace(/-/g, "");
-                }
-
-                lines.push("BEGIN:VEVENT");
-                lines.push("UID:" + String(event.id) + "@conchordia");
-                lines.push("DTSTAMP:" + timestamp);
-
-                if (event.time) {
-                    lines.push("DTSTART:" + start);
-                    lines.push("DTEND:" + end);
-                } else {
-                    lines.push("DTSTART;VALUE=DATE:" + start);
-                    lines.push("DTEND;VALUE=DATE:" + end);
-                }
-
-                lines.push("SUMMARY:" + escapeICS(title));
-                lines.push("DESCRIPTION:" + escapeICS(
-                    event.category + (event.notes ? "\n" + event.notes : "")
-                ));
-                lines.push("LOCATION:" + escapeICS(event.location));
-                lines.push("END:VEVENT");
-            });
-
-            lines.push("END:VCALENDAR");
-
-            const content = lines.join("\r\n") + "\r\n";
-
-            const blob = new Blob([content], {
-                type: "text/calendar;charset=utf-8"
-            });
-
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-
-            link.href = url;
-            link.download = "ConChordia-Calendar.ics";
-
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-            calendarMessage.textContent = "Calendar exported successfully.";
-        }
-
-        document.getElementById("exportButton").onclick = exportCalendar;
-
-        updateColorPickers();
-        renderCalendar();
+    updateColorPickers();
+    loadCalendar();
     </script>
+
 </body>
 </html>

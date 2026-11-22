@@ -16,6 +16,7 @@ const FIELDS = {
     status: 'status',
     fee: 'fee',
     notes: 'notes',
+    category: 'category',
 };
 
 const toJson = (r) => ({
@@ -28,6 +29,7 @@ const toJson = (r) => ({
     status: r.status,
     fee: r.fee != null ? Number(r.fee) : 0,
     notes: r.notes,
+    category: r.category || 'Booking',
     performers: r.performers || [],
     createdAt: r.created_at,
 });

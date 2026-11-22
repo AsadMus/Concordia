@@ -1100,6 +1100,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     font-family: 'Baumans', sans-serif;
     margin-top: 15px;
 }
+.event-filter {
+    accent-color: var(--category-color);
+    cursor: pointer;
+}
+.calendar-filters input.event-filter {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    accent-color: var(--category-color) !important;
+    cursor: pointer;
+}
 @media (max-width: 1000px) {
     .calendar-bottom {
         grid-template-columns: 1fr;
