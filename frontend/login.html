@@ -29,34 +29,65 @@
         </form>
         <p class="account-text">Don't have an account? <a href="signup.html">Sign Up</a></p>
     </main>
-    <script>
-        const loginForm = document.getElementById('loginForm');
-        const loginButton = document.getElementById('loginButton');
-        const loginError = document.getElementById('loginError');
-        loginForm.addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const login = document.getElementById('loginInput').value.trim();
-            const password = document.getElementById('passwordInput').value;
-            loginError.hidden = true;
-            loginError.textContent = '';
-            if (!login || !password) {
-                loginError.textContent = 'Please enter your email/phone and password.';
-                loginError.hidden = false;
-                return;
+
+<script>
+    "use strict";
+
+    const loginForm = document.getElementById("loginForm");
+    const loginButton = document.getElementById("loginButton");
+    const loginError = document.getElementById("loginError");
+
+    loginForm.addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const login = document.getElementById("loginInput").value.trim();
+        const password = document.getElementById("passwordInput").value;
+
+        loginError.hidden = true;
+        loginError.textContent = "";
+
+        if (!login || !password) {
+            loginError.textContent = "Please enter your email/phone and password.";
+            loginError.hidden = false;
+            return;
+        }
+
+        loginButton.disabled = true;
+        loginButton.textContent = "Logging in...";
+
+        try {
+            const response = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ login, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Incorrect email or password.");
             }
-            loginButton.disabled = true;
-            loginButton.textContent = 'Logging in...';
-            try {
-                await api.login(login, password); // saves the token + account info (see js/api.js)
-                window.location.replace('dashboard.html');
-            } catch (error) {
-                loginError.textContent = error.message || 'Unable to log in.';
-                loginError.hidden = false;
-            } finally {
-                loginButton.disabled = false;
-                loginButton.textContent = 'Login';
+
+            if (!data.token || !data.user) {
+                throw new Error("Invalid login response.");
             }
-        });
-    </script>
+
+            localStorage.setItem("conchordiaToken", data.token);
+            localStorage.setItem("conchordiaAccount", JSON.stringify(data.user));
+            localStorage.setItem("conchordiaAccountType", data.user.accountType || "");
+
+            window.location.replace("dashboard.html");
+
+        } catch (error) {
+            loginError.textContent = error.message || "Unable to log in.";
+            loginError.hidden = false;
+        } finally {
+            loginButton.disabled = false;
+            loginButton.textContent = "Login";
+        }
+    });
+</script>
 </body>
 </html>

@@ -42,7 +42,7 @@
                 <div class="profile-dropdown" id="profileDropdown">
                     <a href="artist-profile.html">My Profile</a>
                     <a href="settings.html">Settings</a>
-                    <a href="login.html" data-logout>Log Out</a>
+                    <a href="login.html" id="logoutButton">Log Out</a> 
                 </div>
             </div>
         </header>
@@ -198,22 +198,63 @@
             );
             return contact ? contact.role || "—" : "—";
         }
-
-        // Name comes from the logged-in account (GET /api/auth/me).
-        // If the token is expired or invalid, api.js sends the user back to login.html.
+                
+        
         async function showProfile() {
+            const token = localStorage.getItem("conchordiaToken");
+
+            if (!token) {
+                window.location.replace("login.html");
+                return;
+            }
+
             try {
-                const user = await api.get("/auth/me");
-                const name = user.stageName || user.firstName || "User";
+                const response = await fetch("/api/auth/me", {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    logout();
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error("Failed to load profile");
+                }
+
+                const result = await response.json();
+                const user = result.user || result;
+                const name = user.firstName || user.stage_name || "User";
+
                 document.getElementById("welcomeMessage").textContent =
-                    "Welcome back, " + name + "!";
+                    `Welcome back, ${name}!`;
+
                 document.getElementById("profileName").textContent = name;
+
                 document.getElementById("profileInitial").textContent =
                     name.charAt(0).toUpperCase();
+
+                localStorage.setItem("conchordiaAccount", JSON.stringify(user));
             } catch (error) {
-                console.error(error);
+                console.error("Profile loading error:", error);
             }
         }
+
+
+        function logout() {
+            localStorage.removeItem("conchordiaToken");
+            localStorage.removeItem("conchordiaAccount");
+            localStorage.removeItem("conchordiaAccountType");
+
+            window.location.replace("login.html");
+        }
+
+        document.getElementById("logoutButton").addEventListener("click", function(event) {
+            event.preventDefault();
+            logout();
+        });
 
         function showUpcomingEvents() {
             const calendarEvents = loadData("conchordiaCalendarEvents");
