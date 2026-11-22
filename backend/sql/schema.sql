@@ -15,6 +15,7 @@ CREATE TABLE users (
   phone         VARCHAR(30)  UNIQUE,
   password_hash TEXT         NOT NULL,
   role          VARCHAR(20)  NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  account_type  VARCHAR(20) NOT NULL DEFAULT 'artist' CHECK (account_type IN ('artist', 'manager')),
   stage_name    VARCHAR(150),            -- artist-profile.html
   genres        TEXT[],
   bio           TEXT,

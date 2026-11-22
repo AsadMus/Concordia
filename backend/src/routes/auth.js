@@ -9,8 +9,13 @@ const { requireAuth } = require('../middleware/auth');
 const { asyncHandler, httpError } = require('../middleware/errors');
 
 const publicUser = (u) => ({
-  id: u.id, firstName: u.first_name, lastName: u.last_name,
-  email: u.email, phone: u.phone, role: u.role,
+  id: u.id,
+  firstName: u.first_name,
+  lastName: u.last_name,
+  email: u.email,
+  phone: u.phone,
+  role: u.role,
+  accountType: u.account_type,
 });
 
 const makeToken = (u) =>
@@ -19,21 +24,55 @@ const makeToken = (u) =>
   });
 
 router.post('/signup', asyncHandler(async (req, res) => {
-  const { firstName, lastName, phone, email, password, confirmPassword } = req.body;
-  if (!firstName || !lastName || !email || !password)
+  const {
+    firstName,
+    lastName,
+    phone,
+    email,
+    password,
+    confirmPassword,
+    accountType
+  } = req.body;
+
+  if (!firstName || !lastName || !email || !password) {
     throw httpError(400, 'First name, last name, email and password are required');
-  if (password.length < 8) throw httpError(400, 'Password must be at least 8 characters');
-  if (confirmPassword !== undefined && password !== confirmPassword)
+  }
+
+  if (typeof password !== 'string' || password.length < 8) {
+    throw httpError(400, 'Password must be at least 8 characters');
+  }
+
+  if (confirmPassword !== undefined && password !== confirmPassword) {
     throw httpError(400, 'Passwords do not match');
+  }
+
+  if (!['artist', 'manager'].includes(accountType)) {
+    throw httpError(400, 'Please select Artist or Manager');
+  }
 
   const hash = await bcrypt.hash(password, 10);
+
   const { rows } = await db.query(
-    `INSERT INTO users (first_name, last_name, phone, email, password_hash)
-     VALUES ($1, $2, $3, LOWER($4), $5) RETURNING *`,
-    [firstName, lastName, phone || null, email, hash]
+    `INSERT INTO users
+     (first_name, last_name, phone, email, password_hash, account_type)
+     VALUES ($1, $2, $3, LOWER($4), $5, $6)
+     RETURNING *`,
+    [
+      firstName.trim(),
+      lastName.trim(),
+      phone?.trim() || null,
+      email.trim(),
+      hash,
+      accountType
+    ]
   );
-  res.status(201).json({ token: makeToken(rows[0]), user: publicUser(rows[0]) });
+
+  res.status(201).json({
+    token: makeToken(rows[0]),
+    user: publicUser(rows[0])
+  });
 }));
+
 
 router.post('/login', asyncHandler(async (req, res) => {
   const { login, password } = req.body; // login = email or phone
