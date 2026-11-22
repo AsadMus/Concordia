@@ -6,6 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Settings | ConChordia</title>
 <link rel="stylesheet" href="style.css">
+<script src="js/api.js"></script>
+<script>api.requireLogin();</script>
 </head>
 <body>
 <div class="sidebar">
@@ -80,6 +82,7 @@
                         <small>Account type is selected during registration.</small>
                     </div>
                     <button type="submit" class="settings-primary">Save Account Changes</button>
+                    <p class="settings-inline-status" id="accountStatus" role="status" aria-live="polite"></p>
                 </form>
             </section>
 
@@ -151,8 +154,30 @@
                 </div>
                 <div class="settings-subsection">
                     <h3>Change Password</h3>
-                    <p>Password changes will become available after account authentication is connected to the backend.</p>
-                    <button type="button" class="settings-secondary" disabled>Change Password</button>
+                    <p>Enter your current password, then choose a new one (at least 8 characters).</p>
+                    <form id="passwordForm" class="settings-form">
+                        <div class="settings-field">
+                            <label for="currentPassword">Current Password</label>
+                            <input type="password" id="currentPassword" autocomplete="current-password" required>
+                        </div>
+                        <div class="settings-two-columns">
+                            <div class="settings-field">
+                                <label for="newPassword">New Password</label>
+                                <input type="password" id="newPassword" autocomplete="new-password" minlength="8" required>
+                            </div>
+                            <div class="settings-field">
+                                <label for="confirmNewPassword">Confirm New Password</label>
+                                <input type="password" id="confirmNewPassword" autocomplete="new-password" minlength="8" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="settings-secondary" id="changePasswordButton">Change Password</button>
+                        <p class="settings-inline-status" id="passwordStatus" role="status" aria-live="polite"></p>
+                    </form>
+                </div>
+                <div class="settings-subsection">
+                    <h3>Log Out</h3>
+                    <p>Sign out of ConChordia on this browser.</p>
+                    <button type="button" class="settings-secondary" data-logout>Log Out</button>
                 </div>
                 <div class="settings-subsection">
                     <h3>Privacy Preferences</h3>
@@ -347,6 +372,11 @@ function showStatus(message) {
     $("settingsStatus").textContent = message;
 }
 
+// Message right under a form, so the user sees it without scrolling to the bottom.
+function showFormStatus(id, message) {
+    $(id).textContent = message;
+}
+
 function makeElement(tag, text, className = "") {
     const element = document.createElement(tag);
     if (text !== undefined) element.textContent = text;
@@ -361,8 +391,7 @@ function makeButton(text, handler, className = "settings-secondary") {
     return button;
 }
 
-function loadAccount() {
-    const account = getAccount();
+function fillAccountForm(account) {
     $("settingsFirstName").value = account.firstName || "";
     $("settingsLastName").value = account.lastName || "";
     $("settingsEmail").value = account.email || "";
@@ -371,7 +400,18 @@ function loadAccount() {
     $("settingsRoleBadge").textContent = getRole() === "manager" ? "Manager Mode" : "Artist Mode";
 }
 
-function saveAccount(event) {
+// Show the saved copy right away, then refresh it from the server (GET /api/auth/me).
+async function loadAccount() {
+    fillAccountForm(getAccount());
+    try {
+        api.rememberAccount(await api.get("/auth/me"));
+        fillAccountForm(getAccount());
+    } catch (error) {
+        showFormStatus("accountStatus", "Unable to load account: " + error.message);
+    }
+}
+
+async function saveAccount(event) {
     event.preventDefault();
 
     const previous = getAccount();
@@ -379,25 +419,51 @@ function saveAccount(event) {
     const newEmail = $("settingsEmail").value.trim().toLowerCase();
 
     if (oldEmail && oldEmail !== newEmail) {
-        showStatus("Email changes require backend account management because organization memberships use your email as an identifier.");
+        showFormStatus("accountStatus", "Email changes require backend account management because organization memberships use your email as an identifier.");
         return;
     }
 
-    const updated = {
-        ...previous,
-        firstName: $("settingsFirstName").value.trim(),
-        lastName: $("settingsLastName").value.trim(),
-        email: newEmail,
-        phone: $("settingsPhone").value.trim(),
-        role: getRole()
-    };
-
+    // Saved to the account in the database (PUT /api/auth/me).
     try {
-        saveJSON(ACCOUNT_KEY, updated);
-        localStorage.setItem("conchordiaAccountType", updated.role);
-        showStatus("Account information saved.");
-    } catch {
-        showStatus("Unable to save account information.");
+        const updated = await api.put("/auth/me", {
+            firstName: $("settingsFirstName").value.trim(),
+            lastName: $("settingsLastName").value.trim(),
+            email: newEmail || previous.email,
+            phone: $("settingsPhone").value.trim()
+        });
+        api.rememberAccount(updated);
+        fillAccountForm(getAccount());
+        showFormStatus("accountStatus", "Account information saved.");
+    } catch (error) {
+        showFormStatus("accountStatus", "Unable to save account information: " + error.message);
+    }
+}
+
+// PUT /api/auth/password - the server checks the current password before changing it.
+async function changePassword(event) {
+    event.preventDefault();
+    const currentPassword = $("currentPassword").value;
+    const newPassword = $("newPassword").value;
+    const confirmPassword = $("confirmNewPassword").value;
+
+    if (newPassword.length < 8) {
+        showFormStatus("passwordStatus", "New password must be at least 8 characters.");
+        return;
+    }
+    if (newPassword !== confirmPassword) {
+        showFormStatus("passwordStatus", "New passwords do not match.");
+        return;
+    }
+
+    $("changePasswordButton").disabled = true;
+    try {
+        await api.put("/auth/password", { currentPassword, newPassword, confirmPassword });
+        $("passwordForm").reset();
+        showFormStatus("passwordStatus", "Password changed.");
+    } catch (error) {
+        showFormStatus("passwordStatus", "Unable to change password: " + error.message);
+    } finally {
+        $("changePasswordButton").disabled = false;
     }
 }
 
@@ -805,6 +871,7 @@ $("sidebarToggle").addEventListener("click", () => {
 });
 
 $("accountForm").addEventListener("submit", saveAccount);
+$("passwordForm").addEventListener("submit", changePassword);
 $("saveNotifications").addEventListener("click", saveNotifications);
 $("saveAppearance").addEventListener("click", saveAppearance);
 $("savePrivacy").addEventListener("click", savePrivacy);

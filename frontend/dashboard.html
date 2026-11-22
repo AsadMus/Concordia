@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - ConChordia</title>
     <link rel="stylesheet" href="style.css">
+    <script src="js/api.js"></script>
+    <script>api.requireLogin();</script>
 </head>
 <body>
     <div class="sidebar">
@@ -40,7 +42,7 @@
                 <div class="profile-dropdown" id="profileDropdown">
                     <a href="artist-profile.html">My Profile</a>
                     <a href="settings.html">Settings</a>
-                    <a href="login.html">Log Out</a>
+                    <a href="login.html" data-logout>Log Out</a>
                 </div>
             </div>
         </header>
@@ -126,12 +128,12 @@
         profileButton.addEventListener("click", function() {
             const isOpen = profileButton.getAttribute("aria-expanded") === "true";
             profileButton.setAttribute("aria-expanded", String(!isOpen));
-            profileDropdown.classList.toggle("show", !isOpen);
+            profileDropdown.classList.toggle("open", !isOpen);
         });
         document.addEventListener("click", function(event) {
             if (!event.target.closest(".profile-menu")) {
                 profileButton.setAttribute("aria-expanded", "false");
-                profileDropdown.classList.remove("show");
+                profileDropdown.classList.remove("open");
             }
         });
 
@@ -197,15 +199,12 @@
             return contact ? contact.role || "—" : "—";
         }
 
-        function showProfile() {
+        // Name comes from the logged-in account (GET /api/auth/me).
+        // If the token is expired or invalid, api.js sends the user back to login.html.
+        async function showProfile() {
             try {
-                const profile = JSON.parse(
-                    localStorage.getItem("conchordiaArtistProfile") || "{}"
-                );
-                const name = profile.stageName ||
-                    profile.name ||
-                    profile.artistName ||
-                    "User";
+                const user = await api.get("/auth/me");
+                const name = user.stageName || user.firstName || "User";
                 document.getElementById("welcomeMessage").textContent =
                     "Welcome back, " + name + "!";
                 document.getElementById("profileName").textContent = name;

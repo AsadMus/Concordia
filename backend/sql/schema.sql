@@ -4,7 +4,7 @@
 
 DROP TABLE IF EXISTS transactions, opportunities, interactions, follow_ups,
   booking_performers, bookings, project_collaborators, projects,
-  contact_connections, contacts, users CASCADE;
+  contact_connections, contacts, password_resets, users CASCADE;
 
 -- ---------- Accounts (signup.html / login.html) ----------
 CREATE TABLE users (
@@ -19,7 +19,19 @@ CREATE TABLE users (
   stage_name    VARCHAR(150),            -- artist-profile.html
   genres        TEXT[],
   bio           TEXT,
+  location      VARCHAR(150),            -- artist-profile.html "City, State"
+  socials       JSONB        NOT NULL DEFAULT '{}',  -- {"instagram": "...", "tiktok": "...", "youtube": "...", "spotify": "..."}
   created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+-- ---------- Password reset links (forgot-password.html / reset-password.html) ----------
+-- Only a SHA-256 hash of the token is stored, so a leaked database can't be used to reset passwords.
+CREATE TABLE password_resets (
+  id          SERIAL PRIMARY KEY,
+  user_id     INTEGER     NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash  TEXT        NOT NULL UNIQUE,
+  expires_at  TIMESTAMPTZ NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ---------- Contacts + relationship status (features i, vii) ----------

@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ConChordia Sign Up</title>
     <link rel="stylesheet" href="style.css">
+    <script src="js/api.js"></script>
+    <script>api.redirectIfLoggedIn();</script>
 </head>
 <body class="auth-body">
     <div class="page signup-page">
@@ -92,33 +94,17 @@
             submitButton.disabled = true;
 
             try {
-                const response = await fetch("/api/auth/signup", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        firstName,
-                        lastName,
-                        phone,
-                        email,
-                        password,
-                        confirmPassword,
-                        accountType
-                    })
+                // api.signup saves the login token + account info (see js/api.js)
+                await api.signup({
+                    firstName,
+                    lastName,
+                    phone,
+                    email,
+                    password,
+                    confirmPassword,
+                    accountType
                 });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || "Registration failed.");
-                }
-
-                localStorage.setItem("conchordiaToken", data.token);
-                localStorage.setItem("conchordiaAccount", JSON.stringify(data.user));
-                localStorage.setItem("conchordiaAccountType", data.user.accountType);
-
-                window.location.href = "dashboard.html";
+                window.location.replace("dashboard.html");
 
             } catch (error) {
                 signupError.textContent = error.message;

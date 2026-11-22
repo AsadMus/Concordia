@@ -26,6 +26,8 @@ backend/
 `POST /api/auth/login` with `{ "login": "<email or phone>", "password": "..." }` returns `{ token, user }`.
 Every other `/api/*` request must send the header `Authorization: Bearer <token>`. `js/api.js` handles this for you.
 
+**Front-end pages:** every logged-in page has `<script src="js/api.js"></script><script>api.requireLogin();</script>` in its `<head>`, so it bounces to login.html without a valid token. Any link with a `data-logout` attribute logs the user out.
+
 **Rule for every route:** each query must include `user_id = req.user.id`. That's how one artist can't see another's data (success criterion #6).
 
 ## API
@@ -33,6 +35,7 @@ Every other `/api/*` request must send the header `Authorization: Bearer <token>
 | Status | Endpoint | Page |
 |---|---|---|
 | DONE | `POST /api/auth/signup`, `POST /api/auth/login`, `GET /api/auth/me` | signup / login |
+| DONE | `PUT /api/auth/me` (profile: name, email, phone, stageName, genres, location, bio, socials), `PUT /api/auth/password` | artist-profile.html / settings |
 | DONE | `GET/POST /api/contacts`, `GET/PUT/DELETE /api/contacts/:id` (`?search=&role=&status=`) | contacts.html |
 | TODO | `/api/projects` + `/:id/collaborators` | projects.html |
 | TODO | `/api/bookings` + `/:id/performers` | calendar.html |
