@@ -17,13 +17,13 @@ const { asyncHandler, httpError } = require('../middleware/errors');
 
 // request field -> database column
 const FIELDS = {
-  name: 'name', stageName: 'stage_name', role: 'role', genres: 'genres',
+  name: 'name', stageName: 'stage_name', role: 'role', company: 'company', genres: 'genres',
   email: 'email', phone: 'phone', socials: 'socials', location: 'location',
   relationshipStatus: 'relationship_status', notes: 'notes',
 };
 
 const toJson = (r) => ({
-  id: r.id, name: r.name, stageName: r.stage_name, role: r.role, genres: r.genres,
+  id: r.id, name: r.name, stageName: r.stage_name, role: r.role, company: r.company, genres: r.genres,
   email: r.email, phone: r.phone, socials: r.socials, location: r.location,
   relationshipStatus: r.relationship_status, notes: r.notes, createdAt: r.created_at,
 });

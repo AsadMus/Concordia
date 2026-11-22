@@ -5,18 +5,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Contacts - ConChordia</title>
     <link rel="stylesheet" href="style.css">
     <script src="js/api.js"></script>
-    <script>api.requireLogin();</script>
 </head>
 
 <body>
 
     <!-- Sidebar -->
     <div class="sidebar">
-
         <button class="sidebar-toggle" id="sidebarToggle">☰</button>
 
         <div class="logo">
@@ -34,7 +31,6 @@
             <a href="network.html">Network</a>
             <a href="settings.html">Settings</a>
         </nav>
-
     </div>
 
     <!-- Main Content -->
@@ -49,7 +45,6 @@
 
         <div class="contacts-header">
             <h2 class="section-title">Your Network</h2>
-
             <button class="save-profile-button" id="addContactButton">
                 + Add Contact
             </button>
@@ -57,7 +52,6 @@
 
         <!-- Overview -->
         <div class="contacts-summary">
-
             <section class="dashboard-card">
                 <h3>Total Contacts</h3>
                 <p class="contact-stat" id="totalContacts">0</p>
@@ -67,16 +61,13 @@
                 <h3>Active Connections</h3>
                 <p class="contact-stat" id="activeContacts">0</p>
             </section>
-
         </div>
 
         <!-- Contact List -->
         <section class="dashboard-card">
-
             <h2>Industry Contacts</h2>
 
             <div class="contact-filters">
-
                 <input
                     type="search"
                     id="contactSearch"
@@ -94,13 +85,10 @@
                     <option>Manager</option>
                     <option>Other</option>
                 </select>
-
             </div>
 
             <div class="contacts-table-wrapper">
-
                 <table class="contacts-table">
-
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -113,15 +101,12 @@
                     </thead>
 
                     <tbody id="contactsTableBody"></tbody>
-
                 </table>
-
             </div>
 
             <p id="emptyContacts" class="contacts-empty">
                 No contacts added yet.
             </p>
-
         </section>
 
         <!-- Add/Edit Contact Form -->
@@ -130,7 +115,6 @@
             id="contactFormCard"
             hidden
         >
-
             <h2 id="contactFormTitle">Add Contact</h2>
 
             <form id="contactForm" class="artist-profile-form">
@@ -206,8 +190,10 @@
                 ></textarea>
 
                 <div class="contact-form-actions">
-
-                    <button type="submit" class="save-profile-button">
+                    <button
+                        type="submit"
+                        class="save-profile-button"
+                    >
                         Save Contact
                     </button>
 
@@ -227,22 +213,17 @@
                     >
                         Delete Contact
                     </button>
-
                 </div>
 
                 <p id="contactFormMessage" role="status"></p>
-
             </form>
-
         </section>
 
         <p id="contactsMessage" role="status"></p>
 
     </main>
 
-    <!-- JavaScript -->
     <script>
-
         // Sidebar
         const sidebar = document.querySelector(".sidebar");
         const toggleButton = document.getElementById("sidebarToggle");
@@ -251,66 +232,92 @@
             sidebar.classList.toggle("collapsed");
         });
 
-        // Contacts
-        const STORAGE_KEY = "conchordiaContacts";
-
+        // Contacts - PostgreSQL API
         const contactForm = document.getElementById("contactForm");
         const formCard = document.getElementById("contactFormCard");
         const tableBody = document.getElementById("contactsTableBody");
         const searchInput = document.getElementById("contactSearch");
         const roleFilter = document.getElementById("roleFilter");
         const contactsMessage = document.getElementById("contactsMessage");
+        const formMessage = document.getElementById("contactFormMessage");
         const deleteContactButton = document.getElementById("deleteContactButton");
 
         let contacts = [];
         let editingId = null;
 
-        // Load contacts
-        try {
-            const stored = JSON.parse(
-                localStorage.getItem(STORAGE_KEY) || "[]"
-            );
-
-            contacts = Array.isArray(stored) ? stored : [];
-
-        } catch (error) {
-            console.error("Unable to load contacts:", error);
-            contactsMessage.textContent = "Unable to load saved contacts.";
-        }
-
         function getValue(id) {
             return document.getElementById(id).value.trim();
         }
 
-        // Save to browser storage
-        function saveContacts() {
-            try {
-                localStorage.setItem(
-                    STORAGE_KEY,
-                    JSON.stringify(contacts)
-                );
+        // API request with authentication
+        async function contactRequest(path, options = {}) {
+            const token = localStorage.getItem("conchordiaToken");
 
-                return true;
+            if (!token) {
+                window.location.replace("login.html");
+                throw new Error("Please log in.");
+            }
+
+            const response = await fetch("/api/contacts" + path, {
+                ...options,
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                    ...options.headers
+                }
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                window.location.replace("login.html");
+                throw new Error("Your session has expired.");
+            }
+
+            if (response.status === 204) {
+                return null;
+            }
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error ||
+                    data.message ||
+                    "Request failed."
+                );
+            }
+
+            return data;
+        }
+
+        // Load contacts from PostgreSQL
+        async function loadContacts() {
+            try {
+                contactsMessage.textContent = "";
+
+                const result = await contactRequest("");
+
+                contacts = Array.isArray(result)
+                    ? result
+                    : result.contacts || [];
+
+                renderContacts();
 
             } catch (error) {
-                console.error("Unable to save contacts:", error);
-                contactsMessage.textContent = "Unable to save contacts.";
-                return false;
+                console.error("Unable to load contacts:", error);
+                contactsMessage.textContent = error.message;
             }
         }
 
         // Open Add/Edit form
         function openForm(contact = null) {
-
             contactForm.reset();
-            document.getElementById("contactFormMessage").textContent = "";
+            formMessage.textContent = "";
 
             editingId = contact ? contact.id : null;
 
             document.getElementById("contactFormTitle").textContent =
                 contact ? "Edit Contact" : "Add Contact";
 
-            // Delete is available only when editing
             deleteContactButton.hidden = !contact;
 
             if (contact) {
@@ -333,10 +340,12 @@
                     contact.location || "";
 
                 document.getElementById("contactInstagram").value =
-                    contact.instagram || "";
+                    typeof contact.socials === "object"
+                        ? contact.socials?.instagram || ""
+                        : contact.socials || "";
 
                 document.getElementById("contactRelationship").value =
-                    contact.relationship || "New";
+                    contact.relationshipStatus || "New";
 
                 document.getElementById("contactNotes").value =
                     contact.notes || "";
@@ -358,124 +367,130 @@
             deleteContactButton.hidden = true;
         }
 
-        // Add Contact button
-        document.getElementById("addContactButton").addEventListener(
-            "click",
-            function() {
+        // Add Contact
+        document.getElementById("addContactButton")
+            .addEventListener("click", function() {
                 openForm();
-            }
-        );
+            });
 
-        // Cancel button
-        document.getElementById("cancelContactButton").addEventListener(
-            "click",
-            closeForm
-        );
+        // Cancel
+        document.getElementById("cancelContactButton")
+            .addEventListener("click", closeForm);
 
         // Save Contact
-        contactForm.addEventListener("submit", function(event) {
-
+        contactForm.addEventListener("submit", async function(event) {
             event.preventDefault();
 
             const contact = {
-                id: editingId || crypto.randomUUID(),
                 name: getValue("contactName"),
                 role: getValue("contactRole"),
                 company: getValue("contactCompany"),
                 email: getValue("contactEmail"),
                 phone: getValue("contactPhone"),
                 location: getValue("contactLocation"),
-                instagram: getValue("contactInstagram"),
-                relationship: getValue("contactRelationship"),
+                socials: {
+                    instagram: getValue("contactInstagram")
+                },
+                relationshipStatus: getValue("contactRelationship"),
                 notes: getValue("contactNotes")
             };
 
-            if (!contact.name) return;
-
-            const previousContacts = [...contacts];
-
-            if (editingId) {
-                contacts = contacts.map(function(existing) {
-                    return existing.id === editingId
-                        ? contact
-                        : existing;
-                });
-            } else {
-                contacts.push(contact);
-            }
-
-            if (!saveContacts()) {
-                contacts = previousContacts;
+            if (!contact.name) {
+                formMessage.textContent = "Name is required.";
                 return;
             }
 
-            closeForm();
-            renderContacts();
+            const saveButton = contactForm.querySelector(
+                'button[type="submit"]'
+            );
 
-            contactsMessage.textContent =
-                "Contact saved successfully!";
+            saveButton.disabled = true;
+            formMessage.textContent = "";
+
+            try {
+                await contactRequest(
+                    editingId ? `/${editingId}` : "",
+                    {
+                        method: editingId ? "PUT" : "POST",
+                        body: JSON.stringify(contact)
+                    }
+                );
+
+                closeForm();
+                await loadContacts();
+
+                contactsMessage.textContent =
+                    "Contact saved successfully!";
+
+            } catch (error) {
+                console.error("Unable to save contact:", error);
+                formMessage.textContent = error.message;
+
+            } finally {
+                saveButton.disabled = false;
+            }
         });
 
-        // Delete Contact - only from Edit form
-        deleteContactButton.addEventListener("click", function() {
-
+        // Delete Contact
+        deleteContactButton.addEventListener("click", async function() {
             if (!editingId) return;
 
-            const contact = contacts.find(function(item) {
-                return item.id === editingId;
-            });
+            const contact = contacts.find(
+                item => String(item.id) === String(editingId)
+            );
 
             if (!contact) return;
 
             const confirmed = confirm(
-                "Are you sure you want to permanently delete " +
-                contact.name + "?"
+                `Are you sure you want to permanently delete ${contact.name}?`
             );
 
             if (!confirmed) return;
 
-            const previousContacts = [...contacts];
+            deleteContactButton.disabled = true;
 
-            contacts = contacts.filter(function(item) {
-                return item.id !== editingId;
-            });
+            try {
+                await contactRequest(`/${editingId}`, {
+                    method: "DELETE"
+                });
 
-            if (!saveContacts()) {
-                contacts = previousContacts;
-                return;
+                closeForm();
+                await loadContacts();
+
+                contactsMessage.textContent =
+                    "Contact deleted successfully.";
+
+            } catch (error) {
+                console.error("Unable to delete contact:", error);
+                formMessage.textContent = error.message;
+
+            } finally {
+                deleteContactButton.disabled = false;
             }
-
-            closeForm();
-            renderContacts();
-
-            contactsMessage.textContent =
-                "Contact deleted successfully.";
         });
 
         // Create table cells safely
         function createCell(row, value) {
             const cell = document.createElement("td");
-
             cell.textContent = value || "—";
-
             row.appendChild(cell);
-
             return cell;
         }
 
         // Display contacts
         function renderContacts() {
-
             const query = searchInput.value.toLowerCase().trim();
             const selectedRole = roleFilter.value;
 
             const filtered = contacts.filter(function(contact) {
-
                 const searchable = [
                     contact.name,
+                    contact.stageName,
                     contact.role,
                     contact.company,
-                    contact.email
+                    contact.email,
+                    contact.phone,
+                    contact.location
                 ].join(" ").toLowerCase();
 
                 return searchable.includes(query) &&
@@ -485,20 +500,17 @@
             tableBody.replaceChildren();
 
             filtered.forEach(function(contact) {
-
                 const row = document.createElement("tr");
 
                 createCell(row, contact.name);
                 createCell(row, contact.role);
                 createCell(row, contact.company);
-                createCell(row, contact.relationship);
+                createCell(row, contact.relationshipStatus);
                 createCell(row, contact.email || contact.phone);
 
                 const actions = document.createElement("td");
 
-                // Only Edit is displayed in the table
                 const editButton = document.createElement("button");
-
                 editButton.type = "button";
                 editButton.textContent = "Edit";
                 editButton.className = "contact-action-button";
@@ -508,24 +520,23 @@
                 });
 
                 actions.appendChild(editButton);
-
                 row.appendChild(actions);
                 tableBody.appendChild(row);
             });
 
-            // Update statistics
+            // Contact statistics
             document.getElementById("totalContacts").textContent =
                 contacts.length;
 
             document.getElementById("activeContacts").textContent =
                 contacts.filter(function(contact) {
-                    return contact.relationship === "Active" ||
-                        contact.relationship === "Frequent";
+                    return contact.relationshipStatus === "Active" ||
+                           contact.relationshipStatus === "Frequent" ||
+                           contact.relationshipStatus === "Active Partner";
                 }).length;
 
             // Empty state
-            const emptyMessage =
-                document.getElementById("emptyContacts");
+            const emptyMessage = document.getElementById("emptyContacts");
 
             emptyMessage.textContent = contacts.length === 0
                 ? "No contacts added yet."
@@ -538,8 +549,8 @@
         searchInput.addEventListener("input", renderContacts);
         roleFilter.addEventListener("change", renderContacts);
 
-        // Initial display
-        renderContacts();
+        // Initial load
+        loadContacts();
 
     </script>
 
