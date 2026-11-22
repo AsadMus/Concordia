@@ -457,7 +457,7 @@ nav a:not(.active):hover {
     z-index: 100;
     box-shadow: 0 8px 20px #0005;
 }
-.profile-dropdown.show {
+.profile-dropdown.open {
     display: block;
 }
 .profile-dropdown a {
