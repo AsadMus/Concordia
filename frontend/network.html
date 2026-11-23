@@ -206,7 +206,7 @@ const $ = id => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 const CONNECTIONS_KEY = "conchordiaNetworkConnections";
 const POSITIONS_KEY = "conchordiaNetworkPositions";
-const ORGS_KEY = "conchordiaOrganizations";
+let organizationData = [];
 const COLORS = {New:"#b88b55",Warm:"#e0aa4f",Active:"#59bd9a",Frequent:"#d38aff"};
 let people = [], connections = [], positions = {};
 let selectedId = null, editingId = null, highlightedPath = [];
@@ -230,7 +230,12 @@ function account() {
     return read("conchordiaAccount",{});
 }
 function accountRole() {
-    return account().role || localStorage.getItem("conchordiaAccountType") || "artist";
+    const user = account();
+
+    return user.accountType ||
+        user.account_type ||
+        localStorage.getItem("conchordiaAccountType") ||
+        (user.role === "manager" ? "manager" : "artist");
 }
 function accountId() {
     return String(account().email || "").trim().toLowerCase();
@@ -252,7 +257,11 @@ function action(parent,label,callback,cls="network-secondary") {
     return button;
 }
 function organizations() {
-    return readArray(ORGS_KEY);
+    return organizationData;
+}
+async function loadOrganizations() {
+    organizationData = await api.get("/organizations");
+    renderOrganizations();
 }
 function code(used) {
     const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -265,106 +274,84 @@ function code(used) {
     used.add(result);
     return result;
 }
-function createOrganization(event) {
+async function createOrganization(event) {
     event.preventDefault();
-    if(accountRole() !== "manager" || !accountId()) {
-        status("Sign up as a manager first.");
-        return;
-    }
+
     const name = $("orgName").value.trim();
     const type = $("orgType").value;
-    if(!name) return;
-    const all = organizations();
-    const used = new Set(all.flatMap(org => [org.artistCode,org.adminCode].filter(Boolean)));
-    all.push({
-        id:id(),name,type,ownerId:accountId(),
-        artistCode:code(used),
-        adminCode:type === "collective" ? code(used) : null,
-        members:[],admins:[],createdAt:new Date().toISOString()
-    });
+
+    if (!name) return;
+
     try {
-        save(ORGS_KEY,all);
+        await api.post("/organizations", { name, type });
+
         $("createOrgForm").reset();
+        await loadOrganizations();
+
         status("Organization created.");
-        renderOrganizations();
-    } catch {
-        status("Unable to save organization.");
+    } catch (error) {
+        status(error.message);
     }
 }
-function joinArtist(event) {
+async function joinArtist(event) {
     event.preventDefault();
-    if(accountRole() !== "artist" || !accountId()) {
-        status("Sign up as an artist first.");
-        return;
-    }
-    const entered = $("artistCode").value.trim().toUpperCase();
-    const all = organizations();
-    const org = all.find(item => item.artistCode === entered);
-    if(!org) { status("Invalid invitation code."); return; }
-    if(org.members.includes(accountId())) {
-        status("You already belong to this organization.");
-        return;
-    }
-    org.members.push(accountId());
+
+    const code = $("artistCode").value.trim().toUpperCase();
+
     try {
-        save(ORGS_KEY,all);
+        const result = await api.post("/organizations/join", { code });
+
         $("joinArtistForm").reset();
-        status("Joined " + org.name + ".");
-        renderOrganizations();
-    } catch { status("Unable to save membership."); }
+        await loadOrganizations();
+
+        status(result.message);
+    } catch (error) {
+        status(error.message);
+    }
 }
-function joinAdmin(event) {
+async function joinAdmin(event) {
     event.preventDefault();
-    if(accountRole() !== "manager" || !accountId()) {
-        status("A manager account is required.");
-        return;
-    }
-    const entered = $("adminJoinCode").value.trim().toUpperCase();
-    const all = organizations();
-    const org = all.find(item => item.type === "collective" && item.adminCode === entered);
-    if(!org) { status("Invalid administrator code."); return; }
-    if(org.ownerId === accountId() || org.admins.includes(accountId())) {
-        status("You already manage this collective.");
-        return;
-    }
-    org.admins.push(accountId());
+
+    const code = $("adminJoinCode").value.trim().toUpperCase();
+
     try {
-        save(ORGS_KEY,all);
+        const result = await api.post("/organizations/join", { code });
+
         $("joinAdminForm").reset();
-        status("Joined as administrator.");
-        renderOrganizations();
-    } catch { status("Unable to save membership."); }
-}
-function leaveOrganization(orgId) {
-    const all = organizations();
-    const org = all.find(item => item.id === orgId);
-    if(!org || org.ownerId === accountId()) return;
-    org.members = org.members.filter(member => member !== accountId());
-    org.admins = org.admins.filter(admin => admin !== accountId());
-    try {
-        save(ORGS_KEY,all);
-        status("Left " + org.name + ".");
-        renderOrganizations();
-    } catch { status("Unable to update membership."); }
-}
-function removeMember(orgId,memberId,kind) {
-    const all = organizations();
-    const org = all.find(item => item.id === orgId);
-    if(!org) return;
-    const owner = org.ownerId === accountId();
-    const admin = org.admins.includes(accountId());
-    if(kind === "admin") {
-        if(!owner) return;
-        org.admins = org.admins.filter(item => item !== memberId);
-    } else {
-        if(!owner && !admin) return;
-        org.members = org.members.filter(item => item !== memberId);
+        await loadOrganizations();
+
+        status(result.message);
+    } catch (error) {
+        status(error.message);
     }
+}
+async function leaveOrganization(orgId) {
     try {
-        save(ORGS_KEY,all);
+        await api.del("/organizations/" + orgId + "/leave");
+
+        await loadOrganizations();
+
+        status("Organization left successfully.");
+    } catch (error) {
+        status(error.message);
+    }
+}
+async function removeMember(orgId, memberId, kind) {
+    if (!confirm("Remove this member?")) return;
+
+    try {
+        await api.del(
+            "/organizations/" + orgId +
+            "/members?email=" + encodeURIComponent(memberId) +
+            "&role=" + encodeURIComponent(kind)
+        );
+
+        await loadOrganizations();
+
         status("Member removed.");
-        renderOrganizations();
-    } catch { status("Unable to remove member."); }
+    } catch (error) {
+        status(error.message);
+    }
 }
 function copyCode(value) {
     navigator.clipboard.writeText(value).then(
@@ -392,7 +379,7 @@ function renderOrganizations() {
             const card = element("div",undefined,"network-org-item");
             card.appendChild(element("h4",org.name));
             card.appendChild(element("p",org.type === "team" ? "Management Team" : "Artist Collective"));
-            card.appendChild(element("p","Owner: " + org.ownerId));
+            card.appendChild(element("p","Owner: " + org.ownerName));
             action(card,"Leave Organization",() => {
                 if(confirm("Leave " + org.name + "?")) leaveOrganization(org.id);
             });
@@ -466,14 +453,15 @@ function edges() {
 function historicalEdges() {
     return edges().filter(edge => ["Introduced","Met Directly"].includes(edge.type));
 }
-function loadNetwork() {
+async function loadNetwork() {
     const profile = read("conchordiaArtistProfile",{});
     const user = account();
     const selfName = profile.stageName || profile.name ||
         [user.firstName,user.lastName].filter(Boolean).join(" ") || "You";
     people = [{id:"self",name:selfName,role:"Your Profile",isSelf:true}];
     const seen = new Set(["self"]);
-    readArray("conchordiaContacts").forEach((contact,index) => {
+    const contacts = await api.get("/contacts");
+    contacts.forEach((contact,index) => {
         const contactId = String(contact.id ?? `contact-${index}`);
         if(seen.has(contactId)) return;
         seen.add(contactId);
@@ -486,15 +474,19 @@ function loadNetwork() {
             isSelf:false
         });
     });
-    connections = readArray(CONNECTIONS_KEY).map(edge => ({
+    const networkData = await api.get("/network");
+    connections = [
+        ...(networkData.connections || []),
+        ...(networkData.automaticEdges || [])
+    ].map(edge => ({
         ...edge,
-        id:edge.id || id(),
-        from:String(edge.from ?? edge.contact1 ?? ""),
-        to:String(edge.to ?? edge.contact2 ?? ""),
-        type:edge.type || "Professional",
-        strength:edge.strength || "New",
-        date:edge.date || "",
-        notes:edge.notes || ""
+        id: String(edge.id),
+        from: String(edge.from),
+        to: String(edge.to),
+        type: edge.type || "Introduced",
+        strength: edge.strength || "New",
+        date: edge.date || "",
+        notes: edge.notes || ""
     }));
     positions = read(POSITIONS_KEY,{});
     if(!positions || typeof positions !== "object" || Array.isArray(positions)) positions = {};
@@ -709,6 +701,10 @@ function fillPeople(select) {
     });
 }
 function openConnection(edge=null) {
+    if (edge?.automatic) {
+        $("networkStatus").textContent = edge.notes;
+        return;
+    }
     if(people.length<2) {$("networkStatus").textContent="Add contacts first.";return;}
     editingId=edge?.id||null;
     fillPeople($("connectionFrom"));
@@ -728,49 +724,78 @@ function closeConnection() {
     $("connectionModal").hidden=true;
     editingId=null;
 }
-function saveConnection(event) {
+async function saveConnection(event) {
     event.preventDefault();
-    const from=$("connectionFrom").value,to=$("connectionTo").value;
-    const type=$("connectionType").value;
-    if(from===to) {$("networkStatus").textContent="Choose different people.";return;}
-    if(type==="Met Directly"&&from!=="self") {
-        $("networkStatus").textContent="For a direct meeting, select yourself as Person 1.";
+
+    const from = $("connectionFrom").value;
+    const to = $("connectionTo").value;
+    const type = $("connectionType").value;
+
+    if (from === to) {
+        $("networkStatus").textContent = "Choose different people.";
         return;
     }
-    if(edges().some(e=>e.id!==editingId&&e.from===from&&e.to===to)) {
-        $("networkStatus").textContent="Connection already recorded.";
+
+    if (type === "Met Directly" && from !== "self") {
+        $("networkStatus").textContent =
+            "For a direct meeting, select yourself as Person 1.";
         return;
     }
-    const data={id:editingId||id(),from,to,type,
-        strength:$("connectionStrength").value,
-        date:$("connectionDate").value,
-        notes:$("connectionNotes").value.trim()};
-    const old=[...connections];
-    connections=editingId?connections.map(e=>e.id===editingId?data:e):[...connections,data];
+
+    if (edges().some(edge =>
+        !edge.automatic &&
+        String(edge.id) !== String(editingId) &&
+        edge.from === from &&
+        edge.to === to
+    )) {
+        $("networkStatus").textContent = "Connection already recorded.";
+        return;
+    }
+
+    const data = {
+        from,
+        to,
+        type,
+        strength: $("connectionStrength").value,
+        date: $("connectionDate").value,
+        notes: $("connectionNotes").value.trim()
+    };
+
     try {
-        save(CONNECTIONS_KEY,connections);
-        highlightedPath=[];
+        $("networkStatus").textContent = "Saving connection...";
+
+        if (editingId) {
+            await api.put("/network/connections/" + editingId, data);
+        } else {
+            await api.post("/network/connections", data);
+        }
+
         closeConnection();
+        await loadNetwork();
         renderNetwork();
-        $("networkStatus").textContent="Connection saved.";
-    } catch {
-        connections=old;
-        $("networkStatus").textContent="Unable to save connection.";
+
+        $("networkStatus").textContent = "Connection saved.";
+    } catch (error) {
+        console.error(error);
+        $("networkStatus").textContent = error.message;
     }
 }
-function deleteConnection() {
-    if(!editingId||!confirm("Delete this connection?")) return;
-    const old=[...connections];
-    connections=connections.filter(e=>e.id!==editingId);
+async function deleteConnection() {
+    if (!editingId || !confirm("Delete this connection?")) return;
+
     try {
-        save(CONNECTIONS_KEY,connections);
-        highlightedPath=[];
+        await api.del("/network/connections/" + editingId);
+
         closeConnection();
+        highlightedPath = [];
+
+        await loadNetwork();
         renderNetwork();
-        $("networkStatus").textContent="Connection deleted.";
-    } catch {
-        connections=old;
-        $("networkStatus").textContent="Unable to delete connection.";
+
+        $("networkStatus").textContent = "Connection deleted.";
+    } catch (error) {
+        console.error(error);
+        $("networkStatus").textContent = error.message;
     }
 }
 function zoom(factor,x=500,y=325) {
@@ -869,19 +894,34 @@ $("connectionModal").onclick=event=>{
 document.addEventListener("keydown",event=>{
     if(event.key==="Escape")closeConnection();
 });
-window.addEventListener("pageshow",()=>{
-    loadNetwork();
-    renderNetwork();
-    renderOrganizations();
+window.addEventListener("pageshow", async () => {
+    try {
+        await loadNetwork();
+        renderNetwork();
+    } catch (error) {
+        console.error(error);
+        $("networkStatus").textContent = "Unable to load network.";
+    }
+
+    try {
+        await loadOrganizations();
+    } catch (error) {
+        console.error(error);
+        status("Unable to load organizations.");
+    }
 });
-window.addEventListener("storage",()=>{
-    loadNetwork();
-    renderNetwork();
-    renderOrganizations();
+
+window.addEventListener("storage", async () => {
+    try {
+        await loadNetwork();
+        renderNetwork();
+        await loadOrganizations();
+    } catch (error) {
+        console.error(error);
+    }
 });
-loadNetwork();
+
 setupGraph();
-renderNetwork();
 renderOrganizations();
 </script>
 <script src="js/profile-dropdown.js"></script>

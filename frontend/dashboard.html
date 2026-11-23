@@ -32,18 +32,6 @@
                 <h1 id="welcomeMessage">Welcome back, User!</h1>
                 <p>Here's what's happening with your music network:</p>
             </div>
-            <div class="profile-menu">
-                <button class="profile-button" id="profileButton" aria-expanded="false" aria-controls="profileDropdown">
-                    <span class="profile-circle" id="profileInitial">U</span>
-                    <span id="profileName">User</span>
-                    <span>▼</span>
-                </button>
-                <div class="profile-dropdown" id="profileDropdown">
-                    <a href="artist-profile.html">My Profile</a>
-                    <a href="settings.html">Settings</a>
-                    <a href="login.html" id="logoutButton">Log Out</a> 
-                </div>
-            </div>
         </header>
         <h2 class="section-title">Your Overview</h2>
         <div class="dashboard-grid">
@@ -88,9 +76,9 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Contact</th>
-                            <th>Role</th>
                             <th>Follow-Up Date</th>
+                            <th>Name</th>
+                            <th>Type</th>
                         </tr>
                     </thead>
                     <tbody id="dashboardFollowUps"></tbody>
@@ -122,19 +110,6 @@
             sidebar.classList.toggle("collapsed");
         });
 
-        const profileButton = document.getElementById("profileButton");
-        const profileDropdown = document.getElementById("profileDropdown");
-        profileButton.addEventListener("click", function() {
-            const isOpen = profileButton.getAttribute("aria-expanded") === "true";
-            profileButton.setAttribute("aria-expanded", String(!isOpen));
-            profileDropdown.classList.toggle("open", !isOpen);
-        });
-        document.addEventListener("click", function(event) {
-            if (!event.target.closest(".profile-menu")) {
-                profileButton.setAttribute("aria-expanded", "false");
-                profileDropdown.classList.remove("open");
-            }
-        });
 
         function loadData(key) {
             try {
@@ -230,11 +205,6 @@
                 document.getElementById("welcomeMessage").textContent =
                     `Welcome back, ${name}!`;
 
-                document.getElementById("profileName").textContent = name;
-
-                document.getElementById("profileInitial").textContent =
-                    name.charAt(0).toUpperCase();
-
                 localStorage.setItem("conchordiaAccount", JSON.stringify(user));
             } catch (error) {
                 console.error("Profile loading error:", error);
@@ -249,11 +219,6 @@
 
             window.location.replace("login.html");
         }
-
-        document.getElementById("logoutButton").addEventListener("click", function(event) {
-            event.preventDefault();
-            logout();
-        });
 
         async function showUpcomingEvents() {
             const table = document.getElementById("dashboardEvents");
@@ -386,7 +351,7 @@
                 const opportunityFollowUps = opportunities
                     .filter(opportunity =>
                         opportunity.deadline &&
-                        !["Rejected", "Closed"].includes(opportunity.status)
+                        !["Rejected", "Closed"].includes(opportunity.stage)
                     )
                     .map(opportunity => ({
                         name: opportunity.name || opportunity.title || "Opportunity",
@@ -410,9 +375,9 @@
                 upcoming.forEach(item => {
                     const row = document.createElement("tr");
 
+                    addCell(row, item.date.toLocaleDateString("en-US"));
                     addCell(row, item.name);
                     addCell(row, item.role);
-                    addCell(row, item.date.toLocaleDateString("en-US"));
 
                     table.appendChild(row);
                 });
@@ -473,5 +438,6 @@
         updateDashboard();
         window.addEventListener("storage", updateDashboard);
     </script> 
+    <script src="js/profile-dropdown.js"></script>
 </body>
 </html>

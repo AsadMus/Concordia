@@ -239,6 +239,8 @@
         }
 
         async function openForm(opportunity = null) {
+            console.log("Opportunity being edited:", opportunity);
+            console.log("Deadline:", opportunity?.deadline);
             form.reset();
             editingId = opportunity ? opportunity.id : null;
             await loadContacts();
@@ -247,10 +249,13 @@
                 opportunity ? "Edit Opportunity" : "Add Opportunity";
             document.getElementById("deleteOpportunity").hidden = !opportunity;
 
-            document.getElementById("opportunityName").value = opportunity ? opportunity.name : "";
+            document.getElementById("opportunityName").value = opportunity ? opportunity.title : "";
             document.getElementById("opportunityType").value = opportunity ? opportunity.type : "Gig";
-            document.getElementById("opportunityStatus").value = opportunity ? opportunity.status : "Discovered";
-            document.getElementById("opportunityDeadline").value = opportunity ? opportunity.deadline || "" : "";
+            document.getElementById("opportunityStatus").value = opportunity ? opportunity.stage : "Just Found";
+            document.getElementById("opportunityDeadline").value =
+                opportunity?.deadline
+                    ? String(opportunity.deadline).slice(0, 10)
+                    : "";
             document.getElementById("opportunityValue").value = opportunity ? opportunity.estimatedValue ?? "" : "";
             document.getElementById("opportunityContact").value = opportunity ? opportunity.contactId || "" : "";
             document.getElementById("opportunityOrganization").value = opportunity ? opportunity.organization || "" : "";
@@ -335,7 +340,7 @@
             }
 
             try {
-                await api.delete("/opportunities/" + editingId);
+                await api.del("/opportunities/" + editingId);
 
                 closeForm();
                 await loadOpportunities();
@@ -371,7 +376,7 @@
 
                 return text.includes(search) &&
                     (!typeFilter || opportunity.type === typeFilter) &&
-                    (!statusFilter || opportunity.status === statusFilter);
+                    (!statusFilter || opportunity.stage === statusFilter);
             });
 
             tableBody.replaceChildren();

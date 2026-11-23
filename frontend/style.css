@@ -678,6 +678,30 @@ nav a:not(.active):hover {
 .save-profile-button:hover {
     background: #920cc9;
 }
+    /* Artist Profile - View Mode */
+.profile-view-mode input,
+.profile-view-mode textarea {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+    cursor: default;
+    resize: none;
+}
+.profile-view-mode input:focus,
+.profile-view-mode textarea:focus {
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+.profile-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+.profile-actions button[hidden] {
+    display: none;
+}
 /* Contacts */
 .contacts-header {
     display: flex;
@@ -1979,6 +2003,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     color: #e2c9ef;
     font-size: 13px;
     margin-top: 15px;
+}
+.network-connection-item {
+    color: #ffffff;
+}
+.network-connection-item strong {
+    color: #ffffff;
+}
+.network-connection-item span {
+    color: #d1b8e0;
 }
 @media (max-width: 1100px) {
     .network-workspace {

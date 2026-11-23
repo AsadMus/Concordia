@@ -31,7 +31,7 @@
         <header class="topbar">
             <div>
                 <h1>Calendar</h1>
-                <p>Manage bookings, follow-ups, project deadlines, and opportunities.</p>
+                <p>Manage bookings, payment due dates, project deadlines, and opportunities.</p>
             </div>
         </header>
 
@@ -50,10 +50,6 @@
                 <label>
                     <input type="checkbox" class="event-filter" value="Booking" checked>
                     Bookings
-                </label>
-                <label>
-                    <input type="checkbox" class="event-filter" value="Follow-Up" checked>
-                    Follow-Ups
                 </label>
                 <label>
                     <input type="checkbox" class="event-filter" value="Project Deadline" checked>
@@ -75,10 +71,6 @@
                     <label class="calendar-category-color">
                         <input type="color" data-category="Booking">
                         Bookings
-                    </label>
-                    <label class="calendar-category-color">
-                        <input type="color" data-category="Follow-Up">
-                        Follow-Ups
                     </label>
                     <label class="calendar-category-color">
                         <input type="color" data-category="Project Deadline">
@@ -116,7 +108,6 @@
                     <label for="eventCategory">Category</label>
                     <select id="eventCategory">
                         <option value="Booking">Booking</option>
-                        <option value="Follow-Up">Follow-Up</option>
                         <option value="Personal">Personal</option>
                     </select>
 
@@ -167,7 +158,6 @@
 
     const defaultColors = {
         "Booking": "#176c8d",
-        "Follow-Up": "#865a12",
         "Project Deadline": "#9b315f",
         "Opportunity": "#b45309",
         "Personal": "#416a38"
@@ -199,6 +189,7 @@
     let events = [];
     let projects = [];
     let opportunities = [];
+    let transactions = [];
     let editingId = null;
 
     const today = new Date();
@@ -292,6 +283,24 @@
         };
     }
 
+    function paymentToEvent(transaction) {
+        const dueDate = transaction.dueDate || transaction.date;
+
+        return {
+            id: "payment-" + transaction.id,
+            name: "Payment Due: " +
+                (transaction.description || "Unnamed Payment") +
+                " ($" + Number(transaction.amount).toFixed(2) + ")",
+            title: transaction.description || "Payment Due",
+            category: "Booking",
+            date: String(dueDate).slice(0, 10),
+            time: "",
+            location: "",
+            notes: "Unpaid expense from Revenue",
+            source: "payment"
+        };
+    }
+
     async function apiRequest(path, options = {}) {
         const token = localStorage.getItem("conchordiaToken");
 
@@ -329,13 +338,16 @@
 
         try {
             // Bookings, Follow-Ups and Personal events share this table.
-            const [bookingsData, projectsData] = await Promise.all([
+            const [bookingsData, projectsData, transactionsData] = await Promise.all([
                 apiRequest("/bookings"),
-                apiRequest("/projects")
+                apiRequest("/projects"),
+                apiRequest("/transactions")
             ]);
-
             events = bookingsData.map(bookingToEvent);
             projects = projectsData;
+            transactions = Array.isArray(transactionsData)
+                ? transactionsData
+                : transactionsData.transactions || [];
 
             // Opportunities can be connected when that endpoint is ready.
             try {
@@ -365,7 +377,24 @@
                 opportunity.stage !== "Rejected"
             )
             .map(opportunityToEvent);
-        return [...events, ...projectEvents, ...opportunityEvents];
+
+        const paymentEvents = transactions
+            .filter(transaction =>
+                transaction.kind === "expense" &&
+                !transaction.paid &&
+                ["Pending", "Overdue"].includes(
+                    transaction.status || "Pending"
+                ) &&
+                (transaction.dueDate || transaction.date)
+            )
+            .map(paymentToEvent);
+
+        return [
+            ...events.filter(event => event.category !== "Follow-Up"),
+            ...projectEvents,
+            ...opportunityEvents,
+            ...paymentEvents
+        ];
     }
 
     function visibleCategories() {
@@ -516,21 +545,27 @@
             if (event.location) addText("p", "Location: " + event.location);
             if (event.notes) addText("p", "Notes: " + event.notes);
 
-            if (event.source === "project" ||
-                event.source === "opportunity") {
+            if (["project", "opportunity", "payment"].includes(event.source)) {
+                const sourcePages = {
+                    project: "projects.html",
+                    opportunity: "opportunities.html",
+                    payment: "revenue.html"
+                };
 
-                const isProject = event.source === "project";
-                addText("p", isProject
-                    ? "Imported from Projects"
-                    : "Imported from Opportunities");
+                const sourceLabels = {
+                    project: "Projects",
+                    opportunity: "Opportunities",
+                    payment: "Revenue"
+                };
+
+                const label = sourceLabels[event.source];
+
+                addText("p", "Imported from " + label);
 
                 const link = document.createElement("a");
-                link.href = isProject
-                    ? "projects.html"
-                    : "opportunities.html";
-                link.textContent = isProject
-                    ? "View Projects"
-                    : "View Opportunities";
+                link.href = sourcePages[event.source];
+                link.textContent = "View " + label;
+
                 item.appendChild(link);
             } else {
                 const editButton = document.createElement("button");
@@ -538,6 +573,7 @@
                 editButton.className = "calendar-btn";
                 editButton.textContent = "Edit";
                 editButton.onclick = () => openForm(event);
+
                 item.appendChild(editButton);
             }
 

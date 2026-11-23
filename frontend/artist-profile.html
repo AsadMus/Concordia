@@ -97,7 +97,10 @@
                 <input
                     type="tel"
                     id="phone"
-                    placeholder="Enter phone number"
+                    placeholder="###-###-####"
+                    maxlength="12"
+                    inputmode="numeric"
+                    autocomplete="tel"
                 >
 
                 <h2>Social Media</h2>
@@ -139,9 +142,19 @@
                     placeholder="Tell us about yourself as an artist"
                 ></textarea>
 
-                <button type="submit" class="save-profile-button">
-                    Save Profile
-                </button>
+                <div class="profile-actions">
+                    <button type="button" id="editProfileButton" class="save-profile-button" hidden>
+                        Edit Profile
+                    </button>
+
+                    <button type="submit" id="saveProfileButton" class="save-profile-button" hidden>
+                        Save Changes
+                    </button>
+
+                    <button type="button" id="cancelProfileButton" class="save-profile-button" hidden>
+                        Cancel
+                    </button>
+                </div>
 
                 <p id="saveMessage" role="status"></p>
 
@@ -163,46 +176,92 @@
         });
 
         // Artist Profile - saved to the logged-in user's account
-        // GET /api/auth/me loads it, PUT /api/auth/me saves it.
         const profileForm = document.getElementById("artistProfileForm");
         const saveMessage = document.getElementById("saveMessage");
-        const saveButton = profileForm.querySelector("button[type=submit]");
-        const socialFields = ["instagram", "tiktok", "youtube", "spotify"];
 
+        const editButton = document.getElementById("editProfileButton");
+        const saveButton = document.getElementById("saveProfileButton");
+        const cancelButton = document.getElementById("cancelProfileButton");
+
+        const socialFields = ["instagram", "tiktok", "youtube", "spotify"];
         const field = (id) => document.getElementById(id);
+
+        let savedProfile = null;
+        let editing = false;
 
         function fillForm(user) {
             field("stageName").value = user.stageName || "";
-            field("legalName").value = [user.firstName, user.lastName].filter(Boolean).join(" ");
-            field("genre").value = (user.genres || []).join(", ");
+            field("legalName").value =
+                [user.firstName, user.lastName].filter(Boolean).join(" ");
+            field("genre").value = Array.isArray(user.genres)
+                ? user.genres.join(", ")
+                : user.genres || "";
             field("location").value = user.location || "";
             field("email").value = user.email || "";
-            field("phone").value = user.phone || "";
+            field("phone").value = formatPhoneNumber(user.phone);
             field("bio").value = user.bio || "";
+
             socialFields.forEach(function(name) {
                 field(name).value = (user.socials || {})[name] || "";
             });
         }
 
+        function setEditMode(enabled) {
+            editing = enabled;
+
+            profileForm.querySelectorAll("input, textarea").forEach(function(input) {
+                input.readOnly = !enabled;
+            });
+
+            editButton.hidden = enabled;
+            saveButton.hidden = !enabled;
+            cancelButton.hidden = !enabled;
+
+            profileForm.classList.toggle("profile-view-mode", !enabled);
+        }
+
         async function loadProfile() {
             try {
-                fillForm(await api.get("/auth/me"));
+                savedProfile = await api.get("/auth/me");
+                fillForm(savedProfile);
+                setEditMode(false);
             } catch (error) {
-                saveMessage.textContent = "Unable to load profile: " + error.message;
+                saveMessage.textContent =
+                    "Unable to load profile: " + error.message;
             }
         }
+
+        editButton.addEventListener("click", function() {
+            setEditMode(true);
+            saveMessage.textContent = "";
+            field("stageName").focus();
+        });
+
+        cancelButton.addEventListener("click", function() {
+            if (savedProfile) {
+                fillForm(savedProfile);
+            }
+
+            setEditMode(false);
+            saveMessage.textContent = "";
+        });
 
         profileForm.addEventListener("submit", async function(event) {
             event.preventDefault();
 
-            // "Legal Name" is one box; the account stores first and last name separately.
-            const nameParts = field("legalName").value.trim().split(/\s+/).filter(Boolean);
+            if (!editing) return;
+
+            const nameParts = field("legalName")
+                .value.trim().split(/\s+/).filter(Boolean);
+
             if (nameParts.length < 2) {
-                saveMessage.textContent = "Please enter your first and last legal name.";
+                saveMessage.textContent =
+                    "Please enter your first and last legal name.";
                 return;
             }
 
             const socials = {};
+
             socialFields.forEach(function(name) {
                 socials[name] = field(name).value.trim();
             });
@@ -211,7 +270,7 @@
                 stageName: field("stageName").value,
                 firstName: nameParts[0],
                 lastName: nameParts.slice(1).join(" "),
-                genres: field("genre").value,          // "R&B, Pop" -> ["R&B", "Pop"] on the server
+                genres: field("genre").value,
                 location: field("location").value,
                 email: field("email").value,
                 phone: field("phone").value,
@@ -221,14 +280,36 @@
 
             saveMessage.textContent = "Saving...";
             saveButton.disabled = true;
+
             try {
-                fillForm(await api.put("/auth/me", profileData));
-                saveMessage.textContent = "Profile saved successfully!";
+                savedProfile = await api.put("/auth/me", profileData);
+
+                fillForm(savedProfile);
+                setEditMode(false);
+
+                saveMessage.textContent =
+                    "Profile saved successfully!";
             } catch (error) {
-                saveMessage.textContent = "Unable to save profile: " + error.message;
+                saveMessage.textContent =
+                    "Unable to save profile: " + error.message;
             } finally {
                 saveButton.disabled = false;
             }
+        });
+
+        function formatPhoneNumber(value) {
+            const digits = String(value || "").replace(/\D/g, "").slice(0, 10);
+            if (digits.length > 6) {
+                return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+            }
+            if (digits.length > 3) {
+                return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+            }
+            return digits;
+        }
+
+        field("phone").addEventListener("input", function() {
+            this.value = formatPhoneNumber(this.value);
         });
 
         loadProfile();

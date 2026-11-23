@@ -184,6 +184,8 @@
                     </div>
                 </div>
 
+                <label for="transactionDueDate">Payment Due Date</label>
+                <input type="date" id="transactionDueDate">
                 <label for="transactionNotes">Notes</label>
                 <textarea id="transactionNotes" rows="4" placeholder="Additional payment information..."></textarea>
 
@@ -213,7 +215,7 @@
             }
         }
 
-        let transactions = loadData("conchordiaTransactions");
+        let transactions = [];
         let projects = loadData("conchordiaProjects");
         let contacts = loadData("conchordiaContacts");
         let editingId = null;
@@ -249,13 +251,27 @@
             return `${year}-${month}-${day}`;
         }
 
-        function saveTransactions() {
+        async function loadTransactions() {
             try {
-                localStorage.setItem("conchordiaTransactions", JSON.stringify(transactions));
-                return true;
+                const data = await api.get("/transactions");
+
+                transactions = (Array.isArray(data) ? data : data.transactions || [])
+                    .map(transaction => ({
+                        ...transaction,
+                        type: transaction.kind === "income" ? "Income" : "Expense",
+                        date: transaction.date
+                            ? transaction.date.slice(0, 10)
+                            : transaction.dueDate
+                                ? transaction.dueDate.slice(0, 10)
+                                : "",
+                        category: transaction.category || "Other",
+                        status: transaction.status || (transaction.paid ? "Paid" : "Pending")
+                    }));
+
+                showTransactions();
             } catch (error) {
-                message.textContent = "Unable to save transaction.";
-                return false;
+                console.error("Unable to load transactions:", error);
+                message.textContent = "Unable to load transactions.";
             }
         }
 
@@ -348,7 +364,7 @@
                 transaction ? transaction.amount : "";
 
             document.getElementById("transactionDate").value =
-                transaction ? transaction.date : todayDate();
+                transaction ? transaction.date || todayDate() : todayDate();
 
             document.getElementById("transactionStatus").value =
                 transaction ? transaction.status : "Paid";
@@ -364,6 +380,11 @@
 
             document.getElementById("transactionNotes").value =
                 transaction ? transaction.notes || "" : "";
+
+            document.getElementById("transactionDueDate").value =
+                transaction && transaction.dueDate
+                    ? transaction.dueDate.slice(0, 10)
+                    : "";
 
             formCard.hidden = false;
             formCard.scrollIntoView({ behavior: "smooth" });
@@ -381,7 +402,7 @@
 
         document.getElementById("cancelTransaction").onclick = closeForm;
 
-        form.onsubmit = function(event) {
+        form.onsubmit = async function(event) {
             event.preventDefault();
 
             const amount = Number(value("transactionAmount"));
@@ -392,60 +413,52 @@
             }
 
             const transaction = {
-                id: editingId || crypto.randomUUID(),
                 description: value("transactionDescription"),
-                type: value("transactionType"),
+                kind: value("transactionType").toLowerCase(),
                 category: value("transactionCategory"),
                 amount: amount,
                 date: value("transactionDate"),
                 status: value("transactionStatus"),
                 method: value("transactionMethod"),
-                projectId: value("transactionProject"),
-                contactId: value("transactionContact"),
-                notes: value("transactionNotes")
+                projectId: value("transactionProject") || null,
+                contactId: value("transactionContact") || null,
+                notes: value("transactionNotes"),
+                dueDate: value("transactionDueDate") || null
             };
 
             if (!transaction.description || !transaction.date) return;
 
-            const previous = [...transactions];
+            try {
+                if (editingId !== null) {
+                    await api.put(`/transactions/${editingId}`, transaction);
+                } else {
+                    await api.post("/transactions", transaction);
+                }
 
-            if (editingId) {
-                transactions = transactions.map(item =>
-                    item.id === editingId ? transaction : item
-                );
-            } else {
-                transactions.push(transaction);
+                closeForm();
+                await loadTransactions();
+                message.textContent = "Transaction saved successfully.";
+            } catch (error) {
+                console.error("Unable to save transaction:", error);
+                message.textContent = "Unable to save transaction.";
             }
-
-            if (!saveTransactions()) {
-                transactions = previous;
-                return;
-            }
-
-            closeForm();
-            showTransactions();
-            message.textContent = "Transaction saved successfully.";
         };
 
-        document.getElementById("deleteTransaction").onclick = function() {
-            if (!editingId) return;
-
-            const transaction = transactions.find(item => item.id === editingId);
-            if (!transaction) return;
+        document.getElementById("deleteTransaction").onclick = async function() {
+            if (editingId === null) return;
 
             if (!confirm("Delete this transaction? This cannot be undone.")) return;
 
-            const previous = [...transactions];
-            transactions = transactions.filter(item => item.id !== editingId);
+            try {
+                await api.del(`/transactions/${editingId}`);
 
-            if (!saveTransactions()) {
-                transactions = previous;
-                return;
+                closeForm();
+                await loadTransactions();
+                message.textContent = "Transaction deleted.";
+            } catch (error) {
+                console.error("Unable to delete transaction:", error);
+                message.textContent = "Unable to delete transaction.";
             }
-
-            closeForm();
-            showTransactions();
-            message.textContent = "Transaction deleted.";
         };
 
         function addCell(row, text) {
@@ -544,7 +557,7 @@
         document.getElementById("transactionTypeFilter").addEventListener("change", showTransactions);
         document.getElementById("transactionStatusFilter").addEventListener("change", showTransactions);
 
-        showTransactions();
+        loadTransactions();
     </script>
     <script src="js/profile-dropdown.js"></script>
 </body>

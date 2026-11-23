@@ -1,8 +1,16 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
-    if (location.pathname.endsWith("/settings.html")) return;
 
     const topbar = document.querySelector(".topbar");
+    const cachedType = localStorage.getItem("conchordiaAccountType");
+
+    document.querySelectorAll('.sidebar a[href="artist-profile.html"]')
+        .forEach(link => {
+            link.textContent = cachedType === "manager"
+                ? "Manager Profile"
+                : "Artist Profile";
+        });
+
     if (!topbar) return;
 
     const profile = document.createElement("div");
@@ -59,6 +67,63 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const data = await response.json();
         const user = data.user || data;
+        const accountType =
+            user.accountType ||
+            user.account_type ||
+            localStorage.getItem("conchordiaAccountType") ||
+            "artist";
+
+        const isManager = accountType === "manager";
+        localStorage.setItem("conchordiaAccountType", accountType);
+        const profileLabel = isManager
+            ? "Manager Profile"
+            : "Artist Profile";
+
+        // Update sidebar
+        document.querySelectorAll(
+            '.sidebar a[href="artist-profile.html"]'
+        ).forEach(link => {
+            link.textContent = profileLabel;
+        });
+
+        // Update profile dropdown
+        profile.querySelector(
+            '.shared-profile-menu a[href="artist-profile.html"]'
+        ).textContent = profileLabel;
+
+        // Update profile page
+        if (location.pathname.endsWith("/artist-profile.html")) {
+            document.title = profileLabel + " - ConChordia";
+
+            document.querySelector(".topbar h1").textContent =
+                profileLabel;
+
+            if (isManager) {
+                document.querySelector(".topbar p").textContent =
+                    "Manage your professional information and online presence.";
+
+                document.querySelector('label[for="stageName"]').textContent =
+                    "Display Name";
+
+                document.getElementById("stageName").placeholder =
+                    "Enter display name";
+
+                document.querySelectorAll("#artistProfileForm h2")
+                    .forEach(heading => {
+                        if (heading.textContent.trim() === "Artist Biography") {
+                            heading.textContent = "Manager Biography";
+                        }
+                    });
+
+                document.getElementById("bio").placeholder =
+                    "Tell us about yourself as a manager";
+            }
+        }
+
+        // Keep the dropdown hidden on Settings
+        if (location.pathname.endsWith("/settings.html")) {
+            profile.remove();
+        }
 
         const name =
             user.firstName ||

@@ -16,12 +16,17 @@ const FIELDS = {
     contactId: 'contact_id',
     dueDate: 'due_date',
     paid: 'paid',
+    category: 'category',
+    date: 'transaction_date',
+    method: 'payment_method',
+    notes: 'notes',
+    status: 'payment_status',
 };
-
 
 const toJson = (r) => ({
     id: r.id,
     kind: r.kind,
+    type: r.kind === 'income' ? 'Income' : 'Expense',
     amount: Number(r.amount),
     description: r.description,
     bookingId: r.booking_id,
@@ -30,6 +35,11 @@ const toJson = (r) => ({
     contactName: r.contact_name,
     dueDate: r.due_date,
     paid: r.paid,
+    category: r.category,
+    date: r.transaction_date,
+    method: r.payment_method,
+    notes: r.notes,
+    status: r.payment_status || (r.paid ? 'Paid' : 'Pending'),
 });
 
 const SELECT_WITH_LINKS = 
@@ -62,20 +72,34 @@ async function verifyOwnedLinks(userId, { bookingId, projectId, contactId }) {
 }
 router.get('/summary', asyncHandler(async (req, res) => {
     const totalsQuery = db.query(
-    `SELECT
-        COALESCE(SUM(amount) FILTER (WHERE kind = 'income'), 0) AS income,
-        COALESCE(SUM(amount) FILTER (WHERE kind = 'expense'), 0) AS expenses,
-        COALESCE(SUM(amount) FILTER (WHERE kind = 'income' AND paid = false), 0) AS outstanding
-    FROM transactions
-    WHERE user_id = $1`, 
-    [req.user.id]
+        `SELECT
+            COALESCE(SUM(amount) FILTER (
+                WHERE kind = 'income' AND paid = TRUE
+            ), 0) AS income,
+
+            COALESCE(SUM(amount) FILTER (
+                WHERE kind = 'expense' AND paid = TRUE
+            ), 0) AS expenses,
+
+            COALESCE(SUM(amount) FILTER (
+                WHERE kind = 'income'
+                AND paid = FALSE
+                AND COALESCE(payment_status, 'Pending') IN ('Pending', 'Overdue')
+            ), 0) AS outstanding
+
+        FROM transactions
+        WHERE user_id = $1`,
+        [req.user.id]
     );
 
     const soonestQuery = db.query(
-        `SELECT amount, due_date 
+        `SELECT amount, transaction_date AS due_date
         FROM transactions
-        WHERE user_id = $1 AND kind = 'income' AND paid = FALSE
-        ORDER BY due_date ASC NULLS LAST, created_at ASC
+        WHERE user_id = $1
+        AND kind = 'expense'
+        AND paid = FALSE
+        AND COALESCE(payment_status, 'Pending') IN ('Pending', 'Overdue')
+        ORDER BY transaction_date ASC NULLS LAST, created_at ASC
         LIMIT 1`,
         [req.user.id]
     );
@@ -91,7 +115,7 @@ router.get('/summary', asyncHandler(async (req, res) => {
         expenses,
         profit: Number((income - expenses).toFixed(2)),
         outstanding,
-        soonestBalanceDue: soonestRow  ? { amount: Number(soonestRow.amount), dueDate: soonestRes.rows[0].due_date } : null,
+        soonestBalanceDue: soonestRow  ? { amount: Number(soonestRow.amount), dueDate: soonestRow.due_date } : null,
     });
 }));
 
@@ -127,6 +151,12 @@ router.post('/', asyncHandler(async (req, res) => {
     }
 
     await verifyOwnedLinks(req.user.id, req.body);
+    if (req.body.status !== undefined) {
+        if (!['Paid', 'Pending', 'Overdue', 'Cancelled'].includes(req.body.status)) {
+            throw httpError(400, 'Invalid payment status');
+        }
+        req.body.paid = req.body.status === 'Paid';
+    }
 
     const  cols = ['user_id'];
     const vals = [req.user.id];
@@ -155,6 +185,12 @@ router.post('/', asyncHandler(async (req, res) => {
 
 router.put('/:id', asyncHandler(async (req, res) => {
     await verifyOwnedLinks(req.user.id, req.body);
+    if (req.body.status !== undefined) {
+        if (!['Paid', 'Pending', 'Overdue', 'Cancelled'].includes(req.body.status)) {
+            throw httpError(400, 'Invalid payment status');
+        }
+        req.body.paid = req.body.status === 'Paid';
+    }
 
     const sets = [];
     const vals = [];

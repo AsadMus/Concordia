@@ -27,6 +27,7 @@ app.use('/api/opportunities', require('./routes/opportunities'));  // TODO
 const transactionsRouter = require("./routes/transactions");
 app.use("/api/transactions", transactionsRouter);                  // TODO
 app.use('/api/network', require('./routes/network'));              // TODO
+app.use('/api/organizations', require('./routes/organizations'));  // TODO
 app.use('/api/dashboard', require('./routes/dashboard'));          // TODO
 app.use('/api/admin', require('./routes/admin'));                  // TODO
 

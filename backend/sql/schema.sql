@@ -2,7 +2,8 @@
 -- Every CRM table has a user_id so one artist can never see another's data.
 -- Run with: npm run db:init
 
-DROP TABLE IF EXISTS transactions, opportunities, interactions, follow_ups,
+DROP TABLE IF EXISTS organization_members, organizations,
+  transactions, opportunities, interactions, follow_ups,
   booking_performers, bookings, project_collaborators, projects,
   contact_connections, contacts, password_resets, users CASCADE;
 
@@ -54,12 +55,26 @@ CREATE TABLE contacts (
 
 -- "Who I know through whom" edges (feature ix, network.html)
 CREATE TABLE contact_connections (
-  id          SERIAL PRIMARY KEY,
-  user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  contact_a   INT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,
-  contact_b   INT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,
-  description VARCHAR(255),            -- "introduced me to", "same label", ...
-  CHECK (contact_a <> contact_b)
+  id              SERIAL PRIMARY KEY,
+  user_id         INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  contact_a       INT REFERENCES contacts(id) ON DELETE CASCADE,
+  contact_b       INT REFERENCES contacts(id) ON DELETE CASCADE,
+  description     VARCHAR(255),
+  strength        VARCHAR(20) NOT NULL DEFAULT 'New',
+  connected_date  DATE,
+  connection_type VARCHAR(30) NOT NULL DEFAULT 'Introduced',
+  notes           TEXT,
+
+  CHECK (
+    contact_a IS NULL
+    OR contact_b IS NULL
+    OR contact_a <> contact_b
+  ),
+
+  CHECK (
+    contact_a IS NOT NULL
+    OR contact_b IS NOT NULL
+  )
 );
 
 -- ---------- Collaboration tracker (feature iii, projects.html) ----------
@@ -160,3 +175,38 @@ CREATE INDEX ON bookings (user_id, starts_at);
 CREATE INDEX ON follow_ups (user_id, due_date);
 CREATE INDEX ON opportunities (user_id, stage);
 CREATE INDEX ON transactions (user_id);
+
+CREATE TABLE IF NOT EXISTS organizations (
+    id SERIAL PRIMARY KEY,
+    owner_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    type VARCHAR(20) NOT NULL
+        CHECK (type IN ('team', 'collective')),
+    artist_code VARCHAR(11) NOT NULL UNIQUE,
+    admin_code VARCHAR(11) UNIQUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CHECK (
+        (type = 'team' AND admin_code IS NULL)
+        OR
+        (type = 'collective' AND admin_code IS NOT NULL)
+    )
+);
+
+CREATE TABLE IF NOT EXISTS organization_members (
+    organization_id INT NOT NULL
+        REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id INT NOT NULL
+        REFERENCES users(id) ON DELETE CASCADE,
+    member_role VARCHAR(20) NOT NULL
+        CHECK (member_role IN ('artist', 'admin')),
+    joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    PRIMARY KEY (organization_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_organizations_owner
+ON organizations(owner_id);
+
+CREATE INDEX IF NOT EXISTS idx_organization_members_user
+ON organization_members(user_id);
