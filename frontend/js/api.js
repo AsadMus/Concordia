@@ -6,7 +6,7 @@
 // Log out links:    give them a  data-logout  attribute, e.g.  <a href="#" data-logout>Log Out</a>
 const api = (() => {
   const BASE = '/api';
-  const TOKEN_KEY = 'token';
+  const TOKEN_KEY = 'conchordiaToken';
 
   const getToken = () => localStorage.getItem(TOKEN_KEY);
 

@@ -255,67 +255,55 @@
             logout();
         });
 
-        function showUpcomingEvents() {
-            const calendarEvents = loadData("conchordiaCalendarEvents");
-            const projects = loadData("conchordiaProjects");
-            const opportunities = loadData("conchordiaOpportunities");
+        async function showUpcomingEvents() {
             const table = document.getElementById("dashboardEvents");
             table.replaceChildren();
 
-            const projectEvents = projects
-                .filter(project => project.deadline)
-                .map(project => ({
-                    name: project.name || project.title || "Project",
-                    date: project.deadline,
-                    time: "",
-                    location: "",
-                    category: "Project Deadline"
-                }));
+            try {
+                const bookings = await api.get("/bookings");
 
-            const opportunityEvents = opportunities
-                .filter(opportunity =>
-                    opportunity.deadline &&
-                    opportunity.status !== "Rejected" &&
-                    opportunity.status !== "Closed"
-                )
-                .map(opportunity => ({
-                    name: opportunity.name,
-                    date: opportunity.deadline,
-                    time: "",
-                    location: opportunity.organization || "",
-                    category: "Opportunity"
-                }));
+                const upcoming = bookings
+                    .filter(booking => {
+                        const category = String(booking.category || "Booking").trim();
+                        const date = new Date(booking.startsAt);
 
-            const upcoming = [
-                ...calendarEvents,
-                ...projectEvents,
-                ...opportunityEvents
-            ]
-                .filter(event => event.date && event.date >= todayDate())
-                .sort((a, b) =>
-                    (a.date + (a.time || "")).localeCompare(
-                        b.date + (b.time || "")
+                        return (
+                            ["Booking", "Personal"].includes(category) &&
+                            !Number.isNaN(date.getTime()) &&
+                            date.toLocaleDateString("en-CA") >= todayDate() &&
+                            String(booking.status || "").toLowerCase() !== "cancelled"
+                        );
+                    })
+                    .sort((a, b) =>
+                        new Date(a.startsAt) - new Date(b.startsAt)
                     )
-                )
-                .slice(0, 5);
+                    .slice(0, 5);
 
-            if (upcoming.length === 0) {
-                showEmptyRow("dashboardEvents", "No upcoming events.", 3);
-                return;
-            }
-
-            upcoming.forEach(event => {
-                const row = document.createElement("tr");
-                const dateCell = addCell(row, displayDate(event.date));
-                if (event.time) {
-                    const time = document.createElement("small");
-                    time.textContent = event.time;
-                    dateCell.appendChild(time);
+                if (!upcoming.length) {
+                    showEmptyRow("dashboardEvents", "No upcoming events.", 3);
+                    return;
                 }
-                addCell(row, event.name || event.title || "Untitled Event");
-                addCell(row, event.location || "—");
-                table.appendChild(row);
-            });
+
+                upcoming.forEach(booking => {
+                    const row = document.createElement("tr");
+                    const date = new Date(booking.startsAt);
+
+                    addCell(row, date.toLocaleDateString("en-US"));
+
+                    addCell(row, booking.title || "Untitled Event");
+
+                    addCell(
+                        row,
+                        booking.venueName || booking.venueCity || "—"
+                    );
+
+                    table.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error("Unable to load upcoming events:", error);
+                showEmptyRow("dashboardEvents", "Unable to load events.", 3);
+            }
         }
 
         function showProjects() {
@@ -357,41 +345,80 @@
             });
         }
 
-        function showFollowUps() {
-            const calendarEvents = loadData("conchordiaCalendarEvents");
-            const contacts = loadData("conchordiaContacts");
+        async function showFollowUps() {
             const table = document.getElementById("dashboardFollowUps");
             table.replaceChildren();
 
-            const followUps = calendarEvents
-                .filter(event =>
-                    event.category === "Follow-Up" &&
-                    event.date &&
-                    event.date >= todayDate()
-                )
-                .sort((a, b) => a.date.localeCompare(b.date))
-                .slice(0, 5);
+            try {
+                const [bookings, contacts] = await Promise.all([
+                    api.get("/bookings"),
+                    api.get("/contacts")
+                ]);
 
-            if (followUps.length === 0) {
-                showEmptyRow("dashboardFollowUps", "No upcoming follow-ups.", 3);
-                return;
+                let opportunities = [];
+
+                try {
+                    opportunities = await api.get("/opportunities");
+                } catch (error) {
+                    console.warn("Opportunities unavailable:", error.message);
+                }
+
+                const followUps = bookings
+                    .filter(booking =>
+                        booking.category === "Follow-Up" &&
+                        booking.startsAt &&
+                        new Date(booking.startsAt).toLocaleDateString("en-CA") >= todayDate()
+                    )
+                    .map(booking => {
+                        const contact = contacts.find(person =>
+                            String(person.id) === String(booking.venueContactId)
+                        );
+
+                        return {
+                            name: contact?.name || booking.title || "—",
+                            role: contact?.role || "Follow-Up",
+                            date: new Date(booking.startsAt)
+                        };
+                    });
+
+                const opportunityFollowUps = opportunities
+                    .filter(opportunity =>
+                        opportunity.deadline &&
+                        !["Rejected", "Closed"].includes(opportunity.status)
+                    )
+                    .map(opportunity => ({
+                        name: opportunity.name || opportunity.title || "Opportunity",
+                        role: "Opportunity",
+                        date: new Date(opportunity.deadline)
+                    }))
+                    .filter(item =>
+                        !Number.isNaN(item.date.getTime()) &&
+                        item.date.toLocaleDateString("en-CA") >= todayDate()
+                    );
+
+                const upcoming = [...followUps, ...opportunityFollowUps]
+                    .sort((a, b) => a.date - b.date)
+                    .slice(0, 5);
+
+                if (!upcoming.length) {
+                    showEmptyRow("dashboardFollowUps", "No upcoming follow-ups.", 3);
+                    return;
+                }
+
+                upcoming.forEach(item => {
+                    const row = document.createElement("tr");
+
+                    addCell(row, item.name);
+                    addCell(row, item.role);
+                    addCell(row, item.date.toLocaleDateString("en-US"));
+
+                    table.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error("Unable to load follow-ups:", error);
+                showEmptyRow("dashboardFollowUps", "Unable to load follow-ups.", 3);
             }
-
-            followUps.forEach(event => {
-                const row = document.createElement("tr");
-                const contactId = event.contactId || "";
-                const contactName = contactId
-                    ? getContactName(contactId, contacts)
-                    : event.name || event.title || "—";
-                const role = contactId
-                    ? getContactRole(contactId, contacts)
-                    : "—";
-
-                addCell(row, contactName);
-                addCell(row, role);
-                addCell(row, displayDate(event.date));
-                table.appendChild(row);
-            });
         }
 
         function showRevenue() {
@@ -436,17 +463,18 @@
                     : "No pending payments";
         }
 
-        function updateDashboard() {
-            showProfile();
-            showUpcomingEvents();
-            showProjects();
-            showFollowUps();
-            showRevenue();
+        async function updateDashboard() {
+            await showProfile();
+
+            await Promise.all([
+                showUpcomingEvents(),
+                showProjects(),
+                showFollowUps(),
+                showRevenue()
+            ]);
         }
 
         updateDashboard();
-
-        window.addEventListener("pageshow", updateDashboard);
         window.addEventListener("storage", updateDashboard);
     </script> 
 </body>
