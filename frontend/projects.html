@@ -847,128 +847,69 @@
         }
 
         // Display Projects
-        function showProjects() {
+        async function showProjects() {
+            const table = document.getElementById("dashboardProjects");
+            table.replaceChildren();
 
-            const search = searchInput.value.toLowerCase().trim();
+            try {
+                const result = await api.get("/projects");
 
-            const filtered = projects.filter(function(project) {
+                const projects = Array.isArray(result)
+                    ? result
+                    : result.projects || [];
 
-                const savedNames = (
-                    Array.isArray(project.collaborators)
-                        ? project.collaborators
-                        : []
-                ).map(person => person.name);
+                const recentProjects = [...projects]
+                    .slice(-5)
+                    .reverse();
 
-                const manualNames = (
-                    Array.isArray(project.manualCollaborators)
-                        ? project.manualCollaborators
-                        : []
-                ).map(person =>
-                    typeof person === "string"
-                        ? person
-                        : person.name
-                );
+                if (recentProjects.length === 0) {
+                    showEmptyRow(
+                        "dashboardProjects",
+                        "No projects added yet.",
+                        4
+                    );
+                    return;
+                }
 
-                const searchable = [
-                    project.title,
-                    project.type,
-                    project.status,
-                    ...savedNames,
-                    ...manualNames
-                ].join(" ").toLowerCase();
+                recentProjects.forEach(project => {
+                    const row = document.createElement("tr");
 
-                return searchable.includes(search) &&
-                    (!typeFilter.value ||
-                        project.type === typeFilter.value) &&
-                    (!statusFilter.value ||
-                        project.status === statusFilter.value);
-            });
+                    const savedNames = (
+                        Array.isArray(project.collaborators)
+                            ? project.collaborators
+                            : []
+                    ).map(person => person.name);
 
-            tableBody.replaceChildren();
+                    const manualNames = (
+                        Array.isArray(project.manualCollaborators)
+                            ? project.manualCollaborators
+                            : []
+                    ).map(person =>
+                        typeof person === "string"
+                            ? person
+                            : person.name
+                    );
 
-            filtered.forEach(function(project) {
+                    addCell(row, project.title || "Unnamed Project");
+                    addCell(row, project.type || "—");
+                    addCell(row, project.status || "—");
+                    addCell(
+                        row,
+                        [...savedNames, ...manualNames].join(", ") || "—"
+                    );
 
-                const row = document.createElement("tr");
-
-                addCell(row, project.title);
-                addCell(row, project.type);
-
-                const savedNames = (
-                    Array.isArray(project.collaborators)
-                        ? project.collaborators
-                        : []
-                ).map(person => person.name);
-
-                const manualNames = (
-                    Array.isArray(project.manualCollaborators)
-                        ? project.manualCollaborators
-                        : []
-                ).map(person =>
-                    typeof person === "string"
-                        ? person
-                        : person.name
-                );
-
-                addCell(
-                    row,
-                    [...savedNames, ...manualNames].join(", ")
-                );
-
-                const statusCell = addCell(row, project.status);
-                statusCell.className = "project-status";
-
-                addCell(row, formatDate(project.deadline));
-
-                const feeText = project.fee == null
-                    ? "No fee"
-                    : "$" + Number(project.fee).toFixed(2);
-
-                addCell(
-                    row,
-                    feeText + " - " +
-                    (project.paymentStatus || "Not Applicable")
-                );
-
-                const actions = document.createElement("td");
-
-                const editButton = document.createElement("button");
-
-                editButton.type = "button";
-                editButton.textContent = "Edit";
-                editButton.className = "project-edit-button";
-
-                editButton.addEventListener("click", function() {
-                    openForm(project);
+                    table.appendChild(row);
                 });
 
-                actions.appendChild(editButton);
+            } catch (error) {
+                console.error("Unable to load projects:", error);
 
-                row.appendChild(actions);
-                tableBody.appendChild(row);
-            });
-
-            // Project Statistics
-            document.getElementById("totalProjects").textContent =
-                projects.length;
-
-            document.getElementById("activeProjects").textContent =
-                projects.filter(
-                    project => project.status === "In Progress"
-                ).length;
-
-            document.getElementById("completedProjects").textContent =
-                projects.filter(
-                    project => project.status === "Completed"
-                ).length;
-
-            // Empty State
-            const empty = document.getElementById("emptyProjects");
-
-            empty.textContent = projects.length === 0
-                ? "No projects added yet."
-                : "No projects match your search.";
-
-            empty.hidden = filtered.length > 0;
+                showEmptyRow(
+                    "dashboardProjects",
+                    "Unable to load projects.",
+                    4
+                );
+            }
         }
 
         // Search and Filters

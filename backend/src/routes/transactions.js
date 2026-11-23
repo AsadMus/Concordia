@@ -61,7 +61,7 @@ async function verifyOwnedLinks(userId, { bookingId, projectId, contactId }) {
     }
 }
 router.get('/summary', asyncHandler(async (req, res) => {
-    const totalsQuery = await db.query(
+    const totalsQuery = db.query(
     `SELECT
         COALESCE(SUM(amount) FILTER (WHERE kind = 'income'), 0) AS income,
         COALESCE(SUM(amount) FILTER (WHERE kind = 'expense'), 0) AS expenses,
@@ -71,7 +71,7 @@ router.get('/summary', asyncHandler(async (req, res) => {
     [req.user.id]
     );
 
-    const soonestQuery = await db.query(
+    const soonestQuery = db.query(
         `SELECT amount, due_date 
         FROM transactions
         WHERE user_id = $1 AND kind = 'income' AND paid = FALSE
@@ -104,7 +104,7 @@ router.get('/', asyncHandler(async (req, res) => {
         params.push(kind);
         where.push(`t.kind = $${params.length}`);
     }
-    if (paid == undefined && paid !== '') {
+    if (paid !== undefined && paid !== '') {
         params.push(paid === 'true');
         where.push(`t.paid = $${params.length}`);
     }

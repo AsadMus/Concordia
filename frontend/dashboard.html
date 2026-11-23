@@ -306,9 +306,11 @@
             }
         }
 
-        function showProjects() {
-            const projects = loadData("conchordiaProjects");
-            const contacts = loadData("conchordiaContacts");
+        async function showProjects() {
+            const [projects, contacts] = await Promise.all([
+                api.get("/projects"),
+                api.get("/contacts")
+            ]);
             const table = document.getElementById("dashboardProjects");
             table.replaceChildren();
 
@@ -421,47 +423,41 @@
             }
         }
 
-        function showRevenue() {
-            const transactions = loadData("conchordiaTransactions");
-            const paid = transactions.filter(transaction =>
-                transaction.status === "Paid"
-            );
+        
+        async function showRevenue() {
+            const profitElement = document.getElementById("dashboardProfit");
+            const balanceElement = document.getElementById("dashboardBalance");
+            const dateElement = document.getElementById("dashboardBalanceDate");
 
-            const income = paid
-                .filter(transaction => transaction.type === "Income")
-                .reduce((total, transaction) =>
-                    total + Number(transaction.amount || 0), 0
-                );
+            try {
+                const summary = await api.get("/transactions/summary");
 
-            const expenses = paid
-                .filter(transaction => transaction.type === "Expense")
-                .reduce((total, transaction) =>
-                    total + Number(transaction.amount || 0), 0
-                );
+                profitElement.textContent = money(summary.profit);
 
-            document.getElementById("dashboardProfit").textContent =
-                money(income - expenses);
+                if (summary.soonestBalanceDue) {
+                    balanceElement.textContent = money(
+                        summary.soonestBalanceDue.amount
+                    );
 
-            const unpaid = transactions
-                .filter(transaction =>
-                    transaction.type === "Income" &&
-                    (transaction.status === "Pending" ||
-                     transaction.status === "Overdue")
-                )
-                .sort((a, b) =>
-                    (a.date || "").localeCompare(b.date || "")
-                );
+                    dateElement.textContent = summary.soonestBalanceDue.dueDate
+                        ? displayDate(
+                            String(summary.soonestBalanceDue.dueDate).slice(0, 10)
+                        )
+                        : "No due date";
+                } else {
+                    balanceElement.textContent = money(0);
+                    dateElement.textContent = "No outstanding balances";
+                }
 
-            const balance = unpaid.length > 0 ? unpaid[0] : null;
+            } catch (error) {
+                console.error("Unable to load revenue:", error);
 
-            document.getElementById("dashboardBalance").textContent =
-                balance ? money(balance.amount) : "$0.00";
-
-            document.getElementById("dashboardBalanceDate").textContent =
-                balance && balance.date
-                    ? "Transaction date: " + displayDate(balance.date)
-                    : "No pending payments";
+                profitElement.textContent = "—";
+                balanceElement.textContent = "—";
+                dateElement.textContent = "Unable to load revenue";
+            }
         }
+
 
         async function updateDashboard() {
             await showProfile();
