@@ -362,11 +362,9 @@
         const opportunityEvents = opportunities
             .filter(opportunity =>
                 opportunity.deadline &&
-                opportunity.status !== "Rejected" &&
-                opportunity.status !== "Closed"
+                opportunity.stage !== "Rejected"
             )
             .map(opportunityToEvent);
-
         return [...events, ...projectEvents, ...opportunityEvents];
     }
 

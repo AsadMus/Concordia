@@ -76,13 +76,13 @@
                 </select>
                 <select id="opportunityStatusFilter">
                     <option value="">All Statuses</option>
-                    <option>Discovered</option>
-                    <option>Applied</option>
-                    <option>Under Review</option>
-                    <option>Accepted</option>
-                    <option>Rejected</option>
-                    <option>Closed</option>
-                </select>
+                    <option value="Just Found">Just Found</option>
+                    <option value="Applied">Applied</option>
+                    <option value="Under Review">Under Review</option>
+                    <option value="Accepted">Accepted</option>
+                    <option value="Booked">Booked</option>
+                    <option value="Rejected">Rejected</option>
+                                    </select>
             </div>
 
             <div class="opportunity-table-wrapper">
@@ -91,7 +91,6 @@
                         <tr>
                             <th>Opportunity</th>
                             <th>Type</th>
-                            <th>Contact</th>
                             <th>Status</th>
                             <th>Deadline</th>
                             <th>Value</th>
@@ -126,12 +125,12 @@
                     <div>
                         <label for="opportunityStatus">Status</label>
                         <select id="opportunityStatus">
-                            <option>Discovered</option>
-                            <option>Applied</option>
-                            <option>Under Review</option>
-                            <option>Accepted</option>
-                            <option>Rejected</option>
-                            <option>Closed</option>
+                            <option value="Just Found">Just Found</option>
+                            <option value="Applied">Applied</option>
+                            <option value="Under Review">Under Review</option>
+                            <option value="Accepted">Accepted</option>
+                            <option value="Booked">Booked</option>
+                            <option value="Rejected">Rejected</option>
                         </select>
                     </div>
                 </div>
@@ -188,7 +187,7 @@
             }
         }
 
-        let opportunities = loadData("conchordiaOpportunities");
+        let opportunities = [];
         let contacts = loadData("conchordiaContacts");
         let editingId = null;
 
@@ -202,31 +201,31 @@
             return document.getElementById(id).value.trim();
         }
 
-        function saveOpportunities() {
+        async function loadContacts() {
             try {
-                localStorage.setItem("conchordiaOpportunities", JSON.stringify(opportunities));
-                return true;
+                const data = await api.get("/contacts");
+                contacts = Array.isArray(data) ? data : data.contacts || [];
+
+                contactSelect.replaceChildren();
+
+                const firstOption = document.createElement("option");
+                firstOption.value = "";
+                firstOption.textContent = "No Contact Selected";
+                contactSelect.appendChild(firstOption);
+
+                contacts.forEach(function(contact) {
+                    const option = document.createElement("option");
+                    option.value = contact.id;
+                    option.textContent = contact.name ||
+                        [contact.firstName, contact.lastName].filter(Boolean).join(" ") ||
+                        "Unnamed Contact";
+
+                    contactSelect.appendChild(option);
+                });
             } catch (error) {
-                message.textContent = "Could not save opportunity.";
-                return false;
+                console.error("Unable to load contacts:", error);
+                message.textContent = "Unable to load contacts.";
             }
-        }
-
-        function loadContacts() {
-            contacts = loadData("conchordiaContacts");
-            contactSelect.replaceChildren();
-
-            const firstOption = document.createElement("option");
-            firstOption.value = "";
-            firstOption.textContent = "No Contact Selected";
-            contactSelect.appendChild(firstOption);
-
-            contacts.forEach(function(contact) {
-                const option = document.createElement("option");
-                option.value = contact.id;
-                option.textContent = contact.name + (contact.role ? " (" + contact.role + ")" : "");
-                contactSelect.appendChild(option);
-            });
         }
 
         function getContactName(id) {
@@ -239,10 +238,10 @@
             return contact ? contact.name : "Contact Removed";
         }
 
-        function openForm(opportunity = null) {
+        async function openForm(opportunity = null) {
             form.reset();
             editingId = opportunity ? opportunity.id : null;
-            loadContacts();
+            await loadContacts();
 
             document.getElementById("opportunityFormTitle").textContent =
                 opportunity ? "Edit Opportunity" : "Add Opportunity";
@@ -255,7 +254,7 @@
             document.getElementById("opportunityValue").value = opportunity ? opportunity.estimatedValue ?? "" : "";
             document.getElementById("opportunityContact").value = opportunity ? opportunity.contactId || "" : "";
             document.getElementById("opportunityOrganization").value = opportunity ? opportunity.organization || "" : "";
-            document.getElementById("opportunityLink").value = opportunity ? opportunity.link || "" : "";
+            document.getElementById("opportunityLink").value = opportunity ? opportunity.opportunityLink || "" : "";
             document.getElementById("opportunityNotes").value = opportunity ? opportunity.notes || "" : "";
 
             formCard.hidden = false;
@@ -274,75 +273,78 @@
 
         document.getElementById("cancelOpportunity").onclick = closeForm;
 
-        form.onsubmit = function(event) {
+        form.onsubmit = async function(event) {
             event.preventDefault();
 
             const amount = value("opportunityValue");
             const estimatedValue = amount === "" ? null : Number(amount);
 
-            if (estimatedValue !== null && (!Number.isFinite(estimatedValue) || estimatedValue < 0)) {
+            if (estimatedValue !== null &&
+                (!Number.isFinite(estimatedValue) || estimatedValue < 0)) {
                 message.textContent = "Enter a valid estimated value.";
                 return;
             }
 
             const opportunity = {
-                id: editingId || crypto.randomUUID(),
-                name: value("opportunityName"),
+                title: value("opportunityName"),
                 type: value("opportunityType"),
-                status: value("opportunityStatus"),
-                deadline: value("opportunityDeadline"),
-                estimatedValue: estimatedValue,
-                contactId: value("opportunityContact"),
+                stage: value("opportunityStatus"),
+                deadline: value("opportunityDeadline") || null,
+                estimatedValue,
+                contactId: value("opportunityContact") || null,
                 organization: value("opportunityOrganization"),
-                link: value("opportunityLink"),
+                opportunityLink: value("opportunityLink"),
                 notes: value("opportunityNotes")
             };
 
-            if (!opportunity.name) return;
-
-            const oldOpportunities = [...opportunities];
-
-            if (editingId) {
-                opportunities = opportunities.map(function(item) {
-                    return item.id === editingId ? opportunity : item;
-                });
-            } else {
-                opportunities.push(opportunity);
-            }
-
-            if (!saveOpportunities()) {
-                opportunities = oldOpportunities;
+            if (!opportunity.title) {
+                message.textContent = "Opportunity name is required.";
                 return;
             }
 
-            closeForm();
-            showOpportunities();
-            message.textContent = "Opportunity saved!";
+            try {
+                message.textContent = "Saving opportunity...";
+
+                if (editingId) {
+                    await api.put("/opportunities/" + editingId, opportunity);
+                } else {
+                    await api.post("/opportunities", opportunity);
+                }
+
+                closeForm();
+                await loadOpportunities();
+
+                message.textContent = "Opportunity saved successfully!";
+            } catch (error) {
+                console.error("Unable to save opportunity:", error);
+                message.textContent = "Unable to save opportunity: " + error.message;
+            }
         };
 
-        document.getElementById("deleteOpportunity").onclick = function() {
+        document.getElementById("deleteOpportunity").onclick = async function() {
             if (!editingId) return;
 
-            const opportunity = opportunities.find(function(item) {
-                return item.id === editingId;
-            });
+            const opportunity = opportunities.find(
+                item => String(item.id) === String(editingId)
+            );
 
             if (!opportunity) return;
-            if (!confirm("Delete " + opportunity.name + "? This cannot be undone.")) return;
 
-            const oldOpportunities = [...opportunities];
-            opportunities = opportunities.filter(function(item) {
-                return item.id !== editingId;
-            });
-
-            if (!saveOpportunities()) {
-                opportunities = oldOpportunities;
+            if (!confirm("Delete " + opportunity.title + "? This cannot be undone.")) {
                 return;
             }
 
-            closeForm();
-            showOpportunities();
-            message.textContent = "Opportunity deleted.";
+            try {
+                await api.delete("/opportunities/" + editingId);
+
+                closeForm();
+                await loadOpportunities();
+
+                message.textContent = "Opportunity deleted.";
+            } catch (error) {
+                console.error("Unable to delete opportunity:", error);
+                message.textContent = "Unable to delete opportunity: " + error.message;
+            }
         };
 
         function addCell(row, text) {
@@ -353,7 +355,6 @@
         }
 
         function showOpportunities() {
-            contacts = loadData("conchordiaContacts");
 
             const search = value("opportunitySearch").toLowerCase();
             const typeFilter = value("opportunityTypeFilter");
@@ -361,9 +362,9 @@
 
             const filtered = opportunities.filter(function(opportunity) {
                 const text = [
-                    opportunity.name,
+                    opportunity.title,
                     opportunity.type,
-                    opportunity.status,
+                    opportunity.stage,
                     opportunity.organization,
                     getContactName(opportunity.contactId)
                 ].join(" ").toLowerCase();
@@ -378,17 +379,20 @@
             filtered.forEach(function(opportunity) {
                 const row = document.createElement("tr");
 
-                addCell(row, opportunity.name);
+                addCell(row, opportunity.title);
                 addCell(row, opportunity.type);
-                addCell(row, getContactName(opportunity.contactId));
 
-                const statusCell = addCell(row, opportunity.status);
+                const statusCell = addCell(row, opportunity.stage);
                 statusCell.className = "opportunity-status";
 
                 const formattedDate = opportunity.deadline
-                    ? opportunity.deadline.split("-").slice(1).concat(opportunity.deadline.split("-")[0]).join("/")
+                    ? (() => {
+                        const [year, month, day] = String(opportunity.deadline)
+                            .slice(0, 10)
+                            .split("-");
+                        return `${month}/${day}/${year}`;
+                    })()
                     : "—";
-
                 addCell(row, formattedDate);
 
                 const amount = opportunity.estimatedValue == null
@@ -414,16 +418,16 @@
 
             document.getElementById("progressOpportunities").textContent =
                 opportunities.filter(function(item) {
-                    return item.status === "Applied" || item.status === "Under Review";
+                    return item.stage === "Applied" || item.stage === "Under Review";
                 }).length;
 
             document.getElementById("acceptedOpportunities").textContent =
                 opportunities.filter(function(item) {
-                    return item.status === "Accepted";
+                    return item.stage === "Accepted";
                 }).length;
 
             const totalValue = opportunities.reduce(function(total, item) {
-                if (item.status === "Rejected" || item.status === "Closed") return total;
+                if (item.stage === "Rejected" || item.stage === "Closed") return total;
                 return total + (Number(item.estimatedValue) || 0);
             }, 0);
 
@@ -444,7 +448,21 @@
         document.getElementById("opportunityTypeFilter").addEventListener("change", showOpportunities);
         document.getElementById("opportunityStatusFilter").addEventListener("change", showOpportunities);
 
-        showOpportunities();
+        async function loadOpportunities() {
+            try {
+                const result = await api.get("/opportunities");
+
+                opportunities = Array.isArray(result)
+                    ? result
+                    : result.opportunities || [];
+
+                showOpportunities();
+            } catch (error) {
+                console.error(error);
+                message.textContent = "Unable to load opportunities: " + error.message;
+            }
+        }
+    loadOpportunities();
     </script>
     <script src="js/profile-dropdown.js"></script>
 </body>

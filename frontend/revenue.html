@@ -89,8 +89,6 @@
                             <th>Description</th>
                             <th>Type</th>
                             <th>Category</th>
-                            <th>Project</th>
-                            <th>Contact</th>
                             <th>Amount</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -261,39 +259,58 @@
             }
         }
 
-        function loadRelationships() {
-            projects = loadData("conchordiaProjects");
-            contacts = loadData("conchordiaContacts");
+        async function loadRelationships() {
+            try {
+                const [projectData, contactData] = await Promise.all([
+                    api.get("/projects"),
+                    api.get("/contacts")
+                ]);
 
-            const projectSelect = document.getElementById("transactionProject");
-            const contactSelect = document.getElementById("transactionContact");
+                projects = Array.isArray(projectData)
+                    ? projectData
+                    : projectData.projects || [];
 
-            projectSelect.replaceChildren();
-            contactSelect.replaceChildren();
+                contacts = Array.isArray(contactData)
+                    ? contactData
+                    : contactData.contacts || [];
 
-            const emptyProject = document.createElement("option");
-            emptyProject.value = "";
-            emptyProject.textContent = "No Project Selected";
-            projectSelect.appendChild(emptyProject);
+                const projectSelect = document.getElementById("transactionProject");
+                const contactSelect = document.getElementById("transactionContact");
 
-            const emptyContact = document.createElement("option");
-            emptyContact.value = "";
-            emptyContact.textContent = "No Contact Selected";
-            contactSelect.appendChild(emptyContact);
+                projectSelect.replaceChildren();
+                contactSelect.replaceChildren();
 
-            projects.forEach(project => {
-                const option = document.createElement("option");
-                option.value = project.id;
-                option.textContent = project.name || project.title || "Unnamed Project";
-                projectSelect.appendChild(option);
-            });
+                const emptyProject = document.createElement("option");
+                emptyProject.value = "";
+                emptyProject.textContent = "No Project Selected";
+                projectSelect.appendChild(emptyProject);
 
-            contacts.forEach(contact => {
-                const option = document.createElement("option");
-                option.value = contact.id;
-                option.textContent = contact.name || "Unnamed Contact";
-                contactSelect.appendChild(option);
-            });
+                const emptyContact = document.createElement("option");
+                emptyContact.value = "";
+                emptyContact.textContent = "No Contact Selected";
+                contactSelect.appendChild(emptyContact);
+
+                projects.forEach(project => {
+                    const option = document.createElement("option");
+                    option.value = project.id;
+                    option.textContent = project.title || project.name || "Unnamed Project";
+                    projectSelect.appendChild(option);
+                });
+
+                contacts.forEach(contact => {
+                    const option = document.createElement("option");
+                    option.value = contact.id;
+                    option.textContent = contact.name ||
+                        [contact.firstName, contact.lastName].filter(Boolean).join(" ") ||
+                        "Unnamed Contact";
+
+                    contactSelect.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error("Unable to load relationships:", error);
+                message.textContent = "Unable to load projects or contacts.";
+            }
         }
 
         function getProjectName(id) {
@@ -308,10 +325,10 @@
             return contact ? contact.name || "Unnamed Contact" : "Contact Removed";
         }
 
-        function openForm(transaction = null) {
+        async function openForm(transaction = null) {
             form.reset();
             editingId = transaction ? transaction.id : null;
-            loadRelationships();
+            await loadRelationships();
 
             document.getElementById("transactionFormTitle").textContent =
                 transaction ? "Edit Transaction" : "Add Transaction";
@@ -439,8 +456,7 @@
         }
 
         function showTransactions() {
-            projects = loadData("conchordiaProjects");
-            contacts = loadData("conchordiaContacts");
+
 
             const search = value("transactionSearch").toLowerCase();
             const typeFilter = value("transactionTypeFilter");
@@ -471,8 +487,6 @@
                 addCell(row, transaction.description);
                 addCell(row, transaction.type);
                 addCell(row, transaction.category);
-                addCell(row, getProjectName(transaction.projectId));
-                addCell(row, getContactName(transaction.contactId));
 
                 const amountCell = addCell(row, money(transaction.amount));
                 amountCell.className = transaction.type === "Income"
