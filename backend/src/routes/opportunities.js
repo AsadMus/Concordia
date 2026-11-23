@@ -28,6 +28,9 @@ const FIELDS = {
   deadline: 'deadline',
   contactId: 'contact_id',
   notes: 'notes',
+  estimatedValue: 'estimated_value',
+  organization: 'organization',
+  opportunityLink: 'opportunity_link',
 };
 
 const toJson = (r) => ({
@@ -42,6 +45,9 @@ const toJson = (r) => ({
   contactStageName: r.contact_stage_name,
   notes: r.notes,
   createdAt: r.created_at,
+  estimatedValue: r.estimated_value,
+  organization: r.organization,
+  opportunityLink: r.opportunity_link,
 });
 
 const SELECT_WITH_CONTACT = `

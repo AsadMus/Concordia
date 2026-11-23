@@ -24,7 +24,8 @@ app.use('/api/bookings', require('./routes/bookings'));            // TODO
 app.use('/api/follow-ups', require('./routes/followUps'));         // TODO
 app.use('/api/interactions', require('./routes/interactions'));    // TODO
 app.use('/api/opportunities', require('./routes/opportunities'));  // TODO
-app.use('/api/transactions', require('./routes/transactions'));    // TODO
+const transactionsRouter = require("./routes/transactions");
+app.use("/api/transactions", transactionsRouter);                  // TODO
 app.use('/api/network', require('./routes/network'));              // TODO
 app.use('/api/dashboard', require('./routes/dashboard'));          // TODO
 app.use('/api/admin', require('./routes/admin'));                  // TODO
