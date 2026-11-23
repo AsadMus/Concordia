@@ -470,6 +470,73 @@ nav a:not(.active):hover {
 .profile-dropdown a:hover {
     background: #680b92;
 }
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.shared-profile {
+    position: relative;
+    margin-left: auto;
+}
+.shared-profile-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
+    background: #440561;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Baumans', sans-serif;
+}
+.shared-profile-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #780ba6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+.shared-profile-name {
+    font-family: 'Baumans', sans-serif;
+}
+.shared-profile-arrow {
+    font-size: 10px;
+}
+.shared-profile-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 170px;
+    background: #440561;
+    border-radius: 10px;
+    padding: 8px;
+    z-index: 1000;
+    box-shadow: 0 8px 20px #0005;
+}
+.shared-profile-menu[hidden] {
+    display: none !important;
+}
+.shared-profile-menu a,
+.shared-profile-menu button {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    color: white;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+.shared-profile-menu a:hover,
+.shared-profile-menu button:hover {
+    background: #680b92;
+}
 /* Dashboard */
 .dashboard-grid {
     display: grid;
