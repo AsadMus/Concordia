@@ -2,7 +2,8 @@
 -- Every CRM table has a user_id so one artist can never see another's data.
 -- Run with: npm run db:init
 
-DROP TABLE IF EXISTS organization_members, organizations,
+DROP TABLE IF EXISTS organization_assignments,
+  organization_members, organizations,
   transactions, opportunities, interactions, follow_ups,
   booking_performers, bookings, project_collaborators, projects,
   contact_connections, contacts, password_resets, users CASCADE;
@@ -200,6 +201,13 @@ CREATE TABLE IF NOT EXISTS organization_members (
         REFERENCES users(id) ON DELETE CASCADE,
     member_role VARCHAR(20) NOT NULL
         CHECK (member_role IN ('artist', 'admin')),
+    permissions JSONB NOT NULL DEFAULT '{
+        "contacts": "none",
+        "projects": "none",
+        "bookings": "none",
+        "opportunities": "none",
+        "revenue": "none"
+    }'::jsonb,
     joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     PRIMARY KEY (organization_id, user_id)

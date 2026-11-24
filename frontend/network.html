@@ -68,7 +68,7 @@
         </div>
 
         <div id="managerPanel" hidden>
-            <div class="network-org-card">
+            <div class="network-org-card" id="createOrgCard">
                 <h3>Create Organization</h3>
                 <form id="createOrgForm" class="network-org-form">
                     <label for="orgName">Organization Name</label>
@@ -299,7 +299,10 @@ async function joinArtist(event) {
     const code = $("artistCode").value.trim().toUpperCase();
 
     try {
-        const result = await api.post("/organizations/join", { code });
+        const result = await api.post("/organizations/join", {
+            code,
+            role: "artist"
+        });
 
         $("joinArtistForm").reset();
         await loadOrganizations();
@@ -315,7 +318,10 @@ async function joinAdmin(event) {
     const code = $("adminJoinCode").value.trim().toUpperCase();
 
     try {
-        const result = await api.post("/organizations/join", { code });
+        const result = await api.post("/organizations/join", {
+            code,
+            role: "admin"
+        });
 
         $("joinAdminForm").reset();
         await loadOrganizations();
@@ -353,6 +359,317 @@ async function removeMember(orgId, memberId, kind) {
         status(error.message);
     }
 }
+async function renameOrganization(orgId, oldName) {
+    const name = prompt("Enter new organization name:", oldName);
+
+    if (!name || !name.trim()) return;
+
+    try {
+        await api.put("/organizations/" + orgId, {
+            name: name.trim()
+        });
+
+        await loadOrganizations();
+        status("Organization renamed.");
+    } catch (error) {
+        status(error.message);
+    }
+}
+async function deleteOrganization(orgId, name) {
+    if (!confirm("Permanently delete " + name + "? All memberships will be removed.")) return;
+
+    try {
+        await api.del("/organizations/" + orgId);
+
+        await loadOrganizations();
+        status("Organization deleted.");
+    } catch (error) {
+        status(error.message);
+    }
+}
+async function managePermissions(orgId, artistEmail, artistName) {
+    try {
+        const permissions = await api.get(
+            "/organizations/" + orgId + "/permissions?email=" +
+            encodeURIComponent(artistEmail)
+        );
+
+        const categories = {
+            contacts: "Contacts",
+            projects: "Projects",
+            bookings: "Calendar and Bookings",
+            opportunities: "Opportunities",
+            revenue: "Revenue"
+        };
+
+        const overlay = element("div", undefined, "network-modal-overlay");
+        const modal = element("div", undefined, "network-modal");
+
+        modal.appendChild(element("h2", "Sharing Permissions"));
+        modal.appendChild(element("p", "Manage access to " + artistName));
+
+        const form = element("form");
+        const selects = {};
+
+        Object.entries(categories).forEach(([key, label]) => {
+            form.appendChild(element("label", label));
+
+            const select = element("select");
+
+            [
+                ["none", "No Access"],
+                ["view", "View Only"],
+                ["edit", "View and Edit"]
+            ].forEach(([value, text]) => {
+                const option = element("option", text);
+                option.value = value;
+                select.appendChild(option);
+            });
+
+            select.value = permissions[key] || "none";
+            selects[key] = select;
+            form.appendChild(select);
+        });
+
+        const buttons = element("div", undefined, "network-modal-actions");
+
+        action(buttons, "Cancel", () => overlay.remove());
+
+        const saveButton = element("button", "Save Permissions", "network-primary");
+        saveButton.type = "submit";
+        buttons.appendChild(saveButton);
+
+        form.appendChild(buttons);
+
+        form.onsubmit = async event => {
+            event.preventDefault();
+
+            const updated = {};
+
+            Object.keys(selects).forEach(key => {
+                updated[key] = selects[key].value;
+            });
+
+            try {
+                await api.put(
+                    "/organizations/" + orgId + "/permissions",
+                    {
+                        email: artistEmail,
+                        permissions: updated
+                    }
+                );
+
+                overlay.remove();
+                status("Sharing permissions updated.");
+            } catch (error) {
+                alert(error.message);
+            }
+        };
+
+        modal.appendChild(form);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+    } catch (error) {
+        status(error.message);
+    }
+}
+async function manageAssignments(org, artistEmail) {
+    try {
+        const assignments = await api.get(
+            "/organizations/" + org.id + "/assignments"
+        );
+
+        const overlay = element("div", undefined, "network-modal-overlay");
+        const modal = element("div", undefined, "network-modal");
+
+        modal.appendChild(element("h2", "Assign Administrators"));
+        modal.appendChild(element("p",
+            org.memberNames?.[artistEmail] || artistEmail
+        ));
+
+        if (!org.admins.length) {
+            modal.appendChild(element("p", "No administrators have joined."));
+        }
+
+        org.admins.forEach(adminEmail => {
+            const row = element("div", undefined, "network-org-member-row");
+
+            const assigned = assignments.some(a =>
+                a.adminEmail === adminEmail &&
+                a.artistEmail === artistEmail
+            );
+
+            row.appendChild(element("span",
+                org.memberNames?.[adminEmail] || adminEmail
+            ));
+
+            action(row, assigned ? "Unassign" : "Assign", async () => {
+                try {
+                    const path = "/organizations/" + org.id + "/assignments";
+
+                    if (assigned) {
+                        await api.del(
+                            path +
+                            "?adminEmail=" + encodeURIComponent(adminEmail) +
+                            "&artistEmail=" + encodeURIComponent(artistEmail)
+                        );
+                    } else {
+                        await api.post(path, {
+                            adminEmail,
+                            artistEmail
+                        });
+                    }
+
+                    overlay.remove();
+                    await loadOrganizations();
+                    await manageAssignments(org, artistEmail);
+
+                } catch (error) {
+                    alert(error.message);
+                }
+            });
+
+            modal.appendChild(row);
+        });
+
+        action(modal, "Close", () => overlay.remove());
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+    } catch (error) {
+        status(error.message);
+    }
+}
+async function viewArtist(orgId, artistEmail, artistName, isOwner) {
+    const overlay = element("div", undefined, "network-modal-overlay");
+    const modal = element("div", undefined, "network-modal");
+
+    modal.style.width = "850px";
+    modal.style.maxWidth = "90vw";
+    modal.style.maxHeight = "85vh";
+    modal.style.overflowY = "auto";
+
+    modal.appendChild(element("h2", artistName));
+    modal.appendChild(element("p", "Artist Management"));
+
+    const tabs = element("div", undefined, "network-modal-actions");
+    tabs.style.flexWrap = "wrap";
+
+    const content = element("div");
+    content.style.marginTop = "20px";
+
+    const categories = {
+        profile: "Profile",
+        contacts: "Contacts",
+        projects: "Projects",
+        bookings: "Calendar",
+        opportunities: "Opportunities",
+        revenue: "Revenue"
+    };
+
+    async function loadCategory(category) {
+        content.replaceChildren();
+        content.appendChild(element("p", "Loading..."));
+
+        try {
+            const result = await api.get(
+                "/organizations/" + orgId +
+                "/artist/" + category +
+                "?email=" + encodeURIComponent(artistEmail)
+            );
+
+            content.replaceChildren();
+
+            if (category === "profile") {
+                const fields = {
+                    stage_name: "Stage Name",
+                    first_name: "First Name",
+                    last_name: "Last Name",
+                    email: "Email",
+                    phone: "Phone",
+                    genres: "Genres",
+                    location: "Location",
+                    bio: "Biography"
+                };
+
+                Object.entries(fields).forEach(([key, label]) => {
+                    content.appendChild(element("p",
+                        label + ": " + (result[key] || "Not provided")
+                    ));
+                });
+
+                return;
+            }
+
+            content.appendChild(element("h3", categories[category]));
+
+            if (!result.records.length) {
+                content.appendChild(element("p", "No records found."));
+                return;
+            }
+
+            result.records.forEach(record => {
+                const card = element("div", undefined, "network-org-item");
+
+                card.appendChild(element("h4",
+                    record.title ||
+                    record.name ||
+                    record.description ||
+                    "Record"
+                ));
+
+                Object.entries(record).forEach(([key, value]) => {
+                    if (
+                        key === "id" ||
+                        key.endsWith("_id") ||
+                        key === "created_at" ||
+                        value === null ||
+                        value === ""
+                    ) return;
+
+                    const label = key
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, c => c.toUpperCase());
+
+                    const displayValue =
+                        typeof value === "object"
+                            ? JSON.stringify(value)
+                            : String(value);
+
+                    card.appendChild(element("p",
+                        label + ": " + displayValue
+                    ));
+                });
+
+                content.appendChild(card);
+            });
+
+        } catch (error) {
+            content.replaceChildren();
+            content.appendChild(element("p",
+                error.message || "Access denied."
+            ));
+        }
+    }
+
+    Object.entries(categories).forEach(([key, label]) => {
+        if (isOwner && key === "contacts") return;
+
+        action(tabs, label, () => loadCategory(key));
+    });
+
+    modal.appendChild(tabs);
+    modal.appendChild(content);
+
+    action(modal, "Close", () => overlay.remove());
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    await loadCategory("profile");
+}
 function copyCode(value) {
     navigator.clipboard.writeText(value).then(
         () => status("Invitation code copied."),
@@ -363,12 +680,19 @@ function renderOrganizations() {
     const role = accountRole();
     const current = accountId();
     const all = organizations();
+    const isAdmin = all.some(org => org.admins.includes(current));
+
     $("artistPanel").hidden = role !== "artist";
-    $("managerPanel").hidden = role !== "manager";
-    $("accountRoleBadge").textContent = role === "manager" ? "Manager Mode" : "Artist Mode";
+    $("managerPanel").hidden = false;
+    $("createOrgCard").hidden = role !== "manager";
+
+    $("accountRoleBadge").textContent =
+        role === "manager" ? "Manager Mode" :
+        isAdmin ? "Artist · Administrator" : "Artist Mode";
+
     $("roleDescription").textContent = role === "manager"
         ? "Create teams and collectives, manage artists, and invite administrators."
-        : "Join management teams and artist collectives with invitation codes.";
+        : "Join teams and collectives as an artist or administrator.";
 
     if(role === "artist") {
         const list = $("artistMemberships");
@@ -385,7 +709,6 @@ function renderOrganizations() {
             });
             list.appendChild(card);
         });
-        return;
     }
 
     const list = $("managerOrganizations");
@@ -419,21 +742,56 @@ function renderOrganizations() {
         if(!org.members.length) roster.appendChild(element("p","No artists have joined."));
         org.members.forEach(member => {
             const row = element("div",undefined,"network-org-member-row");
-            row.appendChild(element("span",member));
-            action(row,"Remove",() => removeMember(org.id,member,"artist"));
+            row.appendChild(element("span", org.memberNames?.[member] || member));
+            action(row, "View Artist", () =>
+                viewArtist(
+                    org.id,
+                    member,
+                    org.memberNames?.[member] || member,
+                    owner
+                )
+            );
+            action(row, "Manage Permissions", () =>
+                managePermissions(
+                    org.id,
+                    member,
+                    org.memberNames?.[member] || member
+                )
+            );
+            if (owner) {
+                if (org.type === "collective") {
+                    action(row, "Assign Administrator", () =>
+                        manageAssignments(org, member)
+                    );
+                }
+
+                action(row, "Remove", () =>
+                    removeMember(org.id, member, "artist")
+                );
+            }
             roster.appendChild(row);
         });
-        if(org.type === "collective") {
+        if(owner && org.type === "collective") {
             roster.appendChild(element("h4","Administrators"));
             if(!org.admins.length) roster.appendChild(element("p","No additional administrators."));
             org.admins.forEach(admin => {
                 const row = element("div",undefined,"network-org-member-row");
-                row.appendChild(element("span",admin));
+                row.appendChild(element("span", org.memberNames?.[admin] || admin));
                 if(owner) action(row,"Remove",() => removeMember(org.id,admin,"admin"));
                 roster.appendChild(row);
             });
         }
         card.appendChild(roster);
+        if (owner) {
+            action(card, "Rename Organization", () =>
+                renameOrganization(org.id, org.name)
+            );
+
+            action(card, "Delete Organization", () =>
+                deleteOrganization(org.id, org.name),
+                "network-danger"
+            );
+        }
         if(!owner) action(card,"Leave Collective",() => {
             if(confirm("Leave " + org.name + "?")) leaveOrganization(org.id);
         });
